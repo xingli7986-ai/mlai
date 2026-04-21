@@ -5,40 +5,36 @@ import { useSession } from "next-auth/react";
 
 const SHOWCASE = [
   {
-    user: "lulu_chan",
-    tag: "花卉",
-    desc: "午后樱花与薄雾，粉调渐变",
-    gradient: "from-[#FF6B9D] to-[#C084FC]",
+    url: "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/1776808085069_1.webp",
+    title: "樱花水彩",
   },
   {
-    user: "mochi.design",
-    tag: "水彩",
-    desc: "抽象水墨山水，留白呼吸",
-    gradient: "from-[#6BC5FF] to-[#C084FC]",
+    url: "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/1776808085069_2.webp",
+    title: "樱花水彩",
   },
   {
-    user: "velvet_rose",
-    tag: "复古",
-    desc: "复古邮票拼贴风，琥珀调",
-    gradient: "from-[#FFB86B] to-[#FF6B9D]",
+    url: "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/1776808434564_2.webp",
+    title: "几何花卉",
   },
   {
-    user: "xiaoxi",
-    tag: "热带",
-    desc: "夏日热带雨林，大叶植物剪影",
-    gradient: "from-[#6BE3A7] to-[#6BC5FF]",
+    url: "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/1776808434564_3.webp",
+    title: "几何花卉",
   },
   {
-    user: "starry_petals",
-    tag: "波普",
-    desc: "波普漫画闪电，撞色黄黑",
-    gradient: "from-[#FFE56B] to-[#FF6B9D]",
+    url: "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/1776808481930_1.webp",
+    title: "热带植物",
   },
   {
-    user: "indigo_bloom",
-    tag: "极简",
-    desc: "极简几何矩阵，灰调冷静",
-    gradient: "from-[#A78BFA] to-[#374151]",
+    url: "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/1776808481930_2.webp",
+    title: "热带植物",
+  },
+  {
+    url: "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/1776808504320_0.webp",
+    title: "水墨牡丹",
+  },
+  {
+    url: "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/1776808504320_1.webp",
+    title: "水墨牡丹",
   },
 ];
 
@@ -137,25 +133,29 @@ export default function HomePage() {
             </span>
           </div>
           <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
-            {SHOWCASE.map((s) => (
+            {SHOWCASE.map((s, i) => (
               <div
-                key={s.user}
+                key={`${s.url}-${i}`}
                 className="w-44 shrink-0 snap-start overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md sm:w-52"
               >
-                <div
-                  className={`relative aspect-[3/4] bg-gradient-to-br ${s.gradient}`}
-                >
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.35),transparent_60%)]" />
+                <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={s.url}
+                    alt={s.title}
+                    loading="lazy"
+                    className="h-full w-full object-cover"
+                  />
                   <div className="absolute bottom-2 left-2 rounded-full bg-white/30 px-2 py-0.5 text-[10px] text-white backdrop-blur">
-                    #{s.tag}
+                    #{s.title}
                   </div>
                 </div>
                 <div className="p-3">
                   <div className="text-sm font-semibold text-gray-900">
-                    @{s.user}
+                    {s.title}
                   </div>
-                  <div className="mt-1 line-clamp-2 text-xs text-gray-500">
-                    {s.desc}
+                  <div className="mt-1 text-xs text-gray-500">
+                    MaxLuLu AI 原创印花
                   </div>
                 </div>
               </div>
