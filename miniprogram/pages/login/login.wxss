@@ -1,0 +1,101 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80rpx 40rpx;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 48rpx;
+}
+
+.logo {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 28rpx;
+  background: linear-gradient(135deg, #FF6B9D 0%, #C084FC 100%);
+  margin-bottom: 20rpx;
+  box-shadow: 0 16rpx 32rpx -12rpx rgba(192, 132, 252, 0.55);
+}
+
+.title {
+  font-size: 48rpx;
+  font-weight: 700;
+  letter-spacing: -0.5rpx;
+}
+
+.subtitle {
+  margin-top: 8rpx;
+  font-size: 24rpx;
+  color: #9ca3af;
+}
+
+.login-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.label {
+  font-size: 24rpx;
+  color: #6b7280;
+  margin-bottom: 16rpx;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 24rpx 28rpx;
+  background: #ffffff;
+  border: 2rpx solid #e5e7eb;
+  border-radius: 20rpx;
+  font-size: 32rpx;
+  color: #111827;
+}
+
+.input-code {
+  text-align: center;
+  letter-spacing: 20rpx;
+  font-size: 40rpx;
+  font-weight: 600;
+}
+
+.hint-box {
+  margin-top: 20rpx;
+  padding: 16rpx 20rpx;
+  background: linear-gradient(90deg, rgba(255, 107, 157, 0.08) 0%, rgba(192, 132, 252, 0.08) 100%);
+  border-radius: 16rpx;
+  color: #6b7280;
+  font-size: 24rpx;
+}
+
+.hint-strong {
+  color: #C084FC;
+  font-weight: 700;
+}
+
+.error {
+  color: #e11d48;
+  font-size: 24rpx;
+  margin-top: 16rpx;
+}
+
+.next-btn {
+  margin-top: 32rpx;
+}
+
+.back-btn {
+  margin-top: 24rpx;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 26rpx;
+}
+
+.slogan {
+  margin-top: 64rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+  text-align: center;
+}

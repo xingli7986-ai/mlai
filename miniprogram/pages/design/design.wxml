@@ -1,0 +1,133 @@
+<view wx:if="{{toast}}" class="toast">{{toast}}</view>
+
+<view class="page">
+  <view class="section-title">描述你想要的印花</view>
+  <view class="section-sub">或点选下方风格预设快速填入</view>
+
+  <view class="presets">
+    <view
+      wx:for="{{presets}}"
+      wx:key="label"
+      class="pill {{prompt === item.text ? 'pill-active' : ''}}"
+      data-text="{{item.text}}"
+      bindtap="applyPreset"
+    >{{item.label}}</view>
+  </view>
+
+  <textarea
+    class="textarea"
+    placeholder="尽量具体：颜色、图案、风格、情绪..."
+    value="{{prompt}}"
+    maxlength="300"
+    auto-height
+    bindinput="onPromptInput"
+  />
+  <view class="char-count">{{prompt.length}}/300</view>
+
+  <view wx:if="{{genError}}" class="error-box">{{genError}}</view>
+
+  <button
+    class="btn-primary"
+    disabled="{{!prompt || generating}}"
+    bindtap="handleGenerate"
+  >{{generating ? 'AI 正在绘制 4 款方案...' : '生成方案 ✨'}}</button>
+  <view class="hint-small">生成约需 10–30 秒</view>
+
+  <block wx:if="{{images.length > 0}}">
+    <view class="divider"></view>
+    <view class="section-title">选择喜欢的方案</view>
+    <view class="section-sub">点选其中一张作为你的设计</view>
+    <view class="img-grid">
+      <view
+        wx:for="{{images}}"
+        wx:key="*this"
+        wx:for-item="url"
+        wx:for-index="i"
+        class="img-item {{selectedImage === i ? 'img-picked' : ''}}"
+        data-index="{{i}}"
+        bindtap="handlePickImage"
+      >
+        <image src="{{url}}" mode="aspectFill" class="img-el" />
+        <view class="img-tag">方案 {{i + 1}}</view>
+        <view wx:if="{{selectedImage === i}}" class="img-check">✓</view>
+      </view>
+    </view>
+
+    <view class="action-row">
+      <button
+        class="btn-secondary action-btn"
+        bindtap="handleSaveDesign"
+        disabled="{{selectedImage === null || saving || savedDesignId}}"
+      >{{saving ? '保存中...' : (savedDesignId ? '已保存 ✓' : '保存设计')}}</button>
+      <button
+        class="btn-secondary action-btn"
+        bindtap="handleRegenerate"
+      >↻ 重新生成</button>
+    </view>
+    <view wx:if="{{saveError}}" class="error-box">{{saveError}}</view>
+  </block>
+
+  <block wx:if="{{selectedImage !== null}}">
+    <view class="divider"></view>
+    <view class="section-title">选择裙型</view>
+    <view class="type-grid">
+      <view
+        wx:for="{{skirts}}"
+        wx:key="id"
+        class="type-card {{skirtType === item.id ? 'type-picked' : ''}}"
+        data-id="{{item.id}}"
+        bindtap="pickSkirt"
+      >
+        <view class="type-name">{{item.name}}</view>
+        <view class="type-desc">{{item.desc}}</view>
+      </view>
+    </view>
+  </block>
+
+  <block wx:if="{{skirtType}}">
+    <view class="divider"></view>
+    <view class="section-title">选择面料</view>
+    <view class="fabric-grid">
+      <view
+        wx:for="{{fabrics}}"
+        wx:key="id"
+        class="type-card {{fabric === item.id ? 'type-picked' : ''}}"
+        data-id="{{item.id}}"
+        bindtap="pickFabric"
+      >
+        <view class="type-name">{{item.name}}</view>
+        <view class="type-desc">{{item.desc}}</view>
+      </view>
+    </view>
+  </block>
+
+  <block wx:if="{{fabric}}">
+    <view class="divider"></view>
+    <view class="section-title">选择尺码</view>
+    <view class="size-grid">
+      <view
+        wx:for="{{sizes}}"
+        wx:key="*this"
+        class="size-cell {{size === item ? 'size-picked' : ''}}"
+        data-size="{{item}}"
+        bindtap="pickSize"
+      >{{item}}</view>
+    </view>
+
+    <view class="summary">
+      <view class="summary-label">应付金额</view>
+      <view class="summary-price grad-text">¥ {{price}}</view>
+      <view class="summary-detail">
+        基础价 ¥{{basePrice}}{{fabric === 'silk' ? ' · 真丝 +¥100' : ''}}
+      </view>
+    </view>
+
+    <view wx:if="{{submitError}}" class="error-box">{{submitError}}</view>
+    <button
+      class="btn-primary submit-btn"
+      disabled="{{!size || submitting}}"
+      bindtap="handleSubmit"
+    >{{submitting ? '下单中...' : '确认下单'}}</button>
+    <view class="hint-small">MVP 测试阶段，下单即模拟支付成功</view>
+  </block>
+</view>

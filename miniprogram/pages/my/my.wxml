@@ -1,0 +1,87 @@
+<view wx:if="{{toast}}" class="toast">{{toast}}</view>
+
+<view wx:if="{{!isLoggedIn}}" class="page unauth">
+  <view class="logo"></view>
+  <view class="unauth-title grad-text">请先登录</view>
+  <view class="unauth-sub">登录后查看你的设计和订单</view>
+  <button class="btn-primary login-btn" bindtap="goLogin">去登录</button>
+</view>
+
+<view wx:else class="page">
+  <!-- 用户信息 -->
+  <view class="user-card">
+    <view class="avatar">{{phoneTail}}</view>
+    <view class="user-info">
+      <view class="user-hi">Hi, 设计师</view>
+      <view class="user-phone">{{maskedPhone}}</view>
+    </view>
+    <view class="logout-btn" bindtap="handleLogout">退出</view>
+  </view>
+
+  <!-- 订单统计 -->
+  <view class="stats">
+    <view class="stat">
+      <view class="stat-num amber">{{stats.pending}}</view>
+      <view class="stat-label">待付款</view>
+    </view>
+    <view class="stat">
+      <view class="stat-num sky">{{stats.paid}}</view>
+      <view class="stat-label">待发货</view>
+    </view>
+    <view class="stat">
+      <view class="stat-num emerald">{{stats.completed}}</view>
+      <view class="stat-label">已完成</view>
+    </view>
+  </view>
+
+  <!-- 我的设计 -->
+  <view class="section-head">
+    <view class="section-title">我的设计</view>
+    <view class="section-sub">{{designsLoading ? '加载中...' : '共 ' + designs.length + ' 件'}}</view>
+  </view>
+  <view wx:if="{{designsLoading}}" class="skeleton-grid">
+    <view class="skeleton-cell"></view>
+    <view class="skeleton-cell"></view>
+  </view>
+  <view wx:elif="{{designs.length === 0}}" class="empty">
+    <view class="empty-icon">🎨</view>
+    <view class="empty-text">还没有保存的设计</view>
+  </view>
+  <view wx:else class="design-grid">
+    <view class="design-cell" wx:for="{{designs}}" wx:key="id">
+      <image wx:if="{{item.selectedImage}}" src="{{item.selectedImage}}" mode="aspectFill" class="design-img" />
+      <view wx:else class="design-placeholder">图片缺失</view>
+      <view class="design-meta">{{item._excerpt}}</view>
+    </view>
+  </view>
+
+  <!-- 我的订单 -->
+  <view class="section-head section-head-margin">
+    <view class="section-title">我的订单</view>
+    <view class="section-sub">{{ordersLoading ? '加载中...' : '最近 ' + recentOrders.length + ' 笔'}}</view>
+  </view>
+  <view wx:if="{{ordersLoading}}" class="skeleton-list">
+    <view class="skeleton-row"></view>
+    <view class="skeleton-row"></view>
+  </view>
+  <view wx:elif="{{recentOrders.length === 0}}" class="empty">
+    <view class="empty-icon">📦</view>
+    <view class="empty-text">还没有订单，去设计一件专属裙装吧</view>
+    <button class="btn-primary empty-btn" bindtap="goDesign">开始设计</button>
+  </view>
+  <view wx:else class="order-list">
+    <view class="order-card" wx:for="{{recentOrders}}" wx:key="id">
+      <image wx:if="{{item.design.selectedImage}}" src="{{item.design.selectedImage}}" mode="aspectFill" class="order-thumb" />
+      <view wx:else class="order-thumb order-thumb-placeholder">×</view>
+      <view class="order-info">
+        <view class="order-title">
+          {{item._skirtName}} · {{item._fabricName}} · {{item.size}}
+          <view class="badge {{item._badgeClass}}">{{item._statusText}}</view>
+        </view>
+        <view class="order-prompt">{{item.design.prompt}}</view>
+        <view class="order-date">{{item._date}}</view>
+      </view>
+      <view class="order-price grad-text">¥{{item.price}}</view>
+    </view>
+  </view>
+</view>

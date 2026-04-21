@@ -1,0 +1,24 @@
+{
+  "miniprogramRoot": "./",
+  "description": "MaxLuLu AI 小程序",
+  "appid": "wx42469815c1f5ee09",
+  "projectname": "maxlulu-ai",
+  "compileType": "miniprogram",
+  "libVersion": "latest",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "preloadBackgroundData": false,
+    "minified": true,
+    "autoAudits": false,
+    "showShadowRootInWxmlPanel": true,
+    "useCompilerPlugins": false,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true
+  },
+  "condition": {}
+}

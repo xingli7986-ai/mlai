@@ -1,0 +1,39 @@
+<view class="page">
+  <view class="hero">
+    <view class="badge">✨ AI 印花设计平台</view>
+    <view class="hero-title grad-text">AI 印花设计，为你而生</view>
+    <view class="hero-sub">描述你想要的图案，AI 为你生成独一无二的印花裙</view>
+    <view class="cta-wrap">
+      <button class="btn-primary" bindtap="goDesign">开始设计 →</button>
+      <view wx:if="{{!isLoggedIn}}" class="login-hint" bindtap="goLogin">先去登录</view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="steps">
+      <view class="step-card" wx:for="{{steps}}" wx:key="t">
+        <view class="step-num">{{index + 1}}</view>
+        <view class="step-title">{{item.t}}</view>
+        <view class="step-desc">{{item.d}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section">
+    <view class="section-head">
+      <view class="section-title">设计师们的灵感</view>
+      <view class="section-sub">来自社区的印花作品，横向滑动查看</view>
+    </view>
+    <scroll-view scroll-x class="showcase" show-scrollbar="{{false}}" enhanced>
+      <view class="show-item" wx:for="{{showcase}}" wx:key="user">
+        <view class="show-img" style="background: linear-gradient({{item.gradient}});">
+          <view class="show-tag">#{{item.tag}}</view>
+        </view>
+        <view class="show-user">@{{item.user}}</view>
+        <view class="show-desc">{{item.desc}}</view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="slogan grad-text">Fashion For You — 每一朵印花，都由你绽放</view>
+</view>

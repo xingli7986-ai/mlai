@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import Replicate from "replicate";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/getAuthUser";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -9,8 +9,8 @@ const PROMPT_PREFIX =
   "seamless textile pattern design, fashion fabric print, high quality, ";
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session?.user) {
+  const user = await getAuthUser(req);
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

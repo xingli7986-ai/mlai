@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // WeChat Mini Program uses CommonJS + wx globals; not Next.js code.
+    "miniprogram/**",
   ]),
 ]);
 
