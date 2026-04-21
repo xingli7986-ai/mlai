@@ -81,6 +81,14 @@ const STYLE_PRESETS: { label: string; text: string }[] = [
 const SIZES = ["S", "M", "L", "XL"] as const;
 type SizeOption = (typeof SIZES)[number];
 
+const LOADING_MESSAGES = [
+  "AI 正在调色...",
+  "灵感碰撞中...",
+  "花纹编织中...",
+  "色彩晕染中...",
+  "即将绽放...",
+];
+
 const BASE_PRICE = Math.min(...FABRICS.map((f) => f.price));
 
 function calcPrice(fabricId: string | null): number {
@@ -118,6 +126,8 @@ function DesignPageInner() {
   const [size, setSize] = useState<SizeOption | null>(null);
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState("");
+  const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [saving, setSaving] = useState(false);
@@ -133,6 +143,14 @@ function DesignPageInner() {
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");
   }, [status, router]);
+
+  useEffect(() => {
+    if (!generating) return;
+    const t = window.setInterval(() => {
+      setLoadingMsgIdx((i) => (i + 1) % LOADING_MESSAGES.length);
+    }, 2000);
+    return () => window.clearInterval(t);
+  }, [generating]);
 
   useEffect(() => {
     if (!designIdParam || status !== "authenticated") return;
@@ -203,8 +221,10 @@ function DesignPageInner() {
       }
       setImages(data.images);
       setSelectedImage(null);
+      setLoadedImages(new Set());
       setSavedDesignId(null);
       setSaveError("");
+      setLoadingMsgIdx(0);
       setStep(2);
     } catch (err) {
       setGenError(err instanceof Error ? err.message : "生成失败，请稍后再试");
@@ -475,14 +495,29 @@ function DesignPageInner() {
                 disabled={!prompt.trim() || generating}
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] py-3 text-sm font-semibold text-white shadow-md shadow-[#C084FC]/30 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {generating && (
-                  <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-white" />
+                {generating ? (
+                  <>
+                    <SpinningFlower />
+                    <span>{LOADING_MESSAGES[loadingMsgIdx]}</span>
+                  </>
+                ) : (
+                  <>生成方案 ✨</>
                 )}
-                {generating ? "AI 正在绘制 4 款方案..." : "生成方案 ✨"}
               </button>
               <p className="mt-3 text-center text-xs text-gray-400">
                 生成约需 10–30 秒
               </p>
+              {generating && (
+                <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+                  {[0, 1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className="aspect-[3/4] animate-pulse rounded-2xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100"
+                      style={{ animationDelay: `${i * 150}ms` }}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -518,7 +553,19 @@ function DesignPageInner() {
                           <img
                             src={url}
                             alt={`方案 ${i + 1}`}
-                            className="h-full w-full object-cover"
+                            onLoad={() =>
+                              setLoadedImages((prev) => {
+                                if (prev.has(url)) return prev;
+                                const next = new Set(prev);
+                                next.add(url);
+                                return next;
+                              })
+                            }
+                            className={`h-full w-full object-cover transition-opacity duration-300 ${
+                              loadedImages.has(url)
+                                ? "opacity-100"
+                                : "opacity-0"
+                            }`}
                           />
                           {picked && (
                             <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#FF6B9D] to-[#C084FC] text-xs text-white">
@@ -832,6 +879,26 @@ function DesignPageInner() {
         </section>
       </main>
     </div>
+  );
+}
+
+function SpinningFlower() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      fill="currentColor"
+      className="h-4 w-4 shrink-0 animate-spin"
+      aria-hidden
+    >
+      <circle cx="12" cy="4.5" r="2.2" />
+      <circle cx="18.5" cy="9.5" r="2.2" />
+      <circle cx="16" cy="18" r="2.2" />
+      <circle cx="8" cy="18" r="2.2" />
+      <circle cx="5.5" cy="9.5" r="2.2" />
+      <circle cx="12" cy="12" r="1.8" fillOpacity="0.45" />
+    </svg>
   );
 }
 
