@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
+import { isAdmin } from "@/lib/admin";
 
 type OrderWithDesign = {
   id: string;
@@ -517,6 +518,23 @@ export default function MyPage() {
           )}
         </section>
       </main>
+
+      {isAdmin(phone) && (
+        <div className="mx-auto mb-4 w-full max-w-3xl px-4 sm:px-6">
+          <Link
+            href="/admin"
+            className="flex items-center justify-between rounded-2xl border border-[#C084FC]/30 bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/10 px-5 py-3 text-sm font-medium transition hover:border-[#C084FC]/60 hover:shadow-md"
+          >
+            <span className="flex items-center gap-2 text-gray-700">
+              <span className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-2 py-0.5 text-[10px] font-bold text-white">
+                ADMIN
+              </span>
+              管理后台
+            </span>
+            <span className="text-[#C084FC]">→</span>
+          </Link>
+        </div>
+      )}
 
       <footer className="py-10 text-center">
         <p className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-sm font-medium text-transparent">
