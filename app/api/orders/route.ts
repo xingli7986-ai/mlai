@@ -1,30 +1,17 @@
 import { NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/getAuthUser";
 import { prisma } from "@/lib/prisma";
+import { FABRICS, SIZE_OPTIONS, SKIRT_TYPES } from "@/lib/constants";
 
 export const runtime = "nodejs";
 
-const VALID_SKIRTS = new Set([
-  "a-line",
-  "straight",
-  "half",
-  "pleated",
-  "flared",
-  "wrap",
-]);
-
-const FABRIC_PRICES: Record<string, number> = {
-  cotton: 299,
-  silk: 399,
-  chiffon: 329,
-  denim: 349,
-  velvet: 429,
-};
-const VALID_FABRICS = new Set(Object.keys(FABRIC_PRICES));
-const VALID_SIZES = new Set(["S", "M", "L", "XL"]);
+const VALID_SKIRTS = new Set(SKIRT_TYPES.map((s) => s.id));
+const VALID_FABRICS = new Set(FABRICS.map((f) => f.id));
+const VALID_SIZES = new Set<string>(SIZE_OPTIONS);
+const DEFAULT_PRICE = Math.min(...FABRICS.map((f) => f.price));
 
 function calcPrice(fabric: string): number {
-  return FABRIC_PRICES[fabric] ?? 299;
+  return FABRICS.find((f) => f.id === fabric)?.price ?? DEFAULT_PRICE;
 }
 
 export async function POST(req: Request) {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { FABRIC_LABEL, SKIRT_LABEL } from "@/lib/constants";
 
 type OrderWithDesign = {
   id: string;
@@ -37,23 +38,6 @@ const EMPTY_TEXT: Record<TabId, string> = {
   paid: "没有待发货的订单",
   shipped: "没有已发货的订单",
   completed: "没有已完成的订单",
-};
-
-const SKIRT_LABEL: Record<string, string> = {
-  "a-line": "A 字裙",
-  straight: "直筒裙",
-  half: "半身裙",
-  pleated: "百褶裙",
-  flared: "鱼尾裙",
-  wrap: "一片式裹裙",
-};
-
-const FABRIC_LABEL: Record<string, string> = {
-  cotton: "棉麻",
-  silk: "真丝",
-  chiffon: "雪纺",
-  denim: "牛仔",
-  velvet: "丝绒",
 };
 
 const STATUS_LABEL: Record<string, { text: string; className: string }> = {

@@ -5,6 +5,12 @@ import NextImage from "next/image";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import {
+  FABRICS,
+  SIZE_OPTIONS,
+  SKIRT_TYPES,
+  type SizeOption,
+} from "@/lib/constants";
 
 type Step = 1 | 2 | 3 | 4;
 
@@ -13,23 +19,6 @@ const STEPS: { id: Step; title: string; subtitle: string }[] = [
   { id: 2, title: "选择方案", subtitle: "从 4 款设计中挑选" },
   { id: 3, title: "裙型面料", subtitle: "定制你的专属款式" },
   { id: 4, title: "确认下单", subtitle: "核对信息，生成订单" },
-];
-
-const SKIRT_TYPES = [
-  { id: "a-line", name: "A 字裙", desc: "经典显瘦" },
-  { id: "straight", name: "直筒裙", desc: "利落简约" },
-  { id: "half", name: "半身裙", desc: "灵动百搭" },
-  { id: "pleated", name: "百褶裙", desc: "飘逸复古" },
-  { id: "flared", name: "鱼尾裙", desc: "收腰展摆" },
-  { id: "wrap", name: "一片式裹裙", desc: "优雅随性" },
-];
-
-const FABRICS = [
-  { id: "cotton", name: "棉麻", desc: "透气舒适，日常百搭", price: 299 },
-  { id: "silk", name: "真丝", desc: "丝滑垂坠，高级光泽", price: 399 },
-  { id: "chiffon", name: "雪纺", desc: "轻盈飘逸，仙气满满", price: 329 },
-  { id: "denim", name: "牛仔", desc: "硬挺有型，休闲百搭", price: 349 },
-  { id: "velvet", name: "丝绒", desc: "复古质感，秋冬优选", price: 429 },
 ];
 
 const STYLE_PRESETS: { label: string; text: string }[] = [
@@ -78,9 +67,6 @@ const STYLE_PRESETS: { label: string; text: string }[] = [
     text: "Morandi color palette abstract pattern, muted dusty pink sage green and warm gray, soft elegant",
   },
 ];
-
-const SIZES = ["S", "M", "L", "XL"] as const;
-type SizeOption = (typeof SIZES)[number];
 
 const LOADING_MESSAGES = [
   "AI 正在调色...",
@@ -788,7 +774,7 @@ function DesignPageInner() {
                   </a>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  {SIZES.map((s) => {
+                  {SIZE_OPTIONS.map((s) => {
                     const picked = size === s;
                     return (
                       <button
