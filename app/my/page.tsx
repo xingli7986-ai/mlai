@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 
@@ -83,6 +83,58 @@ export default function MyPage() {
   const [designsLoading, setDesignsLoading] = useState(true);
   const [designsError, setDesignsError] = useState("");
   const [toast, setToast] = useState("");
+  const [avatarOverride, setAvatarOverride] = useState<string | null>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const avatar =
+    avatarOverride ??
+    (session?.user as { image?: string } | undefined)?.image ??
+    null;
+
+  function handlePickAvatar() {
+    if (uploadingAvatar) return;
+    fileInputRef.current?.click();
+  }
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showToast("请选择图片文件");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      showToast("图片不能超过 2MB");
+      return;
+    }
+    setUploadingAvatar(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/user/avatar", {
+        method: "POST",
+        body: form,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.success) {
+        throw new Error(
+          typeof data?.error === "string" ? data.error : "头像上传失败"
+        );
+      }
+      setAvatarOverride(data.avatar as string);
+      showToast("头像已更新 ✨");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "头像上传失败");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  function showToast(message: string) {
+    setToast(message);
+    window.setTimeout(() => setToast(""), 2400);
+  }
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");
@@ -192,9 +244,47 @@ export default function MyPage() {
       <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 sm:py-10">
         <section className="flex items-center justify-between rounded-3xl border border-gray-100 bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/10 p-6 shadow-[0_20px_60px_-30px_rgba(192,132,252,0.25)]">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF6B9D] to-[#C084FC] text-lg font-semibold text-white shadow-md shadow-[#C084FC]/30">
-              {phone.slice(-2) || "ML"}
-            </div>
+            <button
+              type="button"
+              onClick={handlePickAvatar}
+              disabled={uploadingAvatar}
+              className="relative h-16 w-16 shrink-0 overflow-visible rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#C084FC]/40"
+              aria-label="更换头像"
+            >
+              {avatar ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={avatar}
+                  alt="头像"
+                  className={`h-16 w-16 rounded-2xl object-cover shadow-md shadow-[#C084FC]/30 transition-opacity ${
+                    uploadingAvatar ? "opacity-40" : ""
+                  }`}
+                />
+              ) : (
+                <div
+                  className={`flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF6B9D] to-[#C084FC] text-lg font-semibold text-white shadow-md shadow-[#C084FC]/30 transition-opacity ${
+                    uploadingAvatar ? "opacity-40" : ""
+                  }`}
+                >
+                  {phone.slice(-2) || "ML"}
+                </div>
+              )}
+              {uploadingAvatar && (
+                <span className="absolute inset-0 flex items-center justify-center">
+                  <span className="h-5 w-5 animate-spin rounded-full border-2 border-[#C084FC]/30 border-t-[#C084FC]" />
+                </span>
+              )}
+              <span className="pointer-events-none absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#C084FC] shadow-md ring-2 ring-white">
+                <CameraIcon />
+              </span>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
             <div>
               <div className="text-xs uppercase tracking-wider text-[#C084FC]">
                 Hi, 设计师
@@ -458,6 +548,25 @@ function StatCell({
       <div className={`text-2xl font-bold ${toneClass}`}>{count}</div>
       <div className="mt-0.5 text-[11px] text-gray-500">{label}</div>
     </Link>
+  );
+}
+
+function CameraIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="14"
+      height="14"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+      <circle cx="12" cy="13" r="4" />
+    </svg>
   );
 }
 
