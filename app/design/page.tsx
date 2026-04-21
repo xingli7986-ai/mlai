@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 type Step = 1 | 2 | 3 | 4;
@@ -48,8 +48,26 @@ function calcPrice(fabricId: string | null): number {
 }
 
 export default function DesignPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center bg-white text-sm text-gray-400">
+          加载中...
+        </div>
+      }
+    >
+      <DesignPageInner />
+    </Suspense>
+  );
+}
+
+function DesignPageInner() {
   const { status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const designIdParam = searchParams.get("designId");
+  const [loadingDesign, setLoadingDesign] = useState(false);
+  const [loadDesignError, setLoadDesignError] = useState("");
   const [step, setStep] = useState<Step>(1);
   const [prompt, setPrompt] = useState("");
   const [images, setImages] = useState<string[]>([]);
@@ -74,6 +92,53 @@ export default function DesignPage() {
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");
   }, [status, router]);
+
+  useEffect(() => {
+    if (!designIdParam || status !== "authenticated") return;
+    let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- loading state for data fetch
+    setLoadingDesign(true);
+    setLoadDesignError("");
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/designs/${encodeURIComponent(designIdParam)}`,
+          { cache: "no-store" }
+        );
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(
+            typeof data?.error === "string" ? data.error : "加载设计失败"
+          );
+        }
+        const d = data?.design;
+        if (cancelled || !d) return;
+        const imgs: string[] = Array.isArray(d.images) ? d.images : [];
+        const selIdx =
+          typeof d.selectedImage === "string"
+            ? imgs.indexOf(d.selectedImage)
+            : -1;
+        setPrompt(typeof d.prompt === "string" ? d.prompt : "");
+        setImages(imgs);
+        setSelectedImage(selIdx >= 0 ? selIdx : imgs.length > 0 ? 0 : null);
+        setSavedDesignId(typeof d.id === "string" ? d.id : null);
+        setSaveError("");
+        setGenError("");
+        if (imgs.length > 0) setStep(2);
+      } catch (err) {
+        if (!cancelled) {
+          setLoadDesignError(
+            err instanceof Error ? err.message : "加载设计失败"
+          );
+        }
+      } finally {
+        if (!cancelled) setLoadingDesign(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [designIdParam, status]);
 
   async function handleGenerate() {
     const trimmed = prompt.trim();
@@ -252,6 +317,16 @@ export default function DesignPage() {
       </header>
 
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 sm:px-6 sm:py-10">
+        {loadingDesign && (
+          <div className="mb-4 rounded-xl border border-[#C084FC]/30 bg-gradient-to-r from-[#FF6B9D]/5 to-[#C084FC]/5 px-4 py-3 text-sm text-[#C084FC]">
+            正在载入历史设计...
+          </div>
+        )}
+        {loadDesignError && (
+          <div className="mb-4 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-600">
+            {loadDesignError}
+          </div>
+        )}
         <div className="mb-6 flex items-center gap-3 sm:hidden">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FF6B9D] to-[#C084FC] text-sm font-semibold text-white shadow-md shadow-[#C084FC]/30">
             {step}

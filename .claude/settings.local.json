@@ -23,7 +23,8 @@
       "Bash(git remote *)",
       "Bash(git branch *)",
       "Bash(git push *)",
-      "Bash(tasklist //FI \"IMAGENAME eq node.exe\")"
+      "Bash(tasklist //FI \"IMAGENAME eq node.exe\")",
+      "Bash(grep -q \"---\\\\|error\\\\|Error\" /d/Temp/claude/D--maxlulu-ai/3a98ad81-2cb0-4311-8d14-cffc99a5d132/tasks/bxf515wn9.output)"
     ]
   }
 }

@@ -11,7 +11,22 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "MaxLuLu AI - Fashion For You",
   description:
-    "AI 印花设计，描述你想要的图案，AI 为你生成独一无二的印花裙。",
+    "MaxLuLu AI - AI印花设计平台，描述你想要的图案，AI为你生成独一无二的印花裙。Fashion For You。",
+  keywords: [
+    "AI印花设计",
+    "定制裙装",
+    "AI生成图案",
+    "个性化时尚",
+    "MaxLuLu",
+  ],
+  openGraph: {
+    title: "MaxLuLu AI - Fashion For You",
+    description:
+      "MaxLuLu AI - AI印花设计平台，描述你想要的图案，AI为你生成独一无二的印花裙。Fashion For You。",
+    siteName: "MaxLuLu AI",
+    type: "website",
+    locale: "zh_CN",
+  },
 };
 
 export const viewport: Viewport = {
