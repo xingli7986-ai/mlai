@@ -262,8 +262,13 @@ function OrderCard({
   onAction: () => void;
 }) {
   return (
-    <li className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:border-[#C084FC]/40 hover:shadow-md">
-      <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+    <li className="relative rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:border-[#C084FC]/40 hover:shadow-md">
+      <Link
+        href={`/my/orders/${order.id}`}
+        aria-label={`订单详情 #${order.id.slice(-6)}`}
+        className="absolute inset-0 z-0 rounded-2xl"
+      />
+      <div className="pointer-events-none relative flex items-start gap-3 sm:items-center sm:gap-4">
         <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[#FF6B9D]/10 to-[#C084FC]/10 sm:h-20 sm:w-20">
           {order.design.selectedImage ? (
             /* eslint-disable-next-line @next/next/no-img-element */
@@ -303,8 +308,8 @@ function OrderCard({
         </div>
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-3 border-t border-gray-100 pt-3">
-        <div className="flex items-center gap-3 sm:hidden">
+      <div className="relative z-10 mt-3 flex items-center justify-between gap-3 border-t border-gray-100 pt-3">
+        <div className="pointer-events-none flex items-center gap-3 sm:hidden">
           <span className="text-[11px] text-gray-400">
             #{order.id.slice(-6)}
           </span>
@@ -312,8 +317,8 @@ function OrderCard({
             ¥ {order.price}
           </div>
         </div>
-        <div className="hidden text-[11px] text-gray-400 sm:block">
-          点击按钮完成后续操作
+        <div className="pointer-events-none hidden text-[11px] text-gray-400 sm:block">
+          点击卡片查看详情
         </div>
         <OrderActions status={order.status} onAction={onAction} />
       </div>

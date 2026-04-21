@@ -356,10 +356,11 @@ export default function MyPage() {
             <>
               <ul className="space-y-3">
                 {orders.slice(0, 3).map((o) => (
-                  <li
-                    key={o.id}
-                    className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:border-[#C084FC]/40 hover:shadow-md"
-                  >
+                  <li key={o.id}>
+                    <Link
+                      href={`/my/orders/${o.id}`}
+                      className="block rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:border-[#C084FC]/40 hover:shadow-md"
+                    >
                     <div className="flex items-start gap-3 sm:items-center sm:gap-4">
                       <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[#FF6B9D]/10 to-[#C084FC]/10 sm:h-20 sm:w-20">
                         {o.design.selectedImage ? (
@@ -407,6 +408,7 @@ export default function MyPage() {
                         ¥ {o.price}
                       </div>
                     </div>
+                    </Link>
                   </li>
                 ))}
               </ul>

@@ -1,0 +1,380 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+
+type OrderDetail = {
+  id: string;
+  skirtType: string;
+  fabric: string;
+  size: string;
+  price: number;
+  status: string;
+  createdAt: string;
+  design: {
+    prompt: string;
+    selectedImage: string | null;
+    images: string[];
+  };
+};
+
+const SKIRT_LABEL: Record<string, string> = {
+  "a-line": "A 字裙",
+  straight: "直筒裙",
+  half: "半身裙",
+  pleated: "百褶裙",
+  flared: "鱼尾裙",
+  wrap: "一片式裹裙",
+};
+
+const FABRIC_LABEL: Record<string, string> = {
+  cotton: "棉麻",
+  silk: "真丝",
+};
+
+const STATUS_LABEL: Record<string, { text: string; className: string }> = {
+  pending: { text: "待付款", className: "bg-amber-50 text-amber-600" },
+  paid: { text: "待发货", className: "bg-sky-50 text-sky-600" },
+  shipped: { text: "已发货", className: "bg-indigo-50 text-indigo-600" },
+  completed: {
+    text: "已完成",
+    className: "bg-emerald-50 text-emerald-600",
+  },
+  cancelled: { text: "已取消", className: "bg-gray-100 text-gray-500" },
+};
+
+function formatDate(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
+}
+
+export default function OrderDetailPage() {
+  const params = useParams<{ id: string }>();
+  const orderId = params?.id;
+  const { status: authStatus } = useSession();
+  const router = useRouter();
+  const [order, setOrder] = useState<OrderDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [toast, setToast] = useState("");
+  const [zoomed, setZoomed] = useState(false);
+
+  useEffect(() => {
+    if (authStatus === "unauthenticated") router.replace("/login");
+  }, [authStatus, router]);
+
+  useEffect(() => {
+    if (authStatus !== "authenticated" || !orderId) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      setLoadError("");
+      try {
+        const res = await fetch(`/api/orders/${orderId}`, {
+          cache: "no-store",
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(
+            typeof data?.error === "string" ? data.error : "加载订单失败"
+          );
+        }
+        if (!cancelled) setOrder(data.order ?? null);
+      } catch (err) {
+        if (!cancelled)
+          setLoadError(err instanceof Error ? err.message : "加载订单失败");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [authStatus, orderId]);
+
+  useEffect(() => {
+    if (!zoomed) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setZoomed(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [zoomed]);
+
+  function showToast(message: string) {
+    setToast(message);
+    window.setTimeout(() => setToast(""), 2400);
+  }
+
+  if (authStatus !== "authenticated") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white text-sm text-gray-400">
+        加载中...
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative flex min-h-screen flex-col bg-white">
+      {toast && (
+        <div className="pointer-events-none fixed left-1/2 top-6 z-50 -translate-x-1/2">
+          <div className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-[#C084FC]/40">
+            {toast}
+          </div>
+        </div>
+      )}
+
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-black/5 bg-white/80 px-4 py-3 backdrop-blur sm:px-6 sm:py-4">
+        <Link
+          href="/my/orders"
+          title="返回订单列表"
+          className="flex items-center gap-1.5 rounded-full px-2 py-1 text-sm font-medium text-gray-700 hover:bg-gray-100"
+        >
+          <span aria-hidden className="text-gray-500">
+            ←
+          </span>
+          返回订单列表
+        </Link>
+        <Link
+          href="/my"
+          className="rounded-full px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 sm:px-4 sm:py-2"
+        >
+          我的
+        </Link>
+      </header>
+
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 sm:py-10">
+        {loadError ? (
+          <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-600">
+            {loadError}
+          </p>
+        ) : loading || !order ? (
+          <div className="space-y-4">
+            <div className="h-16 animate-pulse rounded-2xl bg-gray-100" />
+            <div className="aspect-[3/4] max-w-sm animate-pulse rounded-2xl bg-gray-100" />
+            <div className="h-40 animate-pulse rounded-2xl bg-gray-100" />
+          </div>
+        ) : (
+          <>
+            <section className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/10 p-5 sm:p-6">
+              <div>
+                <div className="text-xs text-gray-500">订单状态</div>
+                <div className="mt-1 flex items-center gap-2">
+                  <BigStatusBadge status={order.status} />
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-xs text-gray-500">应付金额</div>
+                <div className="mt-1 bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-3xl font-bold text-transparent">
+                  ¥ {order.price}
+                </div>
+              </div>
+            </section>
+
+            <section className="mt-6 flex flex-col items-center">
+              <div className="mb-3 text-xs text-gray-500">
+                点击图片可放大查看
+              </div>
+              <button
+                type="button"
+                onClick={() => order.design.selectedImage && setZoomed(true)}
+                className="group relative aspect-[3/4] w-64 overflow-hidden rounded-2xl ring-2 ring-[#C084FC]/30 shadow-lg shadow-[#C084FC]/20 transition hover:ring-[#C084FC]/60 sm:w-80"
+                disabled={!order.design.selectedImage}
+              >
+                {order.design.selectedImage ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={order.design.selectedImage}
+                      alt="印花大图"
+                      className="h-full w-full object-cover"
+                    />
+                    <div className="pointer-events-none absolute right-3 top-3 rounded-full bg-black/40 px-2 py-1 text-[10px] text-white backdrop-blur-sm">
+                      🔍 放大
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-sm text-gray-400">
+                    图片缺失
+                  </div>
+                )}
+              </button>
+            </section>
+
+            <section className="mt-6">
+              <h2 className="mb-3 text-sm font-semibold tracking-wide text-gray-700">
+                订单信息
+              </h2>
+              <dl className="divide-y divide-gray-100 rounded-2xl border border-gray-100">
+                <Row label="订单号" value={`#${order.id}`} mono />
+                <Row
+                  label="裙型"
+                  value={SKIRT_LABEL[order.skirtType] ?? order.skirtType}
+                />
+                <Row
+                  label="面料"
+                  value={FABRIC_LABEL[order.fabric] ?? order.fabric}
+                />
+                <Row label="尺码" value={order.size} />
+                <Row label="价格" value={`¥ ${order.price}`} />
+                <Row label="下单时间" value={formatDate(order.createdAt)} />
+              </dl>
+            </section>
+
+            <section className="mt-6">
+              <h2 className="mb-3 text-sm font-semibold tracking-wide text-gray-700">
+                印花描述
+              </h2>
+              <div className="rounded-2xl border border-gray-100 bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/5 p-5 text-sm leading-relaxed text-gray-700">
+                {order.design.prompt || "—"}
+              </div>
+            </section>
+
+            <section className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end">
+              <DetailActions
+                status={order.status}
+                onAction={() => showToast("功能开发中")}
+              />
+            </section>
+          </>
+        )}
+      </main>
+
+      {zoomed && order?.design.selectedImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+          onClick={() => setZoomed(false)}
+        >
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={() => setZoomed(false)}
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-xl text-white transition hover:bg-white/20"
+          >
+            ✕
+          </button>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={order.design.selectedImage}
+            alt="印花大图"
+            className="max-h-full max-w-full rounded-xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Row({
+  label,
+  value,
+  mono,
+}: {
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+      <span className="shrink-0 text-gray-500">{label}</span>
+      <span
+        className={`min-w-0 truncate text-right font-medium text-gray-900 ${
+          mono ? "font-mono text-xs" : ""
+        }`}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function BigStatusBadge({ status }: { status: string }) {
+  const meta = STATUS_LABEL[status] ?? {
+    text: status,
+    className: "bg-gray-100 text-gray-500",
+  };
+  return (
+    <span
+      className={`rounded-full px-4 py-1.5 text-sm font-semibold ${meta.className}`}
+    >
+      {meta.text}
+    </span>
+  );
+}
+
+function DetailActions({
+  status,
+  onAction,
+}: {
+  status: string;
+  onAction: () => void;
+}) {
+  if (status === "pending") {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={onAction}
+          className="rounded-full border border-gray-200 bg-white px-6 py-2.5 text-sm font-medium text-gray-600 transition hover:border-gray-300 hover:text-gray-800"
+        >
+          取消订单
+        </button>
+        <button
+          type="button"
+          onClick={onAction}
+          className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-8 py-2.5 text-sm font-semibold text-white shadow-md shadow-[#C084FC]/30 transition hover:opacity-95"
+        >
+          去支付
+        </button>
+      </>
+    );
+  }
+  if (status === "paid") {
+    return (
+      <button
+        type="button"
+        onClick={onAction}
+        className="rounded-full bg-gray-100 px-6 py-2.5 text-sm font-medium text-gray-600 transition hover:bg-gray-200"
+      >
+        提醒发货
+      </button>
+    );
+  }
+  if (status === "shipped") {
+    return (
+      <button
+        type="button"
+        onClick={onAction}
+        className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-8 py-2.5 text-sm font-semibold text-white shadow-md shadow-[#C084FC]/30 transition hover:opacity-95"
+      >
+        确认收货
+      </button>
+    );
+  }
+  if (status === "completed") {
+    return (
+      <button
+        type="button"
+        onClick={onAction}
+        className="rounded-full border border-[#C084FC] bg-white px-6 py-2.5 text-sm font-semibold text-[#C084FC] transition hover:bg-[#C084FC]/5"
+      >
+        再次购买
+      </button>
+    );
+  }
+  if (status === "cancelled") {
+    return (
+      <span className="rounded-full bg-gray-100 px-5 py-2 text-sm text-gray-500">
+        订单已取消
+      </span>
+    );
+  }
+  return null;
+}

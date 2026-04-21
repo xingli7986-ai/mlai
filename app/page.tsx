@@ -3,6 +3,45 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
+const SHOWCASE = [
+  {
+    user: "lulu_chan",
+    tag: "花卉",
+    desc: "午后樱花与薄雾，粉调渐变",
+    gradient: "from-[#FF6B9D] to-[#C084FC]",
+  },
+  {
+    user: "mochi.design",
+    tag: "水彩",
+    desc: "抽象水墨山水，留白呼吸",
+    gradient: "from-[#6BC5FF] to-[#C084FC]",
+  },
+  {
+    user: "velvet_rose",
+    tag: "复古",
+    desc: "复古邮票拼贴风，琥珀调",
+    gradient: "from-[#FFB86B] to-[#FF6B9D]",
+  },
+  {
+    user: "xiaoxi",
+    tag: "热带",
+    desc: "夏日热带雨林，大叶植物剪影",
+    gradient: "from-[#6BE3A7] to-[#6BC5FF]",
+  },
+  {
+    user: "starry_petals",
+    tag: "波普",
+    desc: "波普漫画闪电，撞色黄黑",
+    gradient: "from-[#FFE56B] to-[#FF6B9D]",
+  },
+  {
+    user: "indigo_bloom",
+    tag: "极简",
+    desc: "极简几何矩阵，灰调冷静",
+    gradient: "from-[#A78BFA] to-[#374151]",
+  },
+];
+
 export default function HomePage() {
   const { data: session, status } = useSession();
   const isAuthed = status === "authenticated" && !!session;
@@ -82,6 +121,47 @@ export default function HomePage() {
             </div>
           ))}
         </div>
+
+        <section className="mt-16 w-full max-w-5xl text-left sm:mt-24">
+          <div className="mb-4 flex items-end justify-between px-1">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
+                设计师们的灵感
+              </h2>
+              <p className="mt-1 text-xs text-gray-500 sm:text-sm">
+                来自社区的印花作品，横向滑动查看更多
+              </p>
+            </div>
+            <span className="hidden text-xs text-gray-400 sm:block">
+              ← 滑动 →
+            </span>
+          </div>
+          <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
+            {SHOWCASE.map((s) => (
+              <div
+                key={s.user}
+                className="w-44 shrink-0 snap-start overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md sm:w-52"
+              >
+                <div
+                  className={`relative aspect-[3/4] bg-gradient-to-br ${s.gradient}`}
+                >
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.35),transparent_60%)]" />
+                  <div className="absolute bottom-2 left-2 rounded-full bg-white/30 px-2 py-0.5 text-[10px] text-white backdrop-blur">
+                    #{s.tag}
+                  </div>
+                </div>
+                <div className="p-3">
+                  <div className="text-sm font-semibold text-gray-900">
+                    @{s.user}
+                  </div>
+                  <div className="mt-1 line-clamp-2 text-xs text-gray-500">
+                    {s.desc}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
 
       <footer className="py-10 text-center">

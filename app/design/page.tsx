@@ -113,6 +113,15 @@ export default function DesignPage() {
     setSaveError("");
   }
 
+  function handleRegenerate() {
+    setImages([]);
+    setSelectedImage(null);
+    setSavedDesignId(null);
+    setSaveError("");
+    setGenError("");
+    setStep(1);
+  }
+
   async function handleSaveDesign() {
     if (saving || selectedImage === null) return;
     const url = images[selectedImage];
@@ -455,8 +464,15 @@ export default function DesignPage() {
                           ? "已保存 ✓"
                           : "保存设计"}
                     </button>
+                    <button
+                      type="button"
+                      onClick={handleRegenerate}
+                      className="rounded-full border border-gray-200 bg-white px-6 py-2.5 text-sm font-medium text-gray-700 transition hover:border-[#C084FC] hover:text-[#C084FC]"
+                    >
+                      ↻ 重新生成
+                    </button>
                     <span className="text-xs text-gray-400">
-                      保存后可在「我的」里查看
+                      不满意可以保留描述重新出图
                     </span>
                   </div>
                 </>
