@@ -35,6 +35,46 @@ const STYLE_PRESETS: { label: string; text: string }[] = [
   { label: "波普", text: "波普艺术风格，大胆撞色" },
   { label: "民族风", text: "民族风图腾纹样，异域风情" },
   { label: "极简", text: "极简线条，黑白灰调" },
+  {
+    label: "日式和风",
+    text: "Japanese ukiyo-e style floral pattern, cherry blossom and waves, gold and indigo",
+  },
+  {
+    label: "中国水墨",
+    text: "Chinese ink wash painting, lotus and bamboo, elegant black and white with red accents",
+  },
+  {
+    label: "热带雨林",
+    text: "Tropical rainforest pattern, monstera leaves and exotic birds, vibrant green and teal",
+  },
+  {
+    label: "星空梦境",
+    text: "Dreamy starry night galaxy pattern, deep purple nebula with golden star dust",
+  },
+  {
+    label: "波普艺术",
+    text: "Pop art style bold pattern, bright colors, comic book dots and geometric shapes",
+  },
+  {
+    label: "法式浪漫",
+    text: "French romantic toile pattern, delicate roses and ribbons, soft blush pink and cream",
+  },
+  {
+    label: "扎染渐变",
+    text: "Tie-dye gradient pattern, ocean blue to sunset orange, organic flowing shapes",
+  },
+  {
+    label: "极简线条",
+    text: "Minimalist line art pattern, continuous single line botanical drawings, black on white",
+  },
+  {
+    label: "动物纹理",
+    text: "Luxury animal print pattern, abstract leopard spots, gold and black sophisticated",
+  },
+  {
+    label: "莫兰迪色",
+    text: "Morandi color palette abstract pattern, muted dusty pink sage green and warm gray, soft elegant",
+  },
 ];
 
 const SIZES = ["S", "M", "L", "XL"] as const;
