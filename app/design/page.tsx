@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 
@@ -473,6 +473,16 @@ export default function DesignPage() {
                   })}
                 </div>
               </div>
+
+              {selectedImage !== null &&
+                skirtType &&
+                images[selectedImage] && (
+                  <SkirtPreview
+                    patternUrl={images[selectedImage]}
+                    skirtType={skirtType}
+                  />
+                )}
+
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight">
                   选择面料
@@ -800,4 +810,214 @@ function FabricIcon({ type }: { type: string }) {
     );
   }
   return null;
+}
+
+function buildSkirtPath(type: string): Path2D {
+  const p = new Path2D();
+  switch (type) {
+    case "a-line":
+      p.moveTo(150, 40);
+      p.lineTo(250, 40);
+      p.lineTo(345, 460);
+      p.quadraticCurveTo(200, 490, 55, 460);
+      p.closePath();
+      break;
+    case "straight":
+      p.moveTo(155, 40);
+      p.lineTo(245, 40);
+      p.lineTo(260, 468);
+      p.quadraticCurveTo(200, 482, 140, 468);
+      p.closePath();
+      break;
+    case "half":
+      p.moveTo(145, 40);
+      p.lineTo(255, 40);
+      p.lineTo(325, 345);
+      p.quadraticCurveTo(200, 368, 75, 345);
+      p.closePath();
+      break;
+    case "pleated":
+      p.moveTo(150, 40);
+      p.lineTo(250, 40);
+      p.lineTo(345, 460);
+      p.bezierCurveTo(315, 485, 290, 462, 260, 488);
+      p.bezierCurveTo(230, 462, 200, 490, 170, 462);
+      p.bezierCurveTo(140, 488, 110, 462, 80, 486);
+      p.quadraticCurveTo(65, 470, 55, 460);
+      p.closePath();
+      break;
+    case "flared":
+      p.moveTo(160, 40);
+      p.lineTo(240, 40);
+      p.quadraticCurveTo(232, 220, 230, 290);
+      p.quadraticCurveTo(260, 360, 340, 470);
+      p.quadraticCurveTo(200, 492, 60, 470);
+      p.quadraticCurveTo(140, 360, 170, 290);
+      p.quadraticCurveTo(168, 220, 160, 40);
+      p.closePath();
+      break;
+    case "wrap":
+      p.moveTo(150, 40);
+      p.lineTo(250, 40);
+      p.lineTo(340, 460);
+      p.quadraticCurveTo(200, 490, 60, 460);
+      p.closePath();
+      break;
+    default:
+      p.rect(60, 40, 280, 420);
+  }
+  return p;
+}
+
+function drawSkirtDetails(
+  ctx: CanvasRenderingContext2D,
+  type: string,
+  path: Path2D
+) {
+  if (type === "pleated") {
+    ctx.save();
+    ctx.clip(path);
+    ctx.strokeStyle = "rgba(31,41,55,0.35)";
+    ctx.lineWidth = 1.2;
+    const topXs = [170, 185, 200, 215, 230];
+    const botXs = [110, 155, 200, 245, 290];
+    for (let i = 0; i < topXs.length; i++) {
+      ctx.beginPath();
+      ctx.moveTo(topXs[i], 40);
+      ctx.lineTo(botXs[i], 480);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  if (type === "wrap") {
+    ctx.save();
+    ctx.clip(path);
+    ctx.strokeStyle = "rgba(31,41,55,0.55)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(250, 40);
+    ctx.bezierCurveTo(230, 160, 170, 300, 120, 470);
+    ctx.stroke();
+    // small tie knot outside the skirt, at waist
+    ctx.restore();
+    ctx.save();
+    ctx.strokeStyle = "#374151";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(252, 46);
+    ctx.bezierCurveTo(275, 40, 290, 60, 278, 72);
+    ctx.stroke();
+    ctx.restore();
+  }
+  if (type === "flared") {
+    ctx.save();
+    ctx.clip(path);
+    ctx.strokeStyle = "rgba(31,41,55,0.25)";
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 5]);
+    ctx.beginPath();
+    ctx.moveTo(170, 290);
+    ctx.lineTo(230, 290);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function SkirtPreview({
+  patternUrl,
+  skirtType,
+}: {
+  patternUrl: string;
+  skirtType: string;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [error, setError] = useState(false);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    setError(false);
+    setReady(false);
+
+    let cancelled = false;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+
+    img.onload = () => {
+      if (cancelled) return;
+      try {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const tileSize = 110;
+        const tile = document.createElement("canvas");
+        tile.width = tileSize;
+        tile.height = tileSize;
+        const tctx = tile.getContext("2d");
+        if (!tctx) throw new Error("no tile ctx");
+        tctx.drawImage(img, 0, 0, tileSize, tileSize);
+
+        const pattern = ctx.createPattern(tile, "repeat");
+        if (!pattern) throw new Error("no pattern");
+
+        const path = buildSkirtPath(skirtType);
+
+        ctx.save();
+        ctx.fillStyle = pattern;
+        ctx.fill(path);
+        ctx.restore();
+
+        drawSkirtDetails(ctx, skirtType, path);
+
+        ctx.save();
+        ctx.strokeStyle = "#374151";
+        ctx.lineWidth = 2.5;
+        ctx.lineJoin = "round";
+        ctx.stroke(path);
+        ctx.restore();
+
+        setReady(true);
+      } catch {
+        setError(true);
+      }
+    };
+
+    img.onerror = () => {
+      if (!cancelled) setError(true);
+    };
+
+    img.src = patternUrl;
+
+    return () => {
+      cancelled = true;
+    };
+  }, [patternUrl, skirtType]);
+
+  return (
+    <div className="rounded-3xl border border-gray-100 bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/5 p-6">
+      <h3 className="text-center text-sm font-semibold tracking-wide text-gray-800">
+        效果预览
+      </h3>
+      <div className="mt-4 flex min-h-[320px] items-center justify-center">
+        {error ? (
+          <div className="text-sm text-gray-400">预览暂时不可用</div>
+        ) : (
+          <canvas
+            ref={canvasRef}
+            width={400}
+            height={500}
+            className={`h-auto max-w-full transition-opacity duration-300 ${
+              ready ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        )}
+      </div>
+      <div className="mt-3 text-center text-[11px] text-gray-400">
+        实际效果以收到实物为准
+      </div>
+    </div>
+  );
 }
