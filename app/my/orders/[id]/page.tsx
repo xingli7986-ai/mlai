@@ -33,6 +33,9 @@ const SKIRT_LABEL: Record<string, string> = {
 const FABRIC_LABEL: Record<string, string> = {
   cotton: "棉麻",
   silk: "真丝",
+  chiffon: "雪纺",
+  denim: "牛仔",
+  velvet: "丝绒",
 };
 
 const STATUS_LABEL: Record<string, { text: string; className: string }> = {

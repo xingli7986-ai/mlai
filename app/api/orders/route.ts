@@ -12,11 +12,19 @@ const VALID_SKIRTS = new Set([
   "flared",
   "wrap",
 ]);
-const VALID_FABRICS = new Set(["cotton", "silk"]);
+
+const FABRIC_PRICES: Record<string, number> = {
+  cotton: 299,
+  silk: 399,
+  chiffon: 329,
+  denim: 349,
+  velvet: 429,
+};
+const VALID_FABRICS = new Set(Object.keys(FABRIC_PRICES));
 const VALID_SIZES = new Set(["S", "M", "L", "XL"]);
 
 function calcPrice(fabric: string): number {
-  return fabric === "silk" ? 399 : 299;
+  return FABRIC_PRICES[fabric] ?? 299;
 }
 
 export async function POST(req: Request) {

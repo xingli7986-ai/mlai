@@ -24,8 +24,11 @@ const SKIRT_TYPES = [
 ];
 
 const FABRICS = [
-  { id: "cotton", name: "棉麻", desc: "亲肤透气" },
-  { id: "silk", name: "真丝", desc: "顺滑高级（+¥100）" },
+  { id: "cotton", name: "棉麻", desc: "透气舒适，日常百搭", price: 299 },
+  { id: "silk", name: "真丝", desc: "丝滑垂坠，高级光泽", price: 399 },
+  { id: "chiffon", name: "雪纺", desc: "轻盈飘逸，仙气满满", price: 329 },
+  { id: "denim", name: "牛仔", desc: "硬挺有型，休闲百搭", price: 349 },
+  { id: "velvet", name: "丝绒", desc: "复古质感，秋冬优选", price: 429 },
 ];
 
 const STYLE_PRESETS: { label: string; text: string }[] = [
@@ -78,11 +81,11 @@ const STYLE_PRESETS: { label: string; text: string }[] = [
 const SIZES = ["S", "M", "L", "XL"] as const;
 type SizeOption = (typeof SIZES)[number];
 
-const BASE_PRICE = 299;
-const SILK_SURCHARGE = 100;
+const BASE_PRICE = Math.min(...FABRICS.map((f) => f.price));
 
 function calcPrice(fabricId: string | null): number {
-  return fabricId === "silk" ? BASE_PRICE + SILK_SURCHARGE : BASE_PRICE;
+  const f = FABRICS.find((x) => x.id === fabricId);
+  return f?.price ?? BASE_PRICE;
 }
 
 export default function DesignPage() {
@@ -639,7 +642,7 @@ function DesignPageInner() {
                 <h2 className="text-2xl font-semibold tracking-tight">
                   选择面料
                 </h2>
-                <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
                   {FABRICS.map((f) => {
                     const picked = fabric === f.id;
                     return (
@@ -647,18 +650,25 @@ function DesignPageInner() {
                         key={f.id}
                         type="button"
                         onClick={() => handlePickFabric(f.id)}
-                        className={`flex items-center gap-4 rounded-2xl border p-5 text-left transition ${
+                        className={`flex flex-col gap-3 rounded-2xl border p-4 text-left transition ${
                           picked
                             ? "border-[#C084FC] bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/5 shadow-md shadow-[#C084FC]/20"
                             : "border-gray-200 hover:border-gray-300"
                         }`}
                       >
-                        <div className="flex h-14 w-16 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/5">
+                        <div className="flex h-14 w-full items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/5">
                           <FabricIcon type={f.id} />
                         </div>
-                        <div>
-                          <div className="text-sm font-semibold">{f.name}</div>
-                          <div className="mt-0.5 text-xs text-gray-500">
+                        <div className="min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="truncate text-sm font-semibold">
+                              {f.name}
+                            </span>
+                            <span className="shrink-0 bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-xs font-bold text-transparent">
+                              ¥{f.price} 起
+                            </span>
+                          </div>
+                          <div className="mt-0.5 line-clamp-2 text-xs text-gray-500">
                             {f.desc}
                           </div>
                         </div>
@@ -757,12 +767,16 @@ function DesignPageInner() {
                 </div>
                 <div className="text-right text-xs text-gray-500">
                   基础价 ¥{BASE_PRICE}
-                  {fabric === "silk" && (
-                    <>
-                      <br />
-                      真丝 +¥{SILK_SURCHARGE}
-                    </>
-                  )}
+                  {(() => {
+                    const f = FABRICS.find((x) => x.id === fabric);
+                    if (!f || f.price <= BASE_PRICE) return null;
+                    return (
+                      <>
+                        <br />
+                        {f.name} +¥{f.price - BASE_PRICE}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
 
@@ -968,6 +982,72 @@ function FabricIcon({ type }: { type: string }) {
         <path d="M6 14 Q18 8 30 14 T54 14 Q58 14 58 14" />
         <path d="M6 24 Q18 18 30 24 T54 24 Q58 24 58 24" />
         <path d="M6 34 Q18 28 30 34 T54 34 Q58 34 58 34" />
+      </svg>
+    );
+  }
+  if (type === "chiffon") {
+    return (
+      <svg {...common}>
+        <rect
+          x="4"
+          y="4"
+          width="56"
+          height="40"
+          rx="4"
+          stroke="#111827"
+          strokeWidth="1.5"
+        />
+        <path d="M8 14 Q20 20 32 14 T56 14" opacity="0.55" />
+        <path d="M8 24 Q20 30 32 24 T56 24" opacity="0.55" />
+        <path d="M8 34 Q20 40 32 34 T56 34" opacity="0.55" />
+        <circle cx="16" cy="19" r="0.8" fill="#111827" stroke="none" />
+        <circle cx="40" cy="29" r="0.8" fill="#111827" stroke="none" />
+        <circle cx="48" cy="10" r="0.8" fill="#111827" stroke="none" />
+        <circle cx="24" cy="39" r="0.8" fill="#111827" stroke="none" />
+      </svg>
+    );
+  }
+  if (type === "denim") {
+    return (
+      <svg {...common}>
+        <rect
+          x="4"
+          y="4"
+          width="56"
+          height="40"
+          rx="4"
+          stroke="#111827"
+          strokeWidth="1.5"
+        />
+        <line x1="8" y1="24" x2="24" y2="8" opacity="0.6" />
+        <line x1="8" y1="36" x2="36" y2="8" opacity="0.6" />
+        <line x1="16" y1="40" x2="48" y2="8" opacity="0.6" />
+        <line x1="28" y1="40" x2="56" y2="12" opacity="0.6" />
+        <line x1="40" y1="40" x2="56" y2="24" opacity="0.6" />
+        <line x1="52" y1="40" x2="56" y2="36" opacity="0.6" />
+      </svg>
+    );
+  }
+  if (type === "velvet") {
+    return (
+      <svg {...common}>
+        <rect
+          x="4"
+          y="4"
+          width="56"
+          height="40"
+          rx="4"
+          stroke="#111827"
+          strokeWidth="1.5"
+        />
+        <line x1="10" y1="10" x2="10" y2="38" opacity="0.3" strokeWidth="2" />
+        <line x1="16" y1="10" x2="16" y2="38" opacity="0.6" strokeWidth="2" />
+        <line x1="22" y1="10" x2="22" y2="38" opacity="0.4" strokeWidth="2" />
+        <line x1="28" y1="10" x2="28" y2="38" opacity="0.7" strokeWidth="2" />
+        <line x1="34" y1="10" x2="34" y2="38" opacity="0.35" strokeWidth="2" />
+        <line x1="40" y1="10" x2="40" y2="38" opacity="0.6" strokeWidth="2" />
+        <line x1="46" y1="10" x2="46" y2="38" opacity="0.45" strokeWidth="2" />
+        <line x1="52" y1="10" x2="52" y2="38" opacity="0.7" strokeWidth="2" />
       </svg>
     );
   }
