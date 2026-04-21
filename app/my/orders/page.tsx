@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 
 type OrderWithDesign = {
   id: string;
+  designId: string;
   skirtType: string;
   fabric: string;
   size: string;
@@ -275,7 +276,11 @@ export default function OrdersPage() {
                 onConfirmReceive={() =>
                   handleStatusChange(o.id, "completed", "已确认收货")
                 }
-                onReorder={() => router.push("/design")}
+                onReorder={() =>
+                  router.push(
+                    o.designId ? `/design?designId=${o.designId}` : "/design"
+                  )
+                }
               />
             ))}
           </ul>

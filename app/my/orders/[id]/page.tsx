@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 
 type OrderDetail = {
   id: string;
+  designId: string;
   skirtType: string;
   fabric: string;
   size: string;
@@ -156,7 +157,11 @@ export default function OrderDetailPage() {
     handleStatusChange("completed", "已确认收货");
   }
   function handleReorder() {
-    router.push("/design");
+    if (order?.designId) {
+      router.push(`/design?designId=${order.designId}`);
+    } else {
+      router.push("/design");
+    }
   }
 
   if (authStatus !== "authenticated") {
