@@ -168,6 +168,15 @@ export default function HomePage() {
         <p className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-sm font-medium text-transparent">
           Fashion For You — 每一朵印花，都由你绽放
         </p>
+        <div className="mt-4 flex items-center justify-center gap-4 text-xs text-gray-400">
+          <Link href="/terms" className="hover:text-[#C084FC] hover:underline">
+            用户协议
+          </Link>
+          <span className="text-gray-200">·</span>
+          <Link href="/privacy" className="hover:text-[#C084FC] hover:underline">
+            隐私政策
+          </Link>
+        </div>
       </footer>
     </div>
   );

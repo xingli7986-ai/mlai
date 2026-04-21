@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -129,6 +130,23 @@ export default function LoginPage() {
           </form>
         )}
       </div>
+
+      <p className="mt-5 max-w-sm px-4 text-center text-xs leading-relaxed text-gray-400">
+        登录即表示同意
+        <Link
+          href="/terms"
+          className="text-[#C084FC] hover:underline"
+        >
+          《用户协议》
+        </Link>
+        和
+        <Link
+          href="/privacy"
+          className="text-[#C084FC] hover:underline"
+        >
+          《隐私政策》
+        </Link>
+      </p>
 
       <p className="mt-8 bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-center text-sm font-medium text-transparent">
         Fashion For You — 每一朵印花，都由你绽放
