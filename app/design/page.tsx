@@ -714,8 +714,18 @@ function DesignPageInner() {
               </div>
 
               <div className="mt-8">
-                <div className="mb-3 text-sm font-medium text-gray-700">
-                  选择尺码
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="text-sm font-medium text-gray-700">
+                    选择尺码
+                  </div>
+                  <a
+                    href="/size-guide"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-medium text-[#C084FC] hover:underline"
+                  >
+                    不确定尺码？查看尺码指南 →
+                  </a>
                 </div>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {SIZES.map((s) => {
