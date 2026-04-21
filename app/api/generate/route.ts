@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Replicate from "replicate";
 import { getAuthUser } from "@/lib/getAuthUser";
+import { uploadImageFromUrl } from "@/lib/upload";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -50,16 +51,32 @@ export async function POST(req: Request) {
       },
     });
 
-    const images = Array.isArray(output)
+    const replicateUrls = Array.isArray(output)
       ? output.filter((url): url is string => typeof url === "string")
       : [];
 
-    if (images.length === 0) {
+    if (replicateUrls.length === 0) {
       return NextResponse.json(
         { error: "Unexpected output format from Replicate" },
         { status: 502 }
       );
     }
+
+    const batchId = Date.now();
+    const images = await Promise.all(
+      replicateUrls.map(async (url, i) => {
+        const key = `designs/${batchId}_${i}.webp`;
+        try {
+          return await uploadImageFromUrl(url, key);
+        } catch (uploadErr) {
+          console.error(
+            `R2 upload failed for ${key}, falling back to Replicate URL:`,
+            uploadErr
+          );
+          return url;
+        }
+      })
+    );
 
     return NextResponse.json({ images });
   } catch (err) {
