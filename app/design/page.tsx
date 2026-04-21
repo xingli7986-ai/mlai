@@ -86,17 +86,14 @@ export default function DesignPage() {
 
   function handlePickImage(i: number) {
     setSelectedImage(i);
-    setStep(3);
   }
 
   function handlePickSkirt(id: string) {
     setSkirtType(id);
-    if (fabric) setStep(4);
   }
 
   function handlePickFabric(id: string) {
     setFabric(id);
-    if (skirtType) setStep(4);
   }
 
   async function handleSubmitOrder() {
@@ -260,7 +257,7 @@ export default function DesignPage() {
                 选择喜欢的方案
               </h2>
               <p className="mt-1 text-sm text-gray-500">
-                点选其中一张，自动进入下一步
+                点选其中一张作为你的设计
               </p>
               {images.length === 0 ? (
                 <p className="mt-6 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-700">
@@ -484,10 +481,12 @@ export default function DesignPage() {
             >
               上一步
             </button>
-            {step === 3 ? (
+            {step === 2 || step === 3 ? (
               <button
                 type="button"
-                onClick={() => setStep(4)}
+                onClick={() =>
+                  setStep((s) => (s === 2 ? 3 : 4) as Step)
+                }
                 disabled={!canNext}
                 className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-8 py-2.5 text-sm font-semibold text-white shadow-md shadow-[#C084FC]/30 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40"
               >
