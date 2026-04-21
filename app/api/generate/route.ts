@@ -8,13 +8,6 @@ export const maxDuration = 60;
 const PROMPT_PREFIX =
   "seamless textile pattern design, fashion fabric print, high quality, ";
 
-const VARIANTS = [
-  "vibrant colors",
-  "pastel soft tones",
-  "geometric modern",
-  "floral elegant",
-] as const;
-
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user) {
@@ -47,30 +40,21 @@ export async function POST(req: Request) {
   const replicate = new Replicate({ auth: token, useFileOutput: false });
 
   try {
-    const outputs = await Promise.all(
-      VARIANTS.map((variant) =>
-        replicate.run("black-forest-labs/flux-schnell", {
-          input: {
-            prompt: `${PROMPT_PREFIX}${prompt}, ${variant}`,
-            num_outputs: 1,
-            aspect_ratio: "3:4",
-            output_format: "webp",
-            output_quality: 90,
-          },
-        })
-      )
-    );
-
-    const images = outputs.map((out) => {
-      if (typeof out === "string") return out;
-      if (Array.isArray(out)) {
-        const first = out[0];
-        if (typeof first === "string") return first;
-      }
-      return null;
+    const output = await replicate.run("black-forest-labs/flux-schnell", {
+      input: {
+        prompt: `${PROMPT_PREFIX}${prompt}`,
+        num_outputs: 4,
+        aspect_ratio: "3:4",
+        output_format: "webp",
+        output_quality: 90,
+      },
     });
 
-    if (images.some((url) => !url)) {
+    const images = Array.isArray(output)
+      ? output.filter((url): url is string => typeof url === "string")
+      : [];
+
+    if (images.length === 0) {
       return NextResponse.json(
         { error: "Unexpected output format from Replicate" },
         { status: 502 }
