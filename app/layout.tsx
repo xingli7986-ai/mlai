@@ -26,6 +26,23 @@ export const metadata: Metadata = {
     siteName: "MaxLuLu AI",
     type: "website",
     locale: "zh_CN",
+    images: [
+      {
+        url: "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "MaxLuLu AI - Fashion For You",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MaxLuLu AI - Fashion For You",
+    description:
+      "MaxLuLu AI - AI印花设计平台，描述你想要的图案，AI为你生成独一无二的印花裙。Fashion For You。",
+    images: [
+      "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/og-image.png",
+    ],
   },
 };
 
