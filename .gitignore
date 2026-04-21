@@ -34,6 +34,9 @@ yarn-error.log*
 .env*
 !.env.example
 
+# OG image should be uploaded to R2, not committed
+og-image.png
+
 # vercel
 .vercel
 

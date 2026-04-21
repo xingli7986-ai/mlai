@@ -32,9 +32,7 @@ const STYLE_PRESETS: { label: string; text: string }[] = [
   { label: "花卉", text: "盛开的花朵印花，花瓣飘落" },
   { label: "几何", text: "现代几何图形，线条交错" },
   { label: "水彩", text: "水彩晕染效果，色彩渐变流动" },
-  { label: "波普", text: "波普艺术风格，大胆撞色" },
   { label: "民族风", text: "民族风图腾纹样，异域风情" },
-  { label: "极简", text: "极简线条，黑白灰调" },
   {
     label: "日式和风",
     text: "Japanese ukiyo-e style floral pattern, cherry blossom and waves, gold and indigo",
