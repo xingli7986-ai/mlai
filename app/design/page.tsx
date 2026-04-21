@@ -25,6 +25,15 @@ const FABRICS = [
   { id: "silk", name: "真丝", desc: "顺滑高级（+¥100）" },
 ];
 
+const STYLE_PRESETS: { label: string; text: string }[] = [
+  { label: "花卉", text: "盛开的花朵印花，花瓣飘落" },
+  { label: "几何", text: "现代几何图形，线条交错" },
+  { label: "水彩", text: "水彩晕染效果，色彩渐变流动" },
+  { label: "波普", text: "波普艺术风格，大胆撞色" },
+  { label: "民族风", text: "民族风图腾纹样，异域风情" },
+  { label: "极简", text: "极简线条，黑白灰调" },
+];
+
 const SIZES = ["S", "M", "L", "XL"] as const;
 type SizeOption = (typeof SIZES)[number];
 
@@ -49,6 +58,15 @@ export default function DesignPage() {
   const [genError, setGenError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [savedDesignId, setSavedDesignId] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState("");
+  const [toast, setToast] = useState("");
+
+  function showToast(message: string) {
+    setToast(message);
+    window.setTimeout(() => setToast(""), 2600);
+  }
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");
@@ -76,6 +94,8 @@ export default function DesignPage() {
       }
       setImages(data.images);
       setSelectedImage(null);
+      setSavedDesignId(null);
+      setSaveError("");
       setStep(2);
     } catch (err) {
       setGenError(err instanceof Error ? err.message : "生成失败，请稍后再试");
@@ -86,6 +106,39 @@ export default function DesignPage() {
 
   function handlePickImage(i: number) {
     setSelectedImage(i);
+    setSavedDesignId(null);
+    setSaveError("");
+  }
+
+  async function handleSaveDesign() {
+    if (saving || selectedImage === null) return;
+    const url = images[selectedImage];
+    if (!url || !prompt.trim()) return;
+    setSaveError("");
+    setSaving(true);
+    try {
+      const res = await fetch("/api/designs/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: prompt.trim(),
+          selectedImage: url,
+          images,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.success) {
+        throw new Error(
+          typeof data?.error === "string" ? data.error : "保存失败，请稍后再试"
+        );
+      }
+      setSavedDesignId(data.designId as string);
+      showToast("设计已保存 ✨");
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "保存失败");
+    } finally {
+      setSaving(false);
+    }
   }
 
   function handlePickSkirt(id: string) {
@@ -153,7 +206,14 @@ export default function DesignPage() {
     step === 4;
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="relative flex min-h-screen flex-col bg-white">
+      {toast && (
+        <div className="pointer-events-none fixed left-1/2 top-6 z-50 -translate-x-1/2">
+          <div className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-[#C084FC]/40">
+            {toast}
+          </div>
+        </div>
+      )}
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-black/5 bg-white/80 px-6 py-4 backdrop-blur">
         <Link href="/" className="flex items-center gap-2">
           <span className="h-8 w-8 rounded-xl bg-gradient-to-br from-[#FF6B9D] to-[#C084FC]" />
@@ -218,13 +278,37 @@ export default function DesignPage() {
               <p className="mt-1 text-sm text-gray-500">
                 比如：「深蓝底上散落的白色雏菊，带水彩晕染」
               </p>
+              <div className="mt-5">
+                <div className="mb-2 text-xs font-medium text-gray-500">
+                  快速选风格
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {STYLE_PRESETS.map((p) => {
+                    const active = prompt === p.text;
+                    return (
+                      <button
+                        key={p.label}
+                        type="button"
+                        onClick={() => setPrompt(p.text)}
+                        className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                          active
+                            ? "bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] text-white shadow-md shadow-[#C084FC]/30"
+                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               <textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 rows={6}
                 maxLength={300}
                 placeholder="尽量具体：颜色、图案、风格、情绪..."
-                className="mt-5 w-full resize-none rounded-2xl border border-gray-200 bg-white p-4 text-base outline-none transition focus:border-[#C084FC] focus:ring-2 focus:ring-[#C084FC]/25"
+                className="mt-4 w-full resize-none rounded-2xl border border-gray-200 bg-white p-4 text-base outline-none transition focus:border-[#C084FC] focus:ring-2 focus:ring-[#C084FC]/25"
               />
               <div className="mt-1 text-right text-xs text-gray-400">
                 {prompt.length}/300
@@ -264,38 +348,92 @@ export default function DesignPage() {
                   还没有生成结果，请返回上一步生成方案。
                 </p>
               ) : (
-                <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-                  {images.map((url, i) => {
-                    const picked = selectedImage === i;
-                    return (
-                      <button
-                        key={url}
-                        type="button"
-                        onClick={() => handlePickImage(i)}
-                        className={`group relative aspect-[3/4] overflow-hidden rounded-2xl ring-2 transition ${
-                          picked
-                            ? "ring-[#C084FC] shadow-lg shadow-[#C084FC]/30"
-                            : "ring-transparent hover:ring-gray-200"
-                        }`}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={url}
-                          alt={`方案 ${i + 1}`}
-                          className="h-full w-full object-cover"
-                        />
-                        {picked && (
-                          <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#FF6B9D] to-[#C084FC] text-xs text-white">
-                            ✓
+                <>
+                  <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                    {images.map((url, i) => {
+                      const picked = selectedImage === i;
+                      return (
+                        <button
+                          key={url}
+                          type="button"
+                          onClick={() => handlePickImage(i)}
+                          className={`group relative aspect-[3/4] overflow-hidden rounded-2xl ring-2 transition ${
+                            picked
+                              ? "ring-[#C084FC] shadow-lg shadow-[#C084FC]/30"
+                              : "ring-transparent hover:ring-gray-200"
+                          }`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={url}
+                            alt={`方案 ${i + 1}`}
+                            className="h-full w-full object-cover"
+                          />
+                          {picked && (
+                            <div className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-[#FF6B9D] to-[#C084FC] text-xs text-white">
+                              ✓
+                            </div>
+                          )}
+                          <div className="absolute bottom-2 left-2 rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+                            方案 {i + 1}
                           </div>
-                        )}
-                        <div className="absolute bottom-2 left-2 rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
-                          方案 {i + 1}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {selectedImage !== null && images[selectedImage] && (
+                    <div className="mt-6">
+                      <div className="mb-2 flex items-center justify-between">
+                        <div className="text-sm font-medium text-gray-700">
+                          平铺预览
                         </div>
-                      </button>
-                    );
-                  })}
-                </div>
+                        <div className="text-xs text-gray-400">
+                          作为面料的整体效果
+                        </div>
+                      </div>
+                      <div
+                        className="h-[200px] overflow-hidden rounded-2xl border border-gray-100 shadow-inner"
+                        style={{
+                          backgroundImage: `url(${images[selectedImage]})`,
+                          backgroundRepeat: "repeat",
+                          backgroundSize: "25%",
+                        }}
+                        aria-label="印花平铺预览"
+                      />
+                    </div>
+                  )}
+
+                  {saveError && (
+                    <p className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-600">
+                      {saveError}
+                    </p>
+                  )}
+
+                  <div className="mt-6 flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={handleSaveDesign}
+                      disabled={
+                        selectedImage === null || saving || !!savedDesignId
+                      }
+                      className={`rounded-full border px-6 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed ${
+                        savedDesignId
+                          ? "border-[#C084FC]/40 bg-[#C084FC]/10 text-[#C084FC]"
+                          : "border-gray-200 bg-white text-gray-700 hover:border-[#C084FC] hover:text-[#C084FC] disabled:opacity-40"
+                      }`}
+                    >
+                      {saving
+                        ? "保存中..."
+                        : savedDesignId
+                          ? "已保存 ✓"
+                          : "保存设计"}
+                    </button>
+                    <span className="text-xs text-gray-400">
+                      保存后可在「我的」里查看
+                    </span>
+                  </div>
+                </>
               )}
             </div>
           )}
@@ -320,7 +458,9 @@ export default function DesignPage() {
                             : "border-gray-200 hover:border-gray-300"
                         }`}
                       >
-                        <div className="mb-3 aspect-square rounded-xl bg-gradient-to-br from-[#FF6B9D]/10 to-[#C084FC]/10" />
+                        <div className="mb-3 flex aspect-square items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/5">
+                          <SkirtIcon type={s.id} />
+                        </div>
                         <div className="text-sm font-semibold">{s.name}</div>
                         <div className="mt-0.5 text-xs text-gray-500">
                           {s.desc}
@@ -513,4 +653,50 @@ function Row({ label, value }: { label: string; value: string }) {
       </span>
     </div>
   );
+}
+
+function SkirtIcon({ type }: { type: string }) {
+  const common = {
+    height: 120,
+    viewBox: "0 0 120 120",
+    fill: "none",
+    stroke: "#111827",
+    strokeWidth: 2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+  if (type === "a-line") {
+    return (
+      <svg {...common}>
+        <path d="M46 24 L74 24 L76 34 L44 34 Z" />
+        <path d="M44 34 L22 104 L98 104 L76 34" />
+        <path d="M22 104 Q60 112 98 104" />
+        <line x1="60" y1="34" x2="60" y2="104" strokeDasharray="3 4" opacity="0.35" />
+      </svg>
+    );
+  }
+  if (type === "straight") {
+    return (
+      <svg {...common}>
+        <path d="M42 24 L78 24 L80 34 L40 34 Z" />
+        <path d="M40 34 L38 104 L82 104 L80 34" />
+        <path d="M38 104 Q60 108 82 104" />
+        <line x1="60" y1="34" x2="60" y2="104" strokeDasharray="3 4" opacity="0.35" />
+      </svg>
+    );
+  }
+  if (type === "half") {
+    return (
+      <svg {...common}>
+        <path d="M38 28 L82 28 L82 38 L38 38 Z" />
+        <circle cx="60" cy="33" r="2" fill="#111827" stroke="none" />
+        <path d="M38 38 L30 94 L90 94 L82 38" />
+        <line x1="48" y1="38" x2="45" y2="94" />
+        <line x1="60" y1="38" x2="60" y2="94" />
+        <line x1="72" y1="38" x2="75" y2="94" />
+        <path d="M30 94 Q60 100 90 94" />
+      </svg>
+    );
+  }
+  return null;
 }

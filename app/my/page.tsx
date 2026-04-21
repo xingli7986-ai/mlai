@@ -20,6 +20,13 @@ type OrderWithDesign = {
   };
 };
 
+type SavedDesign = {
+  id: string;
+  prompt: string;
+  selectedImage: string | null;
+  createdAt: string;
+};
+
 const SKIRT_LABEL: Record<string, string> = {
   "a-line": "A 字裙",
   straight: "直筒裙",
@@ -65,6 +72,9 @@ export default function MyPage() {
   const [orders, setOrders] = useState<OrderWithDesign[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [designs, setDesigns] = useState<SavedDesign[]>([]);
+  const [designsLoading, setDesignsLoading] = useState(true);
+  const [designsError, setDesignsError] = useState("");
   const [toast, setToast] = useState("");
 
   useEffect(() => {
@@ -100,9 +110,30 @@ export default function MyPage() {
     }
   }, []);
 
+  const fetchDesigns = useCallback(async () => {
+    setDesignsError("");
+    try {
+      const res = await fetch("/api/designs/list", { cache: "no-store" });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(
+          typeof data?.error === "string" ? data.error : "加载设计失败"
+        );
+      }
+      setDesigns(Array.isArray(data.designs) ? data.designs : []);
+    } catch (err) {
+      setDesignsError(err instanceof Error ? err.message : "加载设计失败");
+    } finally {
+      setDesignsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    if (status === "authenticated") fetchOrders();
-  }, [status, fetchOrders]);
+    if (status === "authenticated") {
+      fetchOrders();
+      fetchDesigns();
+    }
+  }, [status, fetchOrders, fetchDesigns]);
 
   if (status !== "authenticated") {
     return (
@@ -164,6 +195,85 @@ export default function MyPage() {
           >
             退出登录
           </button>
+        </section>
+
+        <section className="mt-8">
+          <div className="mb-3 flex items-end justify-between">
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight">我的设计</h2>
+              <p className="text-xs text-gray-500">
+                {designsLoading ? "加载中..." : `共 ${designs.length} 件`}
+              </p>
+            </div>
+            <Link
+              href="/design"
+              className="text-sm font-medium text-[#C084FC] hover:underline"
+            >
+              新建设计 →
+            </Link>
+          </div>
+
+          {designsError ? (
+            <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-600">
+              {designsError}
+            </p>
+          ) : designsLoading ? (
+            <div className="grid grid-cols-3 gap-3">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  className="aspect-square animate-pulse rounded-2xl bg-gray-100"
+                />
+              ))}
+            </div>
+          ) : designs.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-gray-200 bg-white p-8 text-center">
+              <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF6B9D]/10 to-[#C084FC]/10 text-xl">
+                🎨
+              </div>
+              <div className="text-sm text-gray-500">还没有保存的设计</div>
+            </div>
+          ) : (
+            <ul className="grid grid-cols-3 gap-3">
+              {designs.map((d) => {
+                const excerpt =
+                  d.prompt.length > 20
+                    ? `${d.prompt.slice(0, 20)}...`
+                    : d.prompt;
+                return (
+                  <li key={d.id}>
+                    <Link
+                      href={`/design?designId=${d.id}`}
+                      className="group block overflow-hidden rounded-2xl border border-gray-100 bg-white transition hover:border-[#C084FC]/40 hover:shadow-md"
+                    >
+                      <div className="aspect-square overflow-hidden bg-gradient-to-br from-[#FF6B9D]/10 to-[#C084FC]/10">
+                        {d.selectedImage ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={d.selectedImage}
+                            alt={excerpt}
+                            className="h-full w-full object-cover transition group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
+                            图片缺失
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-3">
+                        <div className="truncate text-sm font-medium text-gray-900">
+                          {excerpt}
+                        </div>
+                        <div className="mt-1 text-[10px] text-gray-400">
+                          {formatDate(d.createdAt)}
+                        </div>
+                      </div>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </section>
 
         <section className="mt-8">
