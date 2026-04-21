@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 
 const SHOWCASE = [
@@ -139,12 +140,13 @@ export default function HomePage() {
                 className="w-44 shrink-0 snap-start overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition hover:shadow-md sm:w-52"
               >
                 <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={s.url}
                     alt={s.title}
+                    fill
+                    sizes="(min-width: 640px) 208px, 176px"
                     loading="lazy"
-                    className="h-full w-full object-cover"
+                    className="object-cover"
                   />
                   <div className="absolute bottom-2 left-2 rounded-full bg-white/30 px-2 py-0.5 text-[10px] text-white backdrop-blur">
                     #{s.title}

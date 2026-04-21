@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import NextImage from "next/image";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -549,10 +550,12 @@ function DesignPageInner() {
                               : "ring-transparent hover:ring-gray-200"
                           }`}
                         >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                          <NextImage
                             src={url}
                             alt={`方案 ${i + 1}`}
+                            width={512}
+                            height={512}
+                            loading="lazy"
                             onLoad={() =>
                               setLoadedImages((prev) => {
                                 if (prev.has(url)) return prev;
