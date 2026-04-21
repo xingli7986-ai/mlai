@@ -161,22 +161,29 @@ export default function MyPage() {
         </div>
       )}
 
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-black/5 bg-white/80 px-6 py-4 backdrop-blur">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="h-8 w-8 rounded-xl bg-gradient-to-br from-[#FF6B9D] to-[#C084FC]" />
-          <span className="text-lg font-semibold tracking-tight">
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-black/5 bg-white/80 px-4 py-3 backdrop-blur sm:px-6 sm:py-4">
+        <Link
+          href="/"
+          title="返回首页"
+          className="flex items-center gap-1.5 sm:gap-2"
+        >
+          <span aria-hidden className="text-gray-400">
+            ←
+          </span>
+          <span className="h-7 w-7 rounded-xl bg-gradient-to-br from-[#FF6B9D] to-[#C084FC] sm:h-8 sm:w-8" />
+          <span className="text-base font-semibold tracking-tight sm:text-lg">
             MaxLuLu <span className="text-[#C084FC]">AI</span>
           </span>
         </Link>
         <Link
           href="/design"
-          className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-5 py-2 text-sm font-medium text-white shadow-md shadow-[#C084FC]/30 transition hover:opacity-95"
+          className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-4 py-1.5 text-sm font-medium text-white shadow-md shadow-[#C084FC]/30 transition hover:opacity-95 sm:px-5 sm:py-2"
         >
           开始设计
         </Link>
       </header>
 
-      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-10">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 sm:py-10">
         <section className="flex items-center justify-between rounded-3xl border border-gray-100 bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/10 p-6 shadow-[0_20px_60px_-30px_rgba(192,132,252,0.25)]">
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#FF6B9D] to-[#C084FC] text-lg font-semibold text-white shadow-md shadow-[#C084FC]/30">
@@ -221,7 +228,7 @@ export default function MyPage() {
               {designsError}
             </p>
           ) : designsLoading ? (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {[0, 1, 2].map((i) => (
                 <div
                   key={i}
@@ -237,7 +244,7 @@ export default function MyPage() {
               <div className="text-sm text-gray-500">还没有保存的设计</div>
             </div>
           ) : (
-            <ul className="grid grid-cols-3 gap-3">
+            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {designs.map((d) => {
                 const excerpt =
                   d.prompt.length > 20
@@ -323,43 +330,53 @@ export default function MyPage() {
               {orders.map((o) => (
                 <li
                   key={o.id}
-                  className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:border-[#C084FC]/40 hover:shadow-md"
+                  className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:border-[#C084FC]/40 hover:shadow-md"
                 >
-                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[#FF6B9D]/10 to-[#C084FC]/10">
-                    {o.design.selectedImage ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={o.design.selectedImage}
-                        alt="印花"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-xs text-gray-400">
-                        图片缺失
+                  <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[#FF6B9D]/10 to-[#C084FC]/10 sm:h-20 sm:w-20">
+                      {o.design.selectedImage ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={o.design.selectedImage}
+                          alt="印花"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[10px] text-gray-400">
+                          图片缺失
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="truncate text-sm font-semibold">
+                          {SKIRT_LABEL[o.skirtType] ?? o.skirtType} ·{" "}
+                          {FABRIC_LABEL[o.fabric] ?? o.fabric} · {o.size}
+                        </span>
+                        <StatusPill status={o.status} />
                       </div>
-                    )}
+                      <div className="mt-1 truncate text-xs text-gray-500">
+                        {o.design.prompt}
+                      </div>
+                      <div className="mt-1.5 text-[11px] text-gray-400">
+                        {formatDate(o.createdAt)}
+                      </div>
+                    </div>
+                    <div className="hidden shrink-0 text-right sm:block">
+                      <div className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-lg font-bold text-transparent">
+                        ¥ {o.price}
+                      </div>
+                      <div className="mt-0.5 text-[10px] text-gray-400">
+                        #{o.id.slice(-6)}
+                      </div>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate text-sm font-semibold">
-                        {SKIRT_LABEL[o.skirtType] ?? o.skirtType} ·{" "}
-                        {FABRIC_LABEL[o.fabric] ?? o.fabric} · {o.size}
-                      </span>
-                      <StatusPill status={o.status} />
-                    </div>
-                    <div className="mt-1 truncate text-xs text-gray-500">
-                      {o.design.prompt}
-                    </div>
-                    <div className="mt-1.5 text-xs text-gray-400">
-                      {formatDate(o.createdAt)}
-                    </div>
-                  </div>
-                  <div className="shrink-0 text-right">
+                  <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3 sm:hidden">
+                    <span className="text-[11px] text-gray-400">
+                      #{o.id.slice(-6)}
+                    </span>
                     <div className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-lg font-bold text-transparent">
                       ¥ {o.price}
-                    </div>
-                    <div className="mt-0.5 text-[10px] text-gray-400">
-                      #{o.id.slice(-6)}
                     </div>
                   </div>
                 </li>

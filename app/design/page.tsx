@@ -217,23 +217,46 @@ export default function DesignPage() {
           </div>
         </div>
       )}
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-black/5 bg-white/80 px-6 py-4 backdrop-blur">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="h-8 w-8 rounded-xl bg-gradient-to-br from-[#FF6B9D] to-[#C084FC]" />
-          <span className="text-lg font-semibold tracking-tight">
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-black/5 bg-white/80 px-4 py-3 backdrop-blur sm:px-6 sm:py-4">
+        <Link
+          href="/"
+          title="返回首页"
+          className="flex items-center gap-1.5 sm:gap-2"
+        >
+          <span
+            aria-hidden
+            className="text-gray-400 transition group-hover:text-[#C084FC]"
+          >
+            ←
+          </span>
+          <span className="h-7 w-7 rounded-xl bg-gradient-to-br from-[#FF6B9D] to-[#C084FC] sm:h-8 sm:w-8" />
+          <span className="text-base font-semibold tracking-tight sm:text-lg">
             MaxLuLu <span className="text-[#C084FC]">AI</span>
           </span>
         </Link>
         <Link
           href="/my"
-          className="rounded-full px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+          className="rounded-full px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 sm:px-4 sm:py-2"
         >
           我的
         </Link>
       </header>
 
-      <main className="mx-auto w-full max-w-4xl flex-1 px-6 py-10">
-        <ol className="mb-10 flex items-center gap-2">
+      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-6 sm:px-6 sm:py-10">
+        <div className="mb-6 flex items-center gap-3 sm:hidden">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#FF6B9D] to-[#C084FC] text-sm font-semibold text-white shadow-md shadow-[#C084FC]/30">
+            {step}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-sm font-semibold text-gray-900">
+              {STEPS[step - 1].title}
+            </div>
+            <div className="truncate text-xs text-gray-400">
+              第 {step}/4 步 · {STEPS[step - 1].subtitle}
+            </div>
+          </div>
+        </div>
+        <ol className="mb-10 hidden items-center gap-2 sm:flex">
           {STEPS.map((s, i) => {
             const active = s.id === step;
             const done = s.id < step;
@@ -272,7 +295,7 @@ export default function DesignPage() {
           })}
         </ol>
 
-        <section className="rounded-3xl border border-gray-100 bg-white p-8 shadow-[0_20px_60px_-30px_rgba(192,132,252,0.25)]">
+        <section className="rounded-3xl border border-gray-100 bg-white p-5 shadow-[0_20px_60px_-30px_rgba(192,132,252,0.25)] sm:p-8">
           {step === 1 && (
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">
@@ -447,7 +470,7 @@ export default function DesignPage() {
                 <h2 className="text-2xl font-semibold tracking-tight">
                   选择裙型
                 </h2>
-                <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
                   {SKIRT_TYPES.map((s) => {
                     const picked = skirtType === s.id;
                     return (
@@ -528,9 +551,9 @@ export default function DesignPage() {
               </p>
 
               <div className="mt-6 flex flex-col gap-6 sm:flex-row">
-                <div className="shrink-0">
+                <div className="shrink-0 sm:w-40">
                   {selectedImage !== null && images[selectedImage] ? (
-                    <div className="aspect-[3/4] w-40 overflow-hidden rounded-2xl ring-2 ring-[#C084FC]/40 shadow-md shadow-[#C084FC]/20">
+                    <div className="mx-auto aspect-[3/4] w-48 overflow-hidden rounded-2xl ring-2 ring-[#C084FC]/40 shadow-md shadow-[#C084FC]/20 sm:w-40">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={images[selectedImage]}
@@ -539,7 +562,7 @@ export default function DesignPage() {
                       />
                     </div>
                   ) : (
-                    <div className="flex aspect-[3/4] w-40 items-center justify-center rounded-2xl bg-gray-100 text-xs text-gray-400">
+                    <div className="mx-auto flex aspect-[3/4] w-48 items-center justify-center rounded-2xl bg-gray-100 text-xs text-gray-400 sm:w-40">
                       未选择
                     </div>
                   )}
@@ -565,7 +588,7 @@ export default function DesignPage() {
                 <div className="mb-3 text-sm font-medium text-gray-700">
                   选择尺码
                 </div>
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   {SIZES.map((s) => {
                     const picked = size === s;
                     return (

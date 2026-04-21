@@ -49,11 +49,11 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-white px-4 py-12">
-      <div className="w-full max-w-sm rounded-3xl bg-white p-8 shadow-[0_20px_60px_-20px_rgba(192,132,252,0.35)] ring-1 ring-black/5">
-        <div className="mb-8 flex flex-col items-center">
-          <div className="mb-3 h-14 w-14 rounded-2xl bg-gradient-to-br from-[#FF6B9D] to-[#C084FC]" />
-          <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
+    <main className="min-h-screen flex flex-col items-center justify-center bg-white px-4 py-8 sm:py-12">
+      <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-[0_20px_60px_-20px_rgba(192,132,252,0.35)] ring-1 ring-black/5 sm:p-8">
+        <div className="mb-6 flex flex-col items-center sm:mb-8">
+          <div className="mb-3 h-12 w-12 rounded-2xl bg-gradient-to-br from-[#FF6B9D] to-[#C084FC] sm:h-14 sm:w-14" />
+          <h1 className="text-xl font-semibold tracking-tight text-gray-900 sm:text-2xl">
             欢迎来到 Maxlulu
           </h1>
           <p className="mt-1 text-sm text-gray-500">
