@@ -85,6 +85,7 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [toast, setToast] = useState("");
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (authStatus === "unauthenticated") router.replace("/login");
@@ -115,6 +116,34 @@ export default function OrdersPage() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- standard data-fetching pattern
     if (authStatus === "authenticated") fetchOrders(tab);
   }, [authStatus, tab, fetchOrders]);
+
+  async function handleStatusChange(
+    orderId: string,
+    newStatus: string,
+    successMsg: string
+  ) {
+    if (actionLoadingId) return;
+    setActionLoadingId(orderId);
+    try {
+      const res = await fetch(`/api/orders/${orderId}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.success) {
+        throw new Error(
+          typeof data?.error === "string" ? data.error : "操作失败"
+        );
+      }
+      await fetchOrders(tab);
+      showToast(successMsg);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "操作失败");
+    } finally {
+      setActionLoadingId(null);
+    }
+  }
 
   function showToast(message: string) {
     setToast(message);
@@ -231,7 +260,22 @@ export default function OrdersPage() {
               <OrderCard
                 key={o.id}
                 order={o}
-                onAction={() => showToast("功能开发中")}
+                loading={actionLoadingId === o.id}
+                onPay={() => handleStatusChange(o.id, "paid", "支付成功")}
+                onCancel={() => {
+                  if (
+                    typeof window !== "undefined" &&
+                    !window.confirm("确定取消订单吗？")
+                  ) {
+                    return;
+                  }
+                  handleStatusChange(o.id, "cancelled", "订单已取消");
+                }}
+                onRemindShip={() => showToast("已通知商家尽快发货 📦")}
+                onConfirmReceive={() =>
+                  handleStatusChange(o.id, "completed", "已确认收货")
+                }
+                onReorder={() => router.push("/design")}
               />
             ))}
           </ul>
@@ -257,10 +301,20 @@ function StatusPill({ status }: { status: string }) {
 
 function OrderCard({
   order,
-  onAction,
+  loading,
+  onPay,
+  onCancel,
+  onRemindShip,
+  onConfirmReceive,
+  onReorder,
 }: {
   order: OrderWithDesign;
-  onAction: () => void;
+  loading: boolean;
+  onPay: () => void;
+  onCancel: () => void;
+  onRemindShip: () => void;
+  onConfirmReceive: () => void;
+  onReorder: () => void;
 }) {
   return (
     <li className="relative rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:border-[#C084FC]/40 hover:shadow-md">
@@ -321,7 +375,15 @@ function OrderCard({
         <div className="pointer-events-none hidden text-[11px] text-gray-400 sm:block">
           点击卡片查看详情
         </div>
-        <OrderActions status={order.status} onAction={onAction} />
+        <OrderActions
+          status={order.status}
+          loading={loading}
+          onPay={onPay}
+          onCancel={onCancel}
+          onRemindShip={onRemindShip}
+          onConfirmReceive={onConfirmReceive}
+          onReorder={onReorder}
+        />
       </div>
     </li>
   );
@@ -329,38 +391,53 @@ function OrderCard({
 
 function OrderActions({
   status,
-  onAction,
+  loading,
+  onPay,
+  onCancel,
+  onRemindShip,
+  onConfirmReceive,
+  onReorder,
 }: {
   status: string;
-  onAction: () => void;
+  loading: boolean;
+  onPay: () => void;
+  onCancel: () => void;
+  onRemindShip: () => void;
+  onConfirmReceive: () => void;
+  onReorder: () => void;
 }) {
+  const primaryCls =
+    "rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-5 py-1.5 text-xs font-semibold text-white shadow-md shadow-[#C084FC]/30 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60";
+  const mutedCls =
+    "rounded-full bg-gray-100 px-4 py-1.5 text-xs font-medium text-gray-600 transition hover:bg-gray-200";
+  const ghostCls =
+    "rounded-full border border-[#C084FC] bg-white px-4 py-1.5 text-xs font-semibold text-[#C084FC] transition hover:bg-[#C084FC]/5";
+
   if (status === "pending") {
     return (
       <div className="flex items-center gap-3">
         <button
           type="button"
-          onClick={onAction}
-          className="text-xs text-gray-400 underline-offset-2 hover:text-gray-600 hover:underline"
+          onClick={onCancel}
+          disabled={loading}
+          className="text-xs text-gray-400 underline-offset-2 hover:text-gray-600 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
         >
-          取消订单
+          {loading ? "处理中..." : "取消订单"}
         </button>
         <button
           type="button"
-          onClick={onAction}
-          className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-5 py-1.5 text-xs font-semibold text-white shadow-md shadow-[#C084FC]/30 transition hover:opacity-95"
+          onClick={onPay}
+          disabled={loading}
+          className={primaryCls}
         >
-          去支付
+          {loading ? "处理中..." : "去支付"}
         </button>
       </div>
     );
   }
   if (status === "paid") {
     return (
-      <button
-        type="button"
-        onClick={onAction}
-        className="rounded-full bg-gray-100 px-4 py-1.5 text-xs font-medium text-gray-600 transition hover:bg-gray-200"
-      >
+      <button type="button" onClick={onRemindShip} className={mutedCls}>
         提醒发货
       </button>
     );
@@ -369,26 +446,27 @@ function OrderActions({
     return (
       <button
         type="button"
-        onClick={onAction}
-        className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-5 py-1.5 text-xs font-semibold text-white shadow-md shadow-[#C084FC]/30 transition hover:opacity-95"
+        onClick={onConfirmReceive}
+        disabled={loading}
+        className={primaryCls}
       >
-        确认收货
+        {loading ? "处理中..." : "确认收货"}
       </button>
     );
   }
   if (status === "completed") {
     return (
-      <button
-        type="button"
-        onClick={onAction}
-        className="rounded-full border border-[#C084FC] bg-white px-4 py-1.5 text-xs font-semibold text-[#C084FC] transition hover:bg-[#C084FC]/5"
-      >
-        再次购买
+      <button type="button" onClick={onReorder} className={ghostCls}>
+        再来一件
       </button>
     );
   }
   if (status === "cancelled") {
-    return <span className="text-xs text-gray-400">订单已取消</span>;
+    return (
+      <button type="button" onClick={onReorder} className={ghostCls}>
+        重新下单
+      </button>
+    );
   }
   return null;
 }
