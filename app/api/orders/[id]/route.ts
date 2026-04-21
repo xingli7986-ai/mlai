@@ -15,14 +15,20 @@ export async function GET(
   }
 
   const { id } = await params;
-  const order = await prisma.order.findUnique({
-    where: { id },
-    include: { design: true },
-  });
 
-  if (!order || order.userId !== userId) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: { design: true },
+    });
+
+    if (!order || order.userId !== userId) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ order });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to load order";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  return NextResponse.json({ order });
 }

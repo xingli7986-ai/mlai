@@ -11,10 +11,15 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const designs = await prisma.design.findMany({
-    where: { userId, status: "saved" },
-    orderBy: { createdAt: "desc" },
-  });
-
-  return NextResponse.json({ designs });
+  try {
+    const designs = await prisma.design.findMany({
+      where: { userId, status: "saved" },
+      orderBy: { createdAt: "desc" },
+    });
+    return NextResponse.json({ designs });
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to load designs";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

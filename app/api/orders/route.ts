@@ -70,33 +70,41 @@ export async function POST(req: Request) {
 
   const price = calcPrice(fabric);
 
-  const design = await prisma.design.create({
-    data: {
-      userId,
-      prompt,
-      images: [selectedImage],
-      selectedImage,
-      skirtType,
-      fabric,
-      status: "completed",
-      order: {
-        create: {
-          userId,
-          skirtType,
-          fabric,
-          size,
-          price,
-          status: "paid",
+  try {
+    const design = await prisma.design.create({
+      data: {
+        userId,
+        prompt,
+        images: [selectedImage],
+        selectedImage,
+        skirtType,
+        fabric,
+        status: "completed",
+        order: {
+          create: {
+            userId,
+            skirtType,
+            fabric,
+            size,
+            price,
+            status: "paid",
+          },
         },
       },
-    },
-    include: { order: true },
-  });
+      include: { order: true },
+    });
 
-  const order = design.order;
-  if (!order) {
-    return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
+    const order = design.order;
+    if (!order) {
+      return NextResponse.json(
+        { error: "Failed to create order" },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true, orderId: order.id, price });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to create order";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  return NextResponse.json({ success: true, orderId: order.id, price });
 }

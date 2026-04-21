@@ -92,6 +92,7 @@ export default function MyPage() {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     if (params.get("toast") === "ordered") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reading URL after hydration, can't use lazy init (SSR mismatch)
       setToast("下单成功 🎉");
       window.history.replaceState({}, "", "/my");
       const t = setTimeout(() => setToast(""), 2800);
@@ -137,6 +138,7 @@ export default function MyPage() {
 
   useEffect(() => {
     if (status === "authenticated") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- standard data-fetching pattern
       fetchOrders();
       fetchDesigns();
     }

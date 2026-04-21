@@ -22,7 +22,8 @@
       "Bash(git commit *)",
       "Bash(git remote *)",
       "Bash(git branch *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(tasklist //FI \"IMAGENAME eq node.exe\")"
     ]
   }
 }

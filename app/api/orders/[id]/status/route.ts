@@ -37,23 +37,29 @@ export async function PATCH(
     );
   }
 
-  const order = await prisma.order.findUnique({ where: { id } });
-  if (!order || order.userId !== userId) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  try {
+    const order = await prisma.order.findUnique({ where: { id } });
+    if (!order || order.userId !== userId) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    const allowed = ALLOWED_TRANSITIONS[order.status] ?? [];
+    if (!allowed.includes(nextStatus)) {
+      return NextResponse.json(
+        { error: `不能从 ${order.status} 变更到 ${nextStatus}` },
+        { status: 400 }
+      );
+    }
+
+    const updated = await prisma.order.update({
+      where: { id },
+      data: { status: nextStatus },
+    });
+
+    return NextResponse.json({ success: true, order: updated });
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to update order";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  const allowed = ALLOWED_TRANSITIONS[order.status] ?? [];
-  if (!allowed.includes(nextStatus)) {
-    return NextResponse.json(
-      { error: `不能从 ${order.status} 变更到 ${nextStatus}` },
-      { status: 400 }
-    );
-  }
-
-  const updated = await prisma.order.update({
-    where: { id },
-    data: { status: nextStatus },
-  });
-
-  return NextResponse.json({ success: true, order: updated });
 }

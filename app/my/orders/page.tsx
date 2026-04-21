@@ -112,6 +112,7 @@ export default function OrdersPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- standard data-fetching pattern
     if (authStatus === "authenticated") fetchOrders(tab);
   }, [authStatus, tab, fetchOrders]);
 

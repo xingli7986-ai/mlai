@@ -45,15 +45,20 @@ export async function POST(req: Request) {
     );
   }
 
-  const design = await prisma.design.create({
-    data: {
-      userId,
-      prompt,
-      images,
-      selectedImage,
-      status: "saved",
-    },
-  });
-
-  return NextResponse.json({ success: true, designId: design.id });
+  try {
+    const design = await prisma.design.create({
+      data: {
+        userId,
+        prompt,
+        images,
+        selectedImage,
+        status: "saved",
+      },
+    });
+    return NextResponse.json({ success: true, designId: design.id });
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to save design";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

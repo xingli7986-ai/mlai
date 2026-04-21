@@ -31,11 +31,15 @@ export async function GET(req: NextRequest) {
     where.status = statusParam;
   }
 
-  const orders = await prisma.order.findMany({
-    where,
-    orderBy: { createdAt: "desc" },
-    include: { design: true },
-  });
-
-  return NextResponse.json({ orders });
+  try {
+    const orders = await prisma.order.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: { design: true },
+    });
+    return NextResponse.json({ orders });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Failed to load orders";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
