@@ -42,21 +42,25 @@ const FABRIC_LABEL: Record<string, string> = {
 };
 
 const STATUS_LABEL: Record<string, { text: string; className: string }> = {
-  paid: {
-    text: "已付款",
-    className: "bg-emerald-50 text-emerald-600",
-  },
   pending: {
     text: "待付款",
     className: "bg-amber-50 text-amber-600",
   },
+  paid: {
+    text: "待发货",
+    className: "bg-sky-50 text-sky-600",
+  },
   shipped: {
     text: "已发货",
-    className: "bg-sky-50 text-sky-600",
+    className: "bg-indigo-50 text-indigo-600",
   },
   completed: {
     text: "已完成",
-    className: "bg-[#C084FC]/10 text-[#C084FC]",
+    className: "bg-emerald-50 text-emerald-600",
+  },
+  cancelled: {
+    text: "已取消",
+    className: "bg-gray-100 text-gray-500",
   },
 };
 
@@ -296,13 +300,36 @@ export default function MyPage() {
             </div>
             {orders.length > 0 && (
               <Link
-                href="/design"
+                href="/my/orders"
                 className="text-sm font-medium text-[#C084FC] hover:underline"
               >
-                继续设计 →
+                查看全部订单 →
               </Link>
             )}
           </div>
+
+          {!loading && !loadError && orders.length > 0 && (
+            <div className="mb-4 grid grid-cols-3 gap-2 rounded-2xl border border-gray-100 bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/5 p-3 sm:gap-3 sm:p-4">
+              <StatCell
+                label="待付款"
+                count={orders.filter((o) => o.status === "pending").length}
+                tone="amber"
+                href="/my/orders?tab=pending"
+              />
+              <StatCell
+                label="待发货"
+                count={orders.filter((o) => o.status === "paid").length}
+                tone="sky"
+                href="/my/orders?tab=paid"
+              />
+              <StatCell
+                label="已完成"
+                count={orders.filter((o) => o.status === "completed").length}
+                tone="emerald"
+                href="/my/orders?tab=completed"
+              />
+            </div>
+          )}
 
           {loadError ? (
             <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-600">
@@ -326,62 +353,70 @@ export default function MyPage() {
               actionHref="/design"
             />
           ) : (
-            <ul className="space-y-3">
-              {orders.map((o) => (
-                <li
-                  key={o.id}
-                  className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:border-[#C084FC]/40 hover:shadow-md"
-                >
-                  <div className="flex items-start gap-3 sm:items-center sm:gap-4">
-                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[#FF6B9D]/10 to-[#C084FC]/10 sm:h-20 sm:w-20">
-                      {o.design.selectedImage ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
-                          src={o.design.selectedImage}
-                          alt="印花"
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-[10px] text-gray-400">
-                          图片缺失
+            <>
+              <ul className="space-y-3">
+                {orders.slice(0, 3).map((o) => (
+                  <li
+                    key={o.id}
+                    className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm transition hover:border-[#C084FC]/40 hover:shadow-md"
+                  >
+                    <div className="flex items-start gap-3 sm:items-center sm:gap-4">
+                      <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-[#FF6B9D]/10 to-[#C084FC]/10 sm:h-20 sm:w-20">
+                        {o.design.selectedImage ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={o.design.selectedImage}
+                            alt="印花"
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-[10px] text-gray-400">
+                            图片缺失
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <span className="truncate text-sm font-semibold">
+                            {SKIRT_LABEL[o.skirtType] ?? o.skirtType} ·{" "}
+                            {FABRIC_LABEL[o.fabric] ?? o.fabric} · {o.size}
+                          </span>
+                          <StatusPill status={o.status} />
                         </div>
-                      )}
+                        <div className="mt-1 truncate text-xs text-gray-500">
+                          {o.design.prompt}
+                        </div>
+                        <div className="mt-1.5 text-[11px] text-gray-400">
+                          {formatDate(o.createdAt)}
+                        </div>
+                      </div>
+                      <div className="hidden shrink-0 text-right sm:block">
+                        <div className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-lg font-bold text-transparent">
+                          ¥ {o.price}
+                        </div>
+                        <div className="mt-0.5 text-[10px] text-gray-400">
+                          #{o.id.slice(-6)}
+                        </div>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <span className="truncate text-sm font-semibold">
-                          {SKIRT_LABEL[o.skirtType] ?? o.skirtType} ·{" "}
-                          {FABRIC_LABEL[o.fabric] ?? o.fabric} · {o.size}
-                        </span>
-                        <StatusPill status={o.status} />
-                      </div>
-                      <div className="mt-1 truncate text-xs text-gray-500">
-                        {o.design.prompt}
-                      </div>
-                      <div className="mt-1.5 text-[11px] text-gray-400">
-                        {formatDate(o.createdAt)}
-                      </div>
-                    </div>
-                    <div className="hidden shrink-0 text-right sm:block">
+                    <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3 sm:hidden">
+                      <span className="text-[11px] text-gray-400">
+                        #{o.id.slice(-6)}
+                      </span>
                       <div className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-lg font-bold text-transparent">
                         ¥ {o.price}
                       </div>
-                      <div className="mt-0.5 text-[10px] text-gray-400">
-                        #{o.id.slice(-6)}
-                      </div>
                     </div>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3 sm:hidden">
-                    <span className="text-[11px] text-gray-400">
-                      #{o.id.slice(-6)}
-                    </span>
-                    <div className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-lg font-bold text-transparent">
-                      ¥ {o.price}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href="/my/orders"
+                className="mt-4 flex items-center justify-center rounded-2xl border border-dashed border-gray-200 py-3 text-sm font-medium text-gray-600 transition hover:border-[#C084FC] hover:text-[#C084FC]"
+              >
+                查看全部 {orders.length} 笔订单 →
+              </Link>
+            </>
           )}
         </section>
       </main>
@@ -392,6 +427,33 @@ export default function MyPage() {
         </p>
       </footer>
     </div>
+  );
+}
+
+function StatCell({
+  label,
+  count,
+  tone,
+  href,
+}: {
+  label: string;
+  count: number;
+  tone: "amber" | "sky" | "emerald";
+  href: string;
+}) {
+  const toneClass = {
+    amber: "text-amber-600",
+    sky: "text-sky-600",
+    emerald: "text-emerald-600",
+  }[tone];
+  return (
+    <Link
+      href={href}
+      className="rounded-xl bg-white/70 px-3 py-3 text-center transition hover:bg-white hover:shadow-sm"
+    >
+      <div className={`text-2xl font-bold ${toneClass}`}>{count}</div>
+      <div className="mt-0.5 text-[11px] text-gray-500">{label}</div>
+    </Link>
   );
 }
 
