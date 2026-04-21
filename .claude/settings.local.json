@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /f)",
+      "Bash(npx create-next-app@latest maxlulu-ai --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --use-npm --turbopack)",
+      "Bash(tasklist)",
+      "Bash(npm install *)",
+      "Bash(npm view *)",
+      "Bash(rm -rf F:/maxlulu-ai/node_modules F:/maxlulu-ai/_old_nm)",
+      "Bash(echo \"删除完成，退出码: $?\")",
+      "PowerShell(Out-Null *)",
+      "PowerShell(Rename-Item *)",
+      "PowerShell(Get-Process | Where-Object { $_.ProcessName -match \"node|npm|tsc|next|esbuild|vite|webpack|tsserver\" } | Select-Object Id, ProcessName, Path, StartTime | Format-Table -AutoSize)",
+      "PowerShell(Get-CimInstance *)",
+      "PowerShell(Get-Process -Id 33368 -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, StartTime, CPU, @{N='RunMinutes';E={[int]\\(\\(Get-Date\\) - $_.StartTime\\).TotalMinutes}} | Format-List; Get-Process -Id 9016 -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, StartTime, CPU, @{N='RunMinutes';E={[int]\\(\\(Get-Date\\) - $_.StartTime\\).TotalMinutes}} | Format-List)",
+      "PowerShell(Stop-Process *)",
+      "Bash(npx prisma *)",
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(git init *)",
+      "Bash(git add *)"
+    ]
+  }
+}

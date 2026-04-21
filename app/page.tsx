@@ -1,0 +1,94 @@
+"use client";
+
+import Link from "next/link";
+import { useSession } from "next-auth/react";
+
+export default function HomePage() {
+  const { data: session, status } = useSession();
+  const isAuthed = status === "authenticated" && !!session;
+
+  return (
+    <div className="flex min-h-screen flex-col bg-white">
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-black/5 bg-white/80 px-6 py-4 backdrop-blur">
+        <Link href="/" className="flex items-center gap-2">
+          <span className="h-8 w-8 rounded-xl bg-gradient-to-br from-[#FF6B9D] to-[#C084FC]" />
+          <span className="text-lg font-semibold tracking-tight">
+            MaxLuLu <span className="text-[#C084FC]">AI</span>
+          </span>
+        </Link>
+        <nav className="flex items-center gap-2">
+          {isAuthed ? (
+            <Link
+              href="/my"
+              className="rounded-full px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100"
+            >
+              我的
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-5 py-2 text-sm font-medium text-white shadow-md shadow-[#C084FC]/30 transition hover:opacity-95"
+            >
+              登录
+            </Link>
+          )}
+        </nav>
+      </header>
+
+      <main className="relative flex flex-1 flex-col items-center justify-center px-6 py-16 text-center">
+        <div className="pointer-events-none absolute inset-x-0 top-20 -z-0 mx-auto h-72 w-72 rounded-full bg-gradient-to-br from-[#FF6B9D]/30 to-[#C084FC]/30 blur-3xl" />
+
+        <span className="mb-6 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#FF6B9D]/10 to-[#C084FC]/10 px-4 py-1.5 text-xs font-medium text-[#C084FC]">
+          ✨ AI 印花设计平台
+        </span>
+        <h1 className="max-w-3xl bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-5xl font-bold leading-tight tracking-tight text-transparent md:text-6xl">
+          AI 印花设计，为你而生
+        </h1>
+        <p className="mt-5 max-w-xl text-base text-gray-500 md:text-lg">
+          描述你想要的图案，AI 为你生成独一无二的印花裙
+        </p>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <Link
+            href="/design"
+            className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-8 py-3.5 text-base font-semibold text-white shadow-xl shadow-[#C084FC]/40 transition hover:-translate-y-0.5 hover:opacity-95"
+          >
+            开始设计 →
+          </Link>
+          {!isAuthed && (
+            <Link
+              href="/login"
+              className="rounded-full border border-gray-200 bg-white px-8 py-3.5 text-base font-medium text-gray-700 transition hover:border-[#C084FC] hover:text-[#C084FC]"
+            >
+              先去登录
+            </Link>
+          )}
+        </div>
+
+        <div className="mt-20 grid w-full max-w-4xl grid-cols-1 gap-4 sm:grid-cols-3">
+          {[
+            { t: "描述想法", d: "用一句话说出你想要的印花" },
+            { t: "AI 生成", d: "数秒内获得多款设计方案" },
+            { t: "定制上身", d: "选择裙型面料，直接下单" },
+          ].map((f, i) => (
+            <div
+              key={f.t}
+              className="rounded-2xl border border-gray-100 bg-white p-5 text-left shadow-sm"
+            >
+              <div className="mb-2 inline-flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[#FF6B9D] to-[#C084FC] text-xs font-semibold text-white">
+                {i + 1}
+              </div>
+              <div className="text-base font-semibold">{f.t}</div>
+              <div className="mt-1 text-sm text-gray-500">{f.d}</div>
+            </div>
+          ))}
+        </div>
+      </main>
+
+      <footer className="py-10 text-center">
+        <p className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-sm font-medium text-transparent">
+          Fashion For You — 每一朵印花，都由你绽放
+        </p>
+      </footer>
+    </div>
+  );
+}
