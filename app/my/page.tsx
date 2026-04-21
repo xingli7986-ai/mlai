@@ -31,6 +31,9 @@ const SKIRT_LABEL: Record<string, string> = {
   "a-line": "A 字裙",
   straight: "直筒裙",
   half: "半身裙",
+  pleated: "百褶裙",
+  flared: "鱼尾裙",
+  wrap: "一片式裹裙",
 };
 
 const FABRIC_LABEL: Record<string, string> = {

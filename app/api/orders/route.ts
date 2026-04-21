@@ -4,7 +4,14 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
-const VALID_SKIRTS = new Set(["a-line", "straight", "half"]);
+const VALID_SKIRTS = new Set([
+  "a-line",
+  "straight",
+  "half",
+  "pleated",
+  "flared",
+  "wrap",
+]);
 const VALID_FABRICS = new Set(["cotton", "silk"]);
 const VALID_SIZES = new Set(["S", "M", "L", "XL"]);
 

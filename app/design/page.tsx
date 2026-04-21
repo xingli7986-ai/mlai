@@ -18,6 +18,9 @@ const SKIRT_TYPES = [
   { id: "a-line", name: "A 字裙", desc: "经典显瘦" },
   { id: "straight", name: "直筒裙", desc: "利落简约" },
   { id: "half", name: "半身裙", desc: "灵动百搭" },
+  { id: "pleated", name: "百褶裙", desc: "飘逸复古" },
+  { id: "flared", name: "鱼尾裙", desc: "收腰展摆" },
+  { id: "wrap", name: "一片式裹裙", desc: "优雅随性" },
 ];
 
 const FABRICS = [
@@ -488,7 +491,9 @@ export default function DesignPage() {
                             : "border-gray-200 hover:border-gray-300"
                         }`}
                       >
-                        <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-[#FF6B9D]/20 to-[#C084FC]/20" />
+                        <div className="flex h-14 w-16 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/5">
+                          <FabricIcon type={f.id} />
+                        </div>
                         <div>
                           <div className="text-sm font-semibold">{f.name}</div>
                           <div className="mt-0.5 text-xs text-gray-500">
@@ -695,6 +700,102 @@ function SkirtIcon({ type }: { type: string }) {
         <line x1="60" y1="38" x2="60" y2="94" />
         <line x1="72" y1="38" x2="75" y2="94" />
         <path d="M30 94 Q60 100 90 94" />
+      </svg>
+    );
+  }
+  if (type === "pleated") {
+    return (
+      <svg {...common}>
+        <path d="M44 24 L76 24 L78 34 L42 34 Z" />
+        <path d="M42 34 L24 106 L96 106 L78 34" />
+        <line x1="49" y1="34" x2="40" y2="106" />
+        <line x1="55" y1="34" x2="52" y2="106" />
+        <line x1="60" y1="34" x2="60" y2="106" />
+        <line x1="65" y1="34" x2="68" y2="106" />
+        <line x1="71" y1="34" x2="80" y2="106" />
+        <path d="M24 106 Q60 114 96 106" />
+      </svg>
+    );
+  }
+  if (type === "flared") {
+    return (
+      <svg {...common}>
+        <path d="M46 24 L74 24 L76 32 L44 32 Z" />
+        <path d="M44 32 L48 74 Q30 92 22 108" />
+        <path d="M76 32 L72 74 Q90 92 98 108" />
+        <line
+          x1="48"
+          y1="74"
+          x2="72"
+          y2="74"
+          strokeDasharray="2 3"
+          opacity="0.35"
+        />
+        <path d="M22 108 Q60 116 98 108" />
+      </svg>
+    );
+  }
+  if (type === "wrap") {
+    return (
+      <svg {...common}>
+        <path d="M42 26 L78 26 L80 34 L40 34 Z" />
+        <path d="M40 34 L28 104 L92 104 L80 34" />
+        <path d="M80 34 Q66 70 44 104" />
+        <path d="M78 28 Q90 24 94 30" />
+        <path d="M90 24 L94 34" />
+        <path d="M28 104 Q60 110 92 104" />
+      </svg>
+    );
+  }
+  return null;
+}
+
+function FabricIcon({ type }: { type: string }) {
+  const common = {
+    height: 48,
+    viewBox: "0 0 64 48",
+    fill: "none",
+    stroke: "#111827",
+    strokeWidth: 1.5,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+  if (type === "cotton") {
+    return (
+      <svg {...common}>
+        <rect
+          x="4"
+          y="4"
+          width="56"
+          height="40"
+          rx="4"
+          stroke="#111827"
+          strokeWidth="1.5"
+        />
+        <line x1="4" y1="16" x2="60" y2="16" />
+        <line x1="4" y1="28" x2="60" y2="28" />
+        <line x1="4" y1="40" x2="60" y2="40" opacity="0" />
+        <line x1="18" y1="4" x2="18" y2="44" />
+        <line x1="32" y1="4" x2="32" y2="44" />
+        <line x1="46" y1="4" x2="46" y2="44" />
+      </svg>
+    );
+  }
+  if (type === "silk") {
+    return (
+      <svg {...common}>
+        <rect
+          x="4"
+          y="4"
+          width="56"
+          height="40"
+          rx="4"
+          stroke="#111827"
+          strokeWidth="1.5"
+        />
+        <path d="M6 14 Q18 8 30 14 T54 14 Q58 14 58 14" />
+        <path d="M6 24 Q18 18 30 24 T54 24 Q58 24 58 24" />
+        <path d="M6 34 Q18 28 30 34 T54 34 Q58 34 58 34" />
       </svg>
     );
   }
