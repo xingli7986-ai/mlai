@@ -340,23 +340,37 @@ export default function AdminOrdersPage() {
                     <div className="hidden text-[11px] text-gray-400 sm:block">
                       用户 ID: <span className="font-mono">{o.userId.slice(-8)}</span>
                     </div>
-                    {o.status === "paid" ? (
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => handleShip(o.id)}
-                        disabled={shippingId === o.id}
-                        className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-5 py-1.5 text-xs font-semibold text-white shadow-md shadow-[#C084FC]/30 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                        onClick={() =>
+                          window.open(
+                            `/api/orders/${o.id}/techpack`,
+                            "_blank"
+                          )
+                        }
+                        className="rounded-full border border-[#C084FC]/60 bg-white px-3 py-1.5 text-[11px] font-medium text-[#C084FC] transition hover:bg-[#C084FC]/5"
                       >
-                        {shippingId === o.id ? "发货中..." : "🚚 标记发货"}
+                        📄 Tech Pack
                       </button>
-                    ) : (
-                      <span className="text-[11px] text-gray-300">
-                        {o.status === "pending" && "等待用户付款"}
-                        {o.status === "shipped" && "已发货，等待用户收货"}
-                        {o.status === "completed" && "订单已完成"}
-                        {o.status === "cancelled" && "订单已取消"}
-                      </span>
-                    )}
+                      {o.status === "paid" ? (
+                        <button
+                          type="button"
+                          onClick={() => handleShip(o.id)}
+                          disabled={shippingId === o.id}
+                          className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-5 py-1.5 text-xs font-semibold text-white shadow-md shadow-[#C084FC]/30 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {shippingId === o.id ? "发货中..." : "🚚 标记发货"}
+                        </button>
+                      ) : (
+                        <span className="text-[11px] text-gray-300">
+                          {o.status === "pending" && "等待用户付款"}
+                          {o.status === "shipped" && "已发货，等待用户收货"}
+                          {o.status === "completed" && "订单已完成"}
+                          {o.status === "cancelled" && "订单已取消"}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </li>
               );

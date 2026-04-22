@@ -299,6 +299,34 @@ export default function OrderDetailPage() {
               </div>
             </section>
 
+            {["paid", "shipped", "completed"].includes(order.status) && (
+              <section className="mt-8 flex flex-col items-start gap-1 sm:items-end">
+                <button
+                  type="button"
+                  onClick={() =>
+                    window.open(`/api/orders/${orderId}/techpack`, "_blank")
+                  }
+                  className="inline-flex items-center gap-2 rounded-full border-2 border-transparent px-6 py-2.5 font-semibold transition hover:opacity-90"
+                  style={{
+                    backgroundImage:
+                      "linear-gradient(white, white), linear-gradient(90deg, #FF6B9D, #C084FC)",
+                    backgroundOrigin: "border-box",
+                    backgroundClip: "padding-box, border-box",
+                  }}
+                >
+                  <span className="text-[#C084FC]">
+                    <DocumentIcon />
+                  </span>
+                  <span className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-sm text-transparent">
+                    下载 Tech Pack
+                  </span>
+                </button>
+                <span className="text-xs text-gray-400">
+                  工艺技术文件，可发送给工厂用于打样生产
+                </span>
+              </section>
+            )}
+
             <section className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-end">
               <DetailActions
                 status={order.status}
@@ -461,4 +489,26 @@ function DetailActions({
     );
   }
   return null;
+}
+
+function DocumentIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <line x1="10" y1="9" x2="8" y2="9" />
+    </svg>
+  );
 }
