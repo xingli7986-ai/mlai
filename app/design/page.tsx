@@ -8,19 +8,24 @@ import { useSession } from "next-auth/react";
 import {
   BASE_PRICE_BY_LEVEL,
   FABRICS,
+  NECKLINES,
   SIZE_OPTIONS,
+  SKIRT_LENGTHS,
   SKIRT_TYPES,
+  SLEEVE_TYPES,
   calculatePrice,
   type SizeOption,
 } from "@/lib/constants";
 
-type Step = 1 | 2 | 3 | 4;
+type Step = 1 | 2 | 3 | 4 | 5 | 6;
 
 const STEPS: { id: Step; title: string; subtitle: string }[] = [
   { id: 1, title: "描述印花", subtitle: "告诉 AI 你想要的图案" },
   { id: 2, title: "选择方案", subtitle: "从 4 款设计中挑选" },
-  { id: 3, title: "裙型面料", subtitle: "定制你的专属款式" },
-  { id: 4, title: "确认下单", subtitle: "核对信息，生成订单" },
+  { id: 3, title: "选择裙型", subtitle: "挑一款剪影最合适的" },
+  { id: 4, title: "领型/袖型/裙长", subtitle: "细化版型设计" },
+  { id: 5, title: "面料尺码", subtitle: "定面料、选尺码，看价格" },
+  { id: 6, title: "确认下单", subtitle: "填收货地址，提交订单" },
 ];
 
 const STYLE_PRESETS: { label: string; text: string }[] = [
@@ -119,6 +124,13 @@ function DesignPageInner() {
   const [skirtType, setSkirtType] = useState<string | null>(null);
   const [fabric, setFabric] = useState<string | null>(null);
   const [size, setSize] = useState<SizeOption | null>(null);
+  const [neckline, setNeckline] = useState<string | null>(null);
+  const [sleeveType, setSleeveType] = useState<string | null>(null);
+  const [skirtLength, setSkirtLength] = useState<string | null>(null);
+  const [recipientName, setRecipientName] = useState("");
+  const [recipientPhone, setRecipientPhone] = useState("");
+  const [recipientRegion, setRecipientRegion] = useState("");
+  const [recipientAddress, setRecipientAddress] = useState("");
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState("");
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
@@ -176,6 +188,9 @@ function DesignPageInner() {
         setImages(imgs);
         setSelectedImage(selIdx >= 0 ? selIdx : imgs.length > 0 ? 0 : null);
         setSavedDesignId(typeof d.id === "string" ? d.id : null);
+        if (typeof d.neckline === "string") setNeckline(d.neckline);
+        if (typeof d.sleeveType === "string") setSleeveType(d.sleeveType);
+        if (typeof d.skirtLength === "string") setSkirtLength(d.skirtLength);
         setSaveError("");
         setGenError("");
         if (imgs.length > 0) setStep(2);
@@ -257,6 +272,9 @@ function DesignPageInner() {
           prompt: prompt.trim(),
           selectedImage: url,
           images,
+          neckline,
+          sleeveType,
+          skirtLength,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -305,6 +323,13 @@ function DesignPageInner() {
       !skirtType ||
       !fabric ||
       !size ||
+      !neckline ||
+      !sleeveType ||
+      !skirtLength ||
+      !recipientName.trim() ||
+      !recipientPhone.trim() ||
+      !recipientRegion.trim() ||
+      !recipientAddress.trim() ||
       !prompt.trim()
     )
       return;
@@ -325,6 +350,13 @@ function DesignPageInner() {
           skirtType,
           fabric,
           size,
+          neckline,
+          sleeveType,
+          skirtLength,
+          recipientName: recipientName.trim(),
+          recipientPhone: recipientPhone.trim(),
+          recipientRegion: recipientRegion.trim(),
+          recipientAddress: recipientAddress.trim(),
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -351,8 +383,13 @@ function DesignPageInner() {
   const canNext =
     (step === 1 && prompt.trim().length > 0) ||
     (step === 2 && selectedImage !== null) ||
-    (step === 3 && skirtType !== null && fabric !== null) ||
-    step === 4;
+    (step === 3 && skirtType !== null) ||
+    (step === 4 &&
+      neckline !== null &&
+      sleeveType !== null &&
+      skirtLength !== null) ||
+    (step === 5 && fabric !== null && size !== null) ||
+    step === 6;
 
   return (
     <div className="relative flex min-h-screen flex-col bg-white">
@@ -408,7 +445,7 @@ function DesignPageInner() {
               {STEPS[step - 1].title}
             </div>
             <div className="truncate text-xs text-gray-400">
-              第 {step}/4 步 · {STEPS[step - 1].subtitle}
+              第 {step}/{STEPS.length} 步 · {STEPS[step - 1].subtitle}
             </div>
           </div>
         </div>
@@ -671,6 +708,9 @@ function DesignPageInner() {
                 <h2 className="text-2xl font-semibold tracking-tight">
                   选择裙型
                 </h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  挑一款最合你心意的剪影
+                </p>
                 <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
                   {SKIRT_TYPES.map((s) => {
                     const picked = skirtType === s.id;
@@ -688,7 +728,12 @@ function DesignPageInner() {
                         <div className="mb-3 flex aspect-square items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/5">
                           <SkirtIcon type={s.id} />
                         </div>
-                        <div className="text-sm font-semibold">{s.name}</div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-sm font-semibold">{s.name}</span>
+                          <span className="text-[10px] uppercase tracking-wide text-gray-400">
+                            {s.enName}
+                          </span>
+                        </div>
                         <div className="mt-0.5 text-xs text-gray-500">
                           {s.desc}
                         </div>
@@ -706,11 +751,112 @@ function DesignPageInner() {
                     skirtType={skirtType}
                   />
                 )}
+            </div>
+          )}
 
+          {step === 4 && (
+            <div className="space-y-10">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  选择领型
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">共 8 种</p>
+                <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+                  {NECKLINES.map((n) => {
+                    const picked = neckline === n.id;
+                    return (
+                      <button
+                        key={n.id}
+                        type="button"
+                        onClick={() => setNeckline(n.id)}
+                        className={`flex flex-col items-start gap-0.5 rounded-2xl border px-3 py-3 text-left transition ${
+                          picked
+                            ? "border-[#C084FC] bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/5 shadow-md shadow-[#C084FC]/20"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <span className="text-sm font-semibold">{n.name}</span>
+                        <span className="text-[10px] uppercase tracking-wide text-gray-400">
+                          {n.enName}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  选择袖型
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">共 10 种</p>
+                <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5 sm:gap-4">
+                  {SLEEVE_TYPES.map((s) => {
+                    const picked = sleeveType === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => setSleeveType(s.id)}
+                        className={`flex flex-col items-start gap-0.5 rounded-2xl border px-3 py-3 text-left transition ${
+                          picked
+                            ? "border-[#C084FC] bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/5 shadow-md shadow-[#C084FC]/20"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <span className="text-sm font-semibold">{s.name}</span>
+                        <span className="text-[10px] uppercase tracking-wide text-gray-400">
+                          {s.enName}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  选择裙长
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">共 6 种</p>
+                <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
+                  {SKIRT_LENGTHS.map((l) => {
+                    const picked = skirtLength === l.id;
+                    return (
+                      <button
+                        key={l.id}
+                        type="button"
+                        onClick={() => setSkirtLength(l.id)}
+                        className={`flex flex-col items-start gap-1 rounded-2xl border px-4 py-3 text-left transition ${
+                          picked
+                            ? "border-[#C084FC] bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/5 shadow-md shadow-[#C084FC]/20"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-sm font-semibold">{l.name}</span>
+                          <span className="text-[10px] uppercase tracking-wide text-gray-400">
+                            {l.enName}
+                          </span>
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          M 码参考: {l.refLengthCm}cm
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {step === 5 && (
+            <div className="space-y-8">
               <div>
                 <h2 className="text-2xl font-semibold tracking-tight">
                   选择面料
                 </h2>
+                <p className="mt-1 text-sm text-gray-500">共 12 种</p>
                 <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
                   {FABRICS.map((f) => {
                     const picked = fabric === f.id;
@@ -746,53 +892,8 @@ function DesignPageInner() {
                   })}
                 </div>
               </div>
-            </div>
-          )}
 
-          {step === 4 && (
-            <div>
-              <h2 className="text-2xl font-semibold tracking-tight">
-                确认订单
-              </h2>
-              <p className="mt-1 text-sm text-gray-500">
-                选择尺码，核对信息后提交
-              </p>
-
-              <div className="mt-6 flex flex-col gap-6 sm:flex-row">
-                <div className="shrink-0 sm:w-40">
-                  {selectedImage !== null && images[selectedImage] ? (
-                    <div className="mx-auto aspect-[3/4] w-48 overflow-hidden rounded-2xl ring-2 ring-[#C084FC]/40 shadow-md shadow-[#C084FC]/20 sm:w-40">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={images[selectedImage]}
-                        alt="选中印花"
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="mx-auto flex aspect-[3/4] w-48 items-center justify-center rounded-2xl bg-gray-100 text-xs text-gray-400 sm:w-40">
-                      未选择
-                    </div>
-                  )}
-                </div>
-                <dl className="flex-1 divide-y divide-gray-100 rounded-2xl border border-gray-100">
-                  <Row label="印花描述" value={prompt || "—"} />
-                  <Row
-                    label="裙型"
-                    value={
-                      SKIRT_TYPES.find((s) => s.id === skirtType)?.name ?? "—"
-                    }
-                  />
-                  <Row
-                    label="面料"
-                    value={FABRICS.find((f) => f.id === fabric)?.name ?? "—"}
-                  />
-                  <Row label="尺码" value={size ?? "未选择"} />
-                  <Row label="金额" value={`¥ ${calcPrice(fabric, skirtType)}`} />
-                </dl>
-              </div>
-
-              <div className="mt-8">
+              <div>
                 <div className="mb-3 flex items-center justify-between">
                   <div className="text-sm font-medium text-gray-700">
                     选择尺码
@@ -827,6 +928,162 @@ function DesignPageInner() {
                 </div>
               </div>
 
+              <div className="rounded-3xl border border-[#C084FC]/20 bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/10 p-5 sm:p-6">
+                <div className="text-xs text-gray-500">价格明细</div>
+                {(() => {
+                  const f = FABRICS.find((x) => x.id === fabric);
+                  if (!f || !skirtType) {
+                    return (
+                      <p className="mt-3 text-sm text-gray-500">
+                        选择面料后可查看价格明细
+                      </p>
+                    );
+                  }
+                  const fabricBase = BASE_PRICE_BY_LEVEL[f.priceLevel];
+                  const total = calculatePrice(f.id, skirtType);
+                  const skirtAddon = total - fabricBase;
+                  const skirtName =
+                    SKIRT_TYPES.find((s) => s.id === skirtType)?.name ??
+                    skirtType;
+                  return (
+                    <div className="mt-3 space-y-2 text-sm">
+                      <div className="flex items-center justify-between text-gray-700">
+                        <span>{f.name} 面料基础价</span>
+                        <span className="font-medium">¥{fabricBase}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-gray-700">
+                        <span>{skirtName} 工艺加成</span>
+                        <span className="font-medium">
+                          {skirtAddon > 0 ? `+¥${skirtAddon}` : "¥0"}
+                        </span>
+                      </div>
+                      <div className="my-2 border-t border-[#C084FC]/20" />
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">
+                          总价
+                        </span>
+                        <span className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-2xl font-bold text-transparent">
+                          ¥{total}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
+
+          {step === 6 && (
+            <div>
+              <h2 className="text-2xl font-semibold tracking-tight">
+                确认订单
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                核对设计信息，填写收货地址
+              </p>
+
+              <div className="mt-6 flex flex-col gap-6 sm:flex-row">
+                <div className="shrink-0 sm:w-40">
+                  {selectedImage !== null && images[selectedImage] ? (
+                    <div className="mx-auto aspect-[3/4] w-48 overflow-hidden rounded-2xl ring-2 ring-[#C084FC]/40 shadow-md shadow-[#C084FC]/20 sm:w-40">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={images[selectedImage]}
+                        alt="选中印花"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="mx-auto flex aspect-[3/4] w-48 items-center justify-center rounded-2xl bg-gray-100 text-xs text-gray-400 sm:w-40">
+                      未选择
+                    </div>
+                  )}
+                </div>
+                <dl className="flex-1 divide-y divide-gray-100 rounded-2xl border border-gray-100">
+                  <Row label="印花描述" value={prompt || "—"} />
+                  <Row
+                    label="裙型"
+                    value={
+                      SKIRT_TYPES.find((s) => s.id === skirtType)?.name ?? "—"
+                    }
+                  />
+                  <Row
+                    label="领型"
+                    value={
+                      NECKLINES.find((n) => n.id === neckline)?.name ?? "—"
+                    }
+                  />
+                  <Row
+                    label="袖型"
+                    value={
+                      SLEEVE_TYPES.find((s) => s.id === sleeveType)?.name ??
+                      "—"
+                    }
+                  />
+                  <Row
+                    label="裙长"
+                    value={(() => {
+                      const l = SKIRT_LENGTHS.find(
+                        (x) => x.id === skirtLength
+                      );
+                      return l ? `${l.name} · ${l.refLengthCm}cm` : "—";
+                    })()}
+                  />
+                  <Row
+                    label="面料"
+                    value={(() => {
+                      const f = FABRICS.find((x) => x.id === fabric);
+                      return f
+                        ? `${f.name} · ${f.composition} · ${f.gsm}`
+                        : "—";
+                    })()}
+                  />
+                  <Row label="尺码" value={size ?? "未选择"} />
+                  <Row
+                    label="金额"
+                    value={`¥ ${calcPrice(fabric, skirtType)}`}
+                  />
+                </dl>
+              </div>
+
+              <div className="mt-8">
+                <h3 className="text-sm font-semibold tracking-tight text-gray-800">
+                  收货地址
+                </h3>
+                <p className="mt-1 text-xs text-gray-400">
+                  MVP 阶段仅收集基本信息
+                </p>
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <AddressInput
+                    label="收件人"
+                    value={recipientName}
+                    onChange={setRecipientName}
+                    placeholder="请输入姓名"
+                  />
+                  <AddressInput
+                    label="手机号"
+                    value={recipientPhone}
+                    onChange={setRecipientPhone}
+                    placeholder="请输入手机号"
+                    inputMode="tel"
+                  />
+                  <AddressInput
+                    label="省市区"
+                    value={recipientRegion}
+                    onChange={setRecipientRegion}
+                    placeholder="如：广东省广州市天河区"
+                    className="sm:col-span-2"
+                  />
+                  <AddressInput
+                    label="详细地址"
+                    value={recipientAddress}
+                    onChange={setRecipientAddress}
+                    placeholder="街道、门牌号等"
+                    className="sm:col-span-2"
+                  />
+                </div>
+              </div>
+
               <div className="mt-8 flex items-center justify-between rounded-2xl bg-gradient-to-r from-[#FF6B9D]/5 to-[#C084FC]/10 p-5">
                 <div>
                   <div className="text-xs text-gray-500">应付金额</div>
@@ -838,11 +1095,17 @@ function DesignPageInner() {
                   基础价 ¥{BASE_PRICE}
                   {(() => {
                     const f = FABRICS.find((x) => x.id === fabric);
-                    const fabricBase = f ? BASE_PRICE_BY_LEVEL[f.priceLevel] : BASE_PRICE;
+                    const fabricBase = f
+                      ? BASE_PRICE_BY_LEVEL[f.priceLevel]
+                      : BASE_PRICE;
                     const fabricSurcharge = fabricBase - BASE_PRICE;
-                    const total = fabric && skirtType ? calculatePrice(fabric, skirtType) : fabricBase;
+                    const total =
+                      fabric && skirtType
+                        ? calculatePrice(fabric, skirtType)
+                        : fabricBase;
                     const skirtSurcharge = total - fabricBase;
-                    if (fabricSurcharge === 0 && skirtSurcharge === 0) return null;
+                    if (fabricSurcharge === 0 && skirtSurcharge === 0)
+                      return null;
                     return (
                       <>
                         {fabricSurcharge > 0 && f && (
@@ -872,7 +1135,17 @@ function DesignPageInner() {
               <button
                 type="button"
                 onClick={handleSubmitOrder}
-                disabled={!size || submitting}
+                disabled={
+                  !size ||
+                  !neckline ||
+                  !sleeveType ||
+                  !skirtLength ||
+                  !recipientName.trim() ||
+                  !recipientPhone.trim() ||
+                  !recipientRegion.trim() ||
+                  !recipientAddress.trim() ||
+                  submitting
+                }
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] py-3.5 text-base font-semibold text-white shadow-lg shadow-[#C084FC]/30 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 {submitting && (
@@ -895,18 +1168,16 @@ function DesignPageInner() {
             >
               上一步
             </button>
-            {step === 2 || step === 3 ? (
+            {step >= 2 && step <= 5 ? (
               <button
                 type="button"
-                onClick={() =>
-                  setStep((s) => (s === 2 ? 3 : 4) as Step)
-                }
+                onClick={() => setStep((s) => (s + 1) as Step)}
                 disabled={!canNext}
                 className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-8 py-2.5 text-sm font-semibold text-white shadow-md shadow-[#C084FC]/30 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 下一步 →
               </button>
-            ) : step === 4 ? (
+            ) : step === 6 ? (
               <span className="text-xs text-gray-400">最后一步</span>
             ) : (
               <span />
@@ -946,6 +1217,36 @@ function Row({ label, value }: { label: string; value: string }) {
         {value}
       </span>
     </div>
+  );
+}
+
+function AddressInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+  inputMode,
+  className = "",
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  inputMode?: "text" | "tel";
+  className?: string;
+}) {
+  return (
+    <label className={`flex flex-col gap-1 ${className}`}>
+      <span className="text-xs font-medium text-gray-500">{label}</span>
+      <input
+        type="text"
+        inputMode={inputMode}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-[#C084FC] focus:ring-2 focus:ring-[#C084FC]/25"
+      />
+    </label>
   );
 }
 

@@ -3,8 +3,11 @@ import { getAuthUser } from "@/lib/getAuthUser";
 import { prisma } from "@/lib/prisma";
 import {
   FABRICS,
+  NECKLINES,
   SIZE_OPTIONS,
+  SKIRT_LENGTHS,
   SKIRT_TYPES,
+  SLEEVE_TYPES,
   calculatePrice,
 } from "@/lib/constants";
 
@@ -13,6 +16,9 @@ export const runtime = "nodejs";
 const VALID_SKIRTS = new Set(SKIRT_TYPES.map((s) => s.id));
 const VALID_FABRICS = new Set(FABRICS.map((f) => f.id));
 const VALID_SIZES = new Set<string>(SIZE_OPTIONS);
+const VALID_NECKLINES = new Set(NECKLINES.map((n) => n.id));
+const VALID_SLEEVES = new Set(SLEEVE_TYPES.map((s) => s.id));
+const VALID_LENGTHS = new Set(SKIRT_LENGTHS.map((l) => l.id));
 
 export async function POST(req: Request) {
   const user = await getAuthUser(req);
@@ -27,6 +33,9 @@ export async function POST(req: Request) {
     skirtType?: unknown;
     fabric?: unknown;
     size?: unknown;
+    neckline?: unknown;
+    sleeveType?: unknown;
+    skirtLength?: unknown;
   };
   try {
     body = await req.json();
@@ -40,6 +49,12 @@ export async function POST(req: Request) {
   const skirtType = typeof body.skirtType === "string" ? body.skirtType : "";
   const fabric = typeof body.fabric === "string" ? body.fabric : "";
   const size = typeof body.size === "string" ? body.size : "";
+  const neckline =
+    typeof body.neckline === "string" ? body.neckline : null;
+  const sleeveType =
+    typeof body.sleeveType === "string" ? body.sleeveType : null;
+  const skirtLength =
+    typeof body.skirtLength === "string" ? body.skirtLength : null;
 
   if (!prompt) {
     return NextResponse.json(
@@ -62,6 +77,15 @@ export async function POST(req: Request) {
   if (!VALID_SIZES.has(size)) {
     return NextResponse.json({ error: "invalid size" }, { status: 400 });
   }
+  if (neckline !== null && !VALID_NECKLINES.has(neckline)) {
+    return NextResponse.json({ error: "invalid neckline" }, { status: 400 });
+  }
+  if (sleeveType !== null && !VALID_SLEEVES.has(sleeveType)) {
+    return NextResponse.json({ error: "invalid sleeveType" }, { status: 400 });
+  }
+  if (skirtLength !== null && !VALID_LENGTHS.has(skirtLength)) {
+    return NextResponse.json({ error: "invalid skirtLength" }, { status: 400 });
+  }
 
   const price = calculatePrice(fabric, skirtType);
 
@@ -74,6 +98,9 @@ export async function POST(req: Request) {
         selectedImage,
         skirtType,
         fabric,
+        neckline,
+        sleeveType,
+        skirtLength,
         status: "completed",
         order: {
           create: {
@@ -81,6 +108,9 @@ export async function POST(req: Request) {
             skirtType,
             fabric,
             size,
+            neckline,
+            sleeveType,
+            skirtLength,
             status: "paid",
           },
         },
