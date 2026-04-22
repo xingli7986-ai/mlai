@@ -182,8 +182,8 @@ export default function HomePage() {
         className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-5 text-center"
         style={{
           background:
-            "linear-gradient(135deg, #FF6B9D 0%, #C084FC 50%, #FF6B9D 100%)",
-          backgroundSize: "200% 200%",
+            "linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 30%, #4a1942 60%, #1a0a2e 100%)",
+          backgroundSize: "400% 400%",
           animation: "gradientShift 20s ease infinite",
         }}
       >
@@ -233,15 +233,13 @@ export default function HomePage() {
         </p>
         <Link
           href="/design"
-          className="relative mt-10 inline-flex items-center gap-2 rounded-full bg-white px-10 py-4 text-base font-bold shadow-lg transition hover:scale-105 sm:text-lg"
+          className="relative mt-10 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-500 px-10 py-4 text-base font-bold text-white shadow-lg transition hover:scale-105 sm:text-lg"
           style={{
             animation: "fadeInUp 0.8s ease-out backwards",
             animationDelay: "0.7s",
           }}
         >
-          <span className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-transparent">
-            开始设计
-          </span>
+          <span>开始设计</span>
           <svg
             viewBox="0 0 24 24"
             width="18"
@@ -251,7 +249,7 @@ export default function HomePage() {
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-[#C084FC]"
+            className="text-white"
           >
             <path d="M5 12h14M13 5l7 7-7 7" />
           </svg>
