@@ -11,34 +11,37 @@ const MODEL_ID = "gemini-3-pro-image-preview";
 const NUM_VARIANTS = 4;
 
 const styleMap: Record<string, string> = {
-  floral: "盛开的花卉印花：花瓣层次、自然晕染、细腻笔触",
-  geometric: "现代几何：精密线条、对称构图、对比色块",
-  watercolor: "水彩风格：泼墨、晕染、留白意境",
-  vintage: "复古印花：60年代波普、Art Deco、经典格纹",
-  tropical: "热带风情：棕榈叶、鹤望兰、鲜艳配色",
-  minimalist: "极简印花：细线条、单色调、克制优雅",
-  newchinese: "新中式：传统纹样现代演绎、刺绣感、盘扣元素",
-  starry: "星空梦幻：深邃星河、渐变色彩、浪漫神秘",
-  ocean: "海洋风情：波浪纹理、贝壳珊瑚、蓝白色调",
-  garden: "秘密花园：繁花似锦、蝴蝶鸟雀、自然生机",
-  aurora: "极光幻彩：流动渐变、梦幻光影、未来感",
-  porcelain: "青花瓷韵：青花纹样、陶瓷质感、东方雅致",
+  floral: "seamless textile pattern with blooming floral motifs: layered petals, natural watercolor bleed, delicate brushwork",
+  geometric: "seamless geometric abstract textile pattern: precise lines, symmetrical composition, contrasting color blocks",
+  watercolor: "seamless watercolor textile pattern: ink splash, soft bleeding edges, negative space aesthetic",
+  vintage: "seamless vintage textile pattern: 60s pop art, Art Deco, classic plaid and checker motifs",
+  tropical: "seamless tropical textile pattern: palm leaves, bird-of-paradise, vibrant tropical palette",
+  minimalist: "seamless minimalist textile pattern: thin lines, monochrome palette, restrained elegance",
+  newchinese: "seamless new-Chinese textile pattern: modern reinterpretation of traditional motifs, embroidery feel, knot and frog elements",
+  starry: "seamless starry-night textile pattern: deep galaxy, gradient colors, romantic and mysterious",
+  ocean: "seamless ocean textile pattern: wave textures, shells and coral, blue-and-white tones",
+  garden: "seamless secret-garden textile pattern: dense blooms, butterflies and birds, natural vitality",
+  aurora: "seamless aurora textile pattern: flowing gradients, dreamy light, futuristic glow",
+  porcelain: "seamless blue-and-white porcelain textile pattern: classic china motifs, ceramic texture, oriental elegance",
 };
 
 function buildMaxLuLuPrompt(userPrompt: string, style?: string): string {
-  const baseContext = `You are a fashion design AI for MaxLuLu, a premium Chinese fashion brand established in 2009 in Paris and Shanghai. The brand is known for elegant printed dresses with French sophistication.
-
-Design Requirements:
-- Generate a COMPLETE outfit visualization: a photorealistic editorial portrait of a woman wearing the printed MaxLuLu dress
-- Clean studio or soft natural lighting, Vogue/Elle magazine quality
-- Emphasize the print pattern, fabric drape, and silhouette
-- Elegant, confident pose; tasteful framing (3:4 portrait aspect)
-- Color palette, composition and print motifs should match the brief below`;
-
   const styleDesc =
-    style && styleMap[style] ? `\nPrint Style: ${styleMap[style]}` : "";
+    style && styleMap[style] ? styleMap[style] : "elegant seamless textile pattern";
 
-  return `${baseContext}${styleDesc}\n\nUser's design request: ${userPrompt}\n\nGenerate a photorealistic fashion editorial image of a woman wearing this MaxLuLu dress design. The image should look like it belongs in Vogue or Elle magazine.`;
+  return `Create a seamless textile pattern design for fabric printing.
+Style: ${styleDesc}.
+Design description: ${userPrompt}.
+
+Requirements:
+- This must be a flat pattern design, NOT a photo of clothing or a model
+- The pattern should be tileable/seamless for fabric repeat printing
+- High detail, professional textile design quality
+- Clean edges suitable for seamless tiling
+- View: flat lay, top-down perspective
+- No garments, no mannequins, no human figures, no 3D objects
+
+Output a 2D flat pattern design only. Do not generate any clothing, garment, model, or mannequin imagery.`;
 }
 
 export async function POST(req: Request) {
