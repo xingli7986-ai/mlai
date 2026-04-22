@@ -14,8 +14,22 @@ import {
   SKIRT_TYPES,
   SLEEVE_TYPES,
   calculatePrice,
-  type SizeOption,
 } from "@/lib/constants";
+
+const MEASUREMENT_FIELDS = [
+  { key: "bust", label: "胸围", placeholder: "如 90", min: 70, max: 130 },
+  { key: "waist", label: "腰围", placeholder: "如 72", min: 55, max: 110 },
+  { key: "hip", label: "臀围", placeholder: "如 96", min: 75, max: 130 },
+  { key: "height", label: "身高", placeholder: "如 165", min: 145, max: 190 },
+] as const;
+
+type MeasurementKey = (typeof MEASUREMENT_FIELDS)[number]["key"];
+
+function parseMeasurement(raw: string, min: number, max: number): number | null {
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < min || n > max) return null;
+  return n;
+}
 
 type Step = 1 | 2 | 3 | 4 | 5 | 6;
 
@@ -123,7 +137,7 @@ function DesignPageInner() {
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [skirtType, setSkirtType] = useState<string | null>(null);
   const [fabric, setFabric] = useState<string | null>(null);
-  const [size, setSize] = useState<SizeOption | null>(null);
+  const [size, setSize] = useState<string | null>(null);
   const [neckline, setNeckline] = useState<string | null>(null);
   const [sleeveType, setSleeveType] = useState<string | null>(null);
   const [skirtLength, setSkirtLength] = useState<string | null>(null);
@@ -131,6 +145,10 @@ function DesignPageInner() {
   const [recipientPhone, setRecipientPhone] = useState("");
   const [recipientRegion, setRecipientRegion] = useState("");
   const [recipientAddress, setRecipientAddress] = useState("");
+  const [customBust, setCustomBust] = useState("");
+  const [customWaist, setCustomWaist] = useState("");
+  const [customHip, setCustomHip] = useState("");
+  const [customHeight, setCustomHeight] = useState("");
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState("");
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
@@ -330,7 +348,8 @@ function DesignPageInner() {
       !recipientPhone.trim() ||
       !recipientRegion.trim() ||
       !recipientAddress.trim() ||
-      !prompt.trim()
+      !prompt.trim() ||
+      (size === "custom" && !customValid)
     )
       return;
     const selectedUrl = images[selectedImage];
@@ -357,6 +376,15 @@ function DesignPageInner() {
           recipientPhone: recipientPhone.trim(),
           recipientRegion: recipientRegion.trim(),
           recipientAddress: recipientAddress.trim(),
+          customMeasurements:
+            size === "custom"
+              ? {
+                  bust: Number(customBust),
+                  waist: Number(customWaist),
+                  hip: Number(customHip),
+                  height: Number(customHeight),
+                }
+              : null,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -380,6 +408,22 @@ function DesignPageInner() {
     );
   }
 
+  const customInputs: Record<MeasurementKey, string> = {
+    bust: customBust,
+    waist: customWaist,
+    hip: customHip,
+    height: customHeight,
+  };
+  const customSetters: Record<MeasurementKey, (v: string) => void> = {
+    bust: setCustomBust,
+    waist: setCustomWaist,
+    hip: setCustomHip,
+    height: setCustomHeight,
+  };
+  const customValid = MEASUREMENT_FIELDS.every(
+    (f) => parseMeasurement(customInputs[f.key], f.min, f.max) !== null
+  );
+
   const canNext =
     (step === 1 && prompt.trim().length > 0) ||
     (step === 2 && selectedImage !== null) ||
@@ -388,7 +432,10 @@ function DesignPageInner() {
       neckline !== null &&
       sleeveType !== null &&
       skirtLength !== null) ||
-    (step === 5 && fabric !== null && size !== null) ||
+    (step === 5 &&
+      fabric !== null &&
+      size !== null &&
+      (size !== "custom" || customValid)) ||
     step === 6;
 
   return (
@@ -926,6 +973,43 @@ function DesignPageInner() {
                     );
                   })}
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSize("custom")}
+                  className={`mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border py-3 text-sm font-semibold transition ${
+                    size === "custom"
+                      ? "border-[#C084FC] bg-gradient-to-br from-[#FF6B9D]/10 to-[#C084FC]/10 text-[#C084FC] shadow-md shadow-[#C084FC]/20"
+                      : "border-gray-200 text-gray-600 hover:border-gray-300"
+                  }`}
+                >
+                  <RulerIcon />
+                  自定义三围
+                </button>
+
+                {size === "custom" && (
+                  <div
+                    className="mt-4"
+                    style={{ animation: "fadeInUp 0.3s ease-out backwards" }}
+                  >
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      {MEASUREMENT_FIELDS.map((f) => (
+                        <MeasurementInput
+                          key={f.key}
+                          label={f.label}
+                          value={customInputs[f.key]}
+                          onChange={customSetters[f.key]}
+                          placeholder={f.placeholder}
+                          min={f.min}
+                          max={f.max}
+                        />
+                      ))}
+                    </div>
+                    <p className="mt-3 text-xs text-gray-500">
+                      我们将根据您的三围数据为您量身定制，确保完美合身
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="rounded-3xl border border-[#C084FC]/20 bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/10 p-5 sm:p-6">
@@ -1038,7 +1122,16 @@ function DesignPageInner() {
                         : "—";
                     })()}
                   />
-                  <Row label="尺码" value={size ?? "未选择"} />
+                  <Row
+                    label="尺码"
+                    value={
+                      !size
+                        ? "未选择"
+                        : size === "custom"
+                          ? `自定义（胸围 ${customBust}cm / 腰围 ${customWaist}cm / 臀围 ${customHip}cm / 身高 ${customHeight}cm）`
+                          : size
+                    }
+                  />
                   <Row
                     label="金额"
                     value={`¥ ${calcPrice(fabric, skirtType)}`}
@@ -1144,6 +1237,7 @@ function DesignPageInner() {
                   !recipientPhone.trim() ||
                   !recipientRegion.trim() ||
                   !recipientAddress.trim() ||
+                  (size === "custom" && !customValid) ||
                   submitting
                 }
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] py-3.5 text-base font-semibold text-white shadow-lg shadow-[#C084FC]/30 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40"
@@ -1217,6 +1311,76 @@ function Row({ label, value }: { label: string; value: string }) {
         {value}
       </span>
     </div>
+  );
+}
+
+function RulerIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <rect x="2" y="9" width="20" height="6" rx="1" />
+      <line x1="6" y1="9" x2="6" y2="12" />
+      <line x1="10" y1="9" x2="10" y2="13" />
+      <line x1="14" y1="9" x2="14" y2="12" />
+      <line x1="18" y1="9" x2="18" y2="13" />
+    </svg>
+  );
+}
+
+function MeasurementInput({
+  label,
+  value,
+  onChange,
+  placeholder,
+  min,
+  max,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  min: number;
+  max: number;
+}) {
+  const trimmed = value.trim();
+  const n = Number(trimmed);
+  const hasValue = trimmed.length > 0;
+  const errorVisible =
+    hasValue && (!Number.isFinite(n) || n < min || n > max);
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="text-xs font-medium text-gray-500">
+        {label}(cm)
+      </span>
+      <input
+        type="number"
+        inputMode="numeric"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={`rounded-xl border bg-white px-4 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[#C084FC]/25 ${
+          errorVisible
+            ? "border-rose-300 focus:border-rose-400"
+            : "border-gray-200 focus:border-[#C084FC]"
+        }`}
+      />
+      {errorVisible && (
+        <span className="text-[11px] text-rose-500">
+          请输入 {min}–{max} 之间的数值
+        </span>
+      )}
+    </label>
   );
 }
 

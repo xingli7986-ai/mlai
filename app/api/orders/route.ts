@@ -20,6 +20,33 @@ const VALID_NECKLINES = new Set(NECKLINES.map((n) => n.id));
 const VALID_SLEEVES = new Set(SLEEVE_TYPES.map((s) => s.id));
 const VALID_LENGTHS = new Set(SKIRT_LENGTHS.map((l) => l.id));
 
+const MEASUREMENT_BOUNDS = {
+  bust: { min: 70, max: 130 },
+  waist: { min: 55, max: 110 },
+  hip: { min: 75, max: 130 },
+  height: { min: 145, max: 190 },
+} as const;
+
+function validateMeasurements(raw: unknown): {
+  bust: number;
+  waist: number;
+  hip: number;
+  height: number;
+} | null {
+  if (!raw || typeof raw !== "object") return null;
+  const m = raw as Record<string, unknown>;
+  const out: Record<string, number> = {};
+  for (const key of ["bust", "waist", "hip", "height"] as const) {
+    const v = m[key];
+    const n = typeof v === "number" ? v : Number(v);
+    if (!Number.isFinite(n)) return null;
+    const bounds = MEASUREMENT_BOUNDS[key];
+    if (n < bounds.min || n > bounds.max) return null;
+    out[key] = n;
+  }
+  return out as { bust: number; waist: number; hip: number; height: number };
+}
+
 export async function POST(req: Request) {
   const user = await getAuthUser(req);
   const userId = user?.id;
@@ -40,6 +67,7 @@ export async function POST(req: Request) {
     recipientPhone?: unknown;
     recipientRegion?: unknown;
     recipientAddress?: unknown;
+    customMeasurements?: unknown;
   };
   try {
     body = await req.json();
@@ -90,8 +118,20 @@ export async function POST(req: Request) {
   if (!VALID_FABRICS.has(fabric)) {
     return NextResponse.json({ error: "invalid fabric" }, { status: 400 });
   }
-  if (!VALID_SIZES.has(size)) {
+  if (size !== "custom" && !VALID_SIZES.has(size)) {
     return NextResponse.json({ error: "invalid size" }, { status: 400 });
+  }
+
+  let customMeasurementsJson: string | null = null;
+  if (size === "custom") {
+    const measurements = validateMeasurements(body.customMeasurements);
+    if (!measurements) {
+      return NextResponse.json(
+        { error: "invalid customMeasurements" },
+        { status: 400 }
+      );
+    }
+    customMeasurementsJson = JSON.stringify(measurements);
   }
   if (neckline !== null && !VALID_NECKLINES.has(neckline)) {
     return NextResponse.json({ error: "invalid neckline" }, { status: 400 });
@@ -155,6 +195,7 @@ export async function POST(req: Request) {
             recipientPhone,
             recipientRegion,
             recipientAddress,
+            customMeasurements: customMeasurementsJson,
             status: "paid",
           },
         },

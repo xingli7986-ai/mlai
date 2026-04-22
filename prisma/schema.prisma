@@ -48,11 +48,12 @@ model Order {
   neckline         String?
   sleeveType       String?
   skirtLength      String?
-  recipientName    String?
-  recipientPhone   String?
-  recipientRegion  String?
-  recipientAddress String?
-  status           String    @default("pending")
+  recipientName       String?
+  recipientPhone      String?
+  recipientRegion     String?
+  recipientAddress    String?
+  customMeasurements  String?
+  status              String    @default("pending")
   paymentId        String?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt

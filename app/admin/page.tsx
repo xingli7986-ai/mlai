@@ -19,11 +19,31 @@ type AdminOrder = {
   skirtType: string;
   fabric: string;
   size: string;
+  customMeasurements: string | null;
   status: string;
   createdAt: string;
   user: { phone: string; name: string | null };
   design: { prompt: string; selectedImage: string | null };
 };
+
+function formatSize(size: string, customMeasurements: string | null): string {
+  if (size !== "custom") return size;
+  if (!customMeasurements) return "自定义";
+  try {
+    const m = JSON.parse(customMeasurements) as {
+      bust?: number;
+      waist?: number;
+      hip?: number;
+      height?: number;
+    };
+    if (m.bust && m.waist && m.hip && m.height) {
+      return `自定义（胸围 ${m.bust}cm / 腰围 ${m.waist}cm / 臀围 ${m.hip}cm / 身高 ${m.height}cm）`;
+    }
+  } catch {
+    /* fall through */
+  }
+  return "自定义";
+}
 
 const TABS = [
   { id: "all", label: "全部" },
@@ -293,7 +313,8 @@ export default function AdminOrdersPage() {
                       </div>
                       <div className="mt-1 truncate text-sm font-semibold">
                         {SKIRT_LABEL[o.skirtType] ?? o.skirtType} ·{" "}
-                        {FABRIC_LABEL[o.fabric] ?? o.fabric} · {o.size}
+                        {FABRIC_LABEL[o.fabric] ?? o.fabric} ·{" "}
+                        {formatSize(o.size, o.customMeasurements)}
                       </div>
                       <div className="mt-1 truncate text-xs text-gray-500">
                         {o.design.prompt}

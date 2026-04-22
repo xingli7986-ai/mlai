@@ -17,6 +17,7 @@ type OrderDetail = {
   skirtType: string;
   fabric: string;
   size: string;
+  customMeasurements: string | null;
   status: string;
   createdAt: string;
   design: {
@@ -25,6 +26,25 @@ type OrderDetail = {
     images: string[];
   };
 };
+
+function formatSize(size: string, customMeasurements: string | null): string {
+  if (size !== "custom") return size;
+  if (!customMeasurements) return "自定义";
+  try {
+    const m = JSON.parse(customMeasurements) as {
+      bust?: number;
+      waist?: number;
+      hip?: number;
+      height?: number;
+    };
+    if (m.bust && m.waist && m.hip && m.height) {
+      return `自定义（胸围 ${m.bust}cm / 腰围 ${m.waist}cm / 臀围 ${m.hip}cm / 身高 ${m.height}cm）`;
+    }
+  } catch {
+    /* fall through */
+  }
+  return "自定义";
+}
 
 const STATUS_CLASSNAME: Record<string, string> = {
   pending: "bg-amber-50 text-amber-600",
@@ -261,7 +281,10 @@ export default function OrderDetailPage() {
                   label="面料"
                   value={FABRIC_LABEL[order.fabric] ?? order.fabric}
                 />
-                <Row label="尺码" value={order.size} />
+                <Row
+                  label="尺码"
+                  value={formatSize(order.size, order.customMeasurements)}
+                />
                 <Row label="价格" value={`¥ ${calculatePrice(order.fabric, order.skirtType)}`} />
                 <Row label="下单时间" value={formatDate(order.createdAt)} />
               </dl>
