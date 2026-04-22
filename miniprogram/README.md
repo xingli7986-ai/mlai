@@ -115,4 +115,4 @@ images/
 1. `pages/orders/orders` —— Tab 切换全部订单列表
 2. `pages/orders/detail?id=` —— 订单详情 + 放大图 + 状态操作按钮
 3. Canvas 裙型贴图预览（小程序用 `canvas type="2d"`）
-4. 图片上传/存储（当前用 Replicate URL，~1 小时失效）
+4. 图片上传/存储（当前由 Gemini 生成后上传至 Cloudflare R2 长期保存）

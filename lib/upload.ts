@@ -13,6 +13,14 @@ export async function uploadImageFromUrl(
   const contentType =
     response.headers.get("content-type") || "image/webp";
 
+  return uploadBufferToR2(buffer, key, contentType);
+}
+
+export async function uploadBufferToR2(
+  buffer: Buffer,
+  key: string,
+  contentType: string
+): Promise<string> {
   await r2Client.send(
     new PutObjectCommand({
       Bucket: R2_BUCKET,
