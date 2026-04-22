@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { getAuthUser } from "@/lib/getAuthUser";
 import { prisma } from "@/lib/prisma";
+import { processForProduction } from "@/lib/print-processing";
 import {
   FABRICS,
   NECKLINES,
@@ -12,6 +13,9 @@ import {
 } from "@/lib/constants";
 
 export const runtime = "nodejs";
+// `after()` fires the production print pipeline post-response; give it room
+// to finish (seamless → R2 → Replicate upscale → R2 ≈ 30–120s).
+export const maxDuration = 300;
 
 const VALID_SKIRTS = new Set(SKIRT_TYPES.map((s) => s.id));
 const VALID_FABRICS = new Set(FABRICS.map((f) => f.id));
@@ -210,6 +214,20 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
+
+    // Fire-and-forget the production-grade print processing pipeline after the
+    // response is sent. `after` lets Vercel keep the function alive long enough
+    // to finish even though the user already has their order confirmation.
+    after(async () => {
+      try {
+        await processForProduction(design.id);
+      } catch (err) {
+        console.error(
+          `Print processing failed for design ${design.id}:`,
+          err
+        );
+      }
+    });
 
     return NextResponse.json({ success: true, orderId: order.id, price });
   } catch (err) {

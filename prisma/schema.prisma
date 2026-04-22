@@ -19,21 +19,23 @@ model User {
 }
 
 model Design {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id])
-  prompt        String
-  images        String[]
-  selectedImage String?
-  skirtType     String?
-  fabric        String?
-  neckline      String?
-  sleeveType    String?
-  skirtLength   String?
-  status        String    @default("draft")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  order         Order?
+  id                 String    @id @default(cuid())
+  userId             String
+  user               User      @relation(fields: [userId], references: [id])
+  prompt             String
+  images             String[]
+  selectedImage      String?
+  skirtType          String?
+  fabric             String?
+  neckline           String?
+  sleeveType         String?
+  skirtLength        String?
+  productionImageUrl String?
+  processingStatus   String?   @default("pending")
+  status             String    @default("draft")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  order              Order?
 }
 
 model Order {

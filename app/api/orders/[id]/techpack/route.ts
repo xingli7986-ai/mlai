@@ -123,7 +123,10 @@ export async function GET(
     const date = formatDate(createdAt);
     const season = seasonFromDate(createdAt);
     const printImageUrl =
-      order.design.selectedImage || order.design.images[0] || "";
+      order.design.productionImageUrl ||
+      order.design.selectedImage ||
+      order.design.images[0] ||
+      "";
     const printDescription = order.design.prompt ?? "";
 
     const skirtType = lookupSkirt(order.skirtType);
