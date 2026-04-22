@@ -9,6 +9,7 @@ import {
   FABRIC_LABEL,
   ORDER_STATUS_LABEL,
   SKIRT_LABEL,
+  calculatePrice,
 } from "@/lib/constants";
 
 type AdminOrder = {
@@ -18,7 +19,6 @@ type AdminOrder = {
   skirtType: string;
   fabric: string;
   size: string;
-  price: number;
   status: string;
   createdAt: string;
   user: { phone: string; name: string | null };
@@ -305,7 +305,7 @@ export default function AdminOrdersPage() {
                     </div>
                     <div className="hidden shrink-0 text-right sm:block">
                       <div className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-lg font-bold text-transparent">
-                        ¥ {o.price}
+                        ¥ {calculatePrice(o.fabric, o.skirtType)}
                       </div>
                     </div>
                   </div>
@@ -313,7 +313,7 @@ export default function AdminOrdersPage() {
                   <div className="mt-3 flex items-center justify-between gap-3 border-t border-gray-100 pt-3">
                     <div className="flex items-center gap-3 sm:hidden">
                       <div className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-base font-bold text-transparent">
-                        ¥ {o.price}
+                        ¥ {calculatePrice(o.fabric, o.skirtType)}
                       </div>
                     </div>
                     <div className="hidden text-[11px] text-gray-400 sm:block">

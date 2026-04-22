@@ -6,9 +6,11 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
+  BASE_PRICE_BY_LEVEL,
   FABRICS,
   SIZE_OPTIONS,
   SKIRT_TYPES,
+  calculatePrice,
   type SizeOption,
 } from "@/lib/constants";
 
@@ -76,11 +78,17 @@ const LOADING_MESSAGES = [
   "即将绽放...",
 ];
 
-const BASE_PRICE = Math.min(...FABRICS.map((f) => f.price));
+const BASE_PRICE = BASE_PRICE_BY_LEVEL[1];
 
-function calcPrice(fabricId: string | null): number {
-  const f = FABRICS.find((x) => x.id === fabricId);
-  return f?.price ?? BASE_PRICE;
+function calcPrice(
+  fabricId: string | null,
+  skirtId: string | null
+): number {
+  if (!fabricId || !skirtId) {
+    const f = FABRICS.find((x) => x.id === fabricId);
+    return f ? BASE_PRICE_BY_LEVEL[f.priceLevel] : BASE_PRICE;
+  }
+  return calculatePrice(fabricId, skirtId);
 }
 
 export default function DesignPage() {
@@ -726,11 +734,11 @@ function DesignPageInner() {
                               {f.name}
                             </span>
                             <span className="shrink-0 bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-xs font-bold text-transparent">
-                              ¥{f.price} 起
+                              ¥{BASE_PRICE_BY_LEVEL[f.priceLevel]} 起
                             </span>
                           </div>
                           <div className="mt-0.5 line-clamp-2 text-xs text-gray-500">
-                            {f.desc}
+                            {f.composition} · {f.gsm}
                           </div>
                         </div>
                       </button>
@@ -780,7 +788,7 @@ function DesignPageInner() {
                     value={FABRICS.find((f) => f.id === fabric)?.name ?? "—"}
                   />
                   <Row label="尺码" value={size ?? "未选择"} />
-                  <Row label="金额" value={`¥ ${calcPrice(fabric)}`} />
+                  <Row label="金额" value={`¥ ${calcPrice(fabric, skirtType)}`} />
                 </dl>
               </div>
 
@@ -823,18 +831,32 @@ function DesignPageInner() {
                 <div>
                   <div className="text-xs text-gray-500">应付金额</div>
                   <div className="mt-1 bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-3xl font-bold text-transparent">
-                    ¥ {calcPrice(fabric)}
+                    ¥ {calcPrice(fabric, skirtType)}
                   </div>
                 </div>
                 <div className="text-right text-xs text-gray-500">
                   基础价 ¥{BASE_PRICE}
                   {(() => {
                     const f = FABRICS.find((x) => x.id === fabric);
-                    if (!f || f.price <= BASE_PRICE) return null;
+                    const fabricBase = f ? BASE_PRICE_BY_LEVEL[f.priceLevel] : BASE_PRICE;
+                    const fabricSurcharge = fabricBase - BASE_PRICE;
+                    const total = fabric && skirtType ? calculatePrice(fabric, skirtType) : fabricBase;
+                    const skirtSurcharge = total - fabricBase;
+                    if (fabricSurcharge === 0 && skirtSurcharge === 0) return null;
                     return (
                       <>
-                        <br />
-                        {f.name} +¥{f.price - BASE_PRICE}
+                        {fabricSurcharge > 0 && f && (
+                          <>
+                            <br />
+                            {f.name} +¥{fabricSurcharge}
+                          </>
+                        )}
+                        {skirtSurcharge > 0 && (
+                          <>
+                            <br />
+                            工艺 +¥{skirtSurcharge}
+                          </>
+                        )}
                       </>
                     );
                   })()}

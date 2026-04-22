@@ -8,6 +8,7 @@ import {
   FABRIC_LABEL,
   ORDER_STATUS_LABEL,
   SKIRT_LABEL,
+  calculatePrice,
 } from "@/lib/constants";
 
 type OrderWithDesign = {
@@ -16,7 +17,6 @@ type OrderWithDesign = {
   skirtType: string;
   fabric: string;
   size: string;
-  price: number;
   status: string;
   createdAt: string;
   design: {
@@ -346,7 +346,7 @@ function OrderCard({
         </div>
         <div className="hidden shrink-0 text-right sm:block">
           <div className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-lg font-bold text-transparent">
-            ¥ {order.price}
+            ¥ {calculatePrice(order.fabric, order.skirtType)}
           </div>
           <div className="mt-0.5 text-[10px] text-gray-400">
             #{order.id.slice(-6)}
@@ -360,7 +360,7 @@ function OrderCard({
             #{order.id.slice(-6)}
           </span>
           <div className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-base font-bold text-transparent">
-            ¥ {order.price}
+            ¥ {calculatePrice(order.fabric, order.skirtType)}
           </div>
         </div>
         <div className="pointer-events-none hidden text-[11px] text-gray-400 sm:block">

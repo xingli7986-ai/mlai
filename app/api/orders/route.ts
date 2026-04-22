@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/getAuthUser";
 import { prisma } from "@/lib/prisma";
-import { FABRICS, SIZE_OPTIONS, SKIRT_TYPES } from "@/lib/constants";
+import {
+  FABRICS,
+  SIZE_OPTIONS,
+  SKIRT_TYPES,
+  calculatePrice,
+} from "@/lib/constants";
 
 export const runtime = "nodejs";
 
 const VALID_SKIRTS = new Set(SKIRT_TYPES.map((s) => s.id));
 const VALID_FABRICS = new Set(FABRICS.map((f) => f.id));
 const VALID_SIZES = new Set<string>(SIZE_OPTIONS);
-const DEFAULT_PRICE = Math.min(...FABRICS.map((f) => f.price));
-
-function calcPrice(fabric: string): number {
-  return FABRICS.find((f) => f.id === fabric)?.price ?? DEFAULT_PRICE;
-}
 
 export async function POST(req: Request) {
   const user = await getAuthUser(req);
@@ -63,7 +63,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid size" }, { status: 400 });
   }
 
-  const price = calcPrice(fabric);
+  const price = calculatePrice(fabric, skirtType);
 
   try {
     const design = await prisma.design.create({
@@ -81,7 +81,6 @@ export async function POST(req: Request) {
             skirtType,
             fabric,
             size,
-            price,
             status: "paid",
           },
         },

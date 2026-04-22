@@ -8,6 +8,7 @@ import {
   FABRIC_LABEL,
   ORDER_STATUS_LABEL,
   SKIRT_LABEL,
+  calculatePrice,
 } from "@/lib/constants";
 
 type OrderDetail = {
@@ -16,7 +17,6 @@ type OrderDetail = {
   skirtType: string;
   fabric: string;
   size: string;
-  price: number;
   status: string;
   createdAt: string;
   design: {
@@ -212,7 +212,7 @@ export default function OrderDetailPage() {
               <div className="text-right">
                 <div className="text-xs text-gray-500">应付金额</div>
                 <div className="mt-1 bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-3xl font-bold text-transparent">
-                  ¥ {order.price}
+                  ¥ {calculatePrice(order.fabric, order.skirtType)}
                 </div>
               </div>
             </section>
@@ -262,7 +262,7 @@ export default function OrderDetailPage() {
                   value={FABRIC_LABEL[order.fabric] ?? order.fabric}
                 />
                 <Row label="尺码" value={order.size} />
-                <Row label="价格" value={`¥ ${order.price}`} />
+                <Row label="价格" value={`¥ ${calculatePrice(order.fabric, order.skirtType)}`} />
                 <Row label="下单时间" value={formatDate(order.createdAt)} />
               </dl>
             </section>
