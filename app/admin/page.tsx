@@ -5,7 +5,11 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { isAdmin } from "@/lib/admin";
-import { FABRIC_LABEL, SKIRT_LABEL } from "@/lib/constants";
+import {
+  FABRIC_LABEL,
+  ORDER_STATUS_LABEL,
+  SKIRT_LABEL,
+} from "@/lib/constants";
 
 type AdminOrder = {
   id: string;
@@ -32,12 +36,12 @@ const TABS = [
 
 type TabId = (typeof TABS)[number]["id"];
 
-const STATUS_META: Record<string, { text: string; className: string }> = {
-  pending: { text: "待付款", className: "bg-amber-50 text-amber-600" },
-  paid: { text: "待发货", className: "bg-sky-50 text-sky-600" },
-  shipped: { text: "已发货", className: "bg-indigo-50 text-indigo-600" },
-  completed: { text: "已完成", className: "bg-emerald-50 text-emerald-600" },
-  cancelled: { text: "已取消", className: "bg-gray-100 text-gray-500" },
+const STATUS_CLASSNAME: Record<string, string> = {
+  pending: "bg-amber-50 text-amber-600",
+  paid: "bg-sky-50 text-sky-600",
+  shipped: "bg-indigo-50 text-indigo-600",
+  completed: "bg-emerald-50 text-emerald-600",
+  cancelled: "bg-gray-100 text-gray-500",
 };
 
 function formatDate(iso: string) {
@@ -253,11 +257,9 @@ export default function AdminOrdersPage() {
         ) : (
           <ul className="space-y-3">
             {orders.map((o) => {
-              const meta =
-                STATUS_META[o.status] ?? {
-                  text: o.status,
-                  className: "bg-gray-100 text-gray-500",
-                };
+              const statusText = ORDER_STATUS_LABEL[o.status] ?? o.status;
+              const statusClass =
+                STATUS_CLASSNAME[o.status] ?? "bg-gray-100 text-gray-500";
               return (
                 <li
                   key={o.id}
@@ -284,9 +286,9 @@ export default function AdminOrdersPage() {
                           #{o.id.slice(0, 8)}
                         </span>
                         <span
-                          className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${meta.className}`}
+                          className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${statusClass}`}
                         >
-                          {meta.text}
+                          {statusText}
                         </span>
                       </div>
                       <div className="mt-1 truncate text-sm font-semibold">

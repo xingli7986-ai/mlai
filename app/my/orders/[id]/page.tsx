@@ -4,7 +4,11 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { FABRIC_LABEL, SKIRT_LABEL } from "@/lib/constants";
+import {
+  FABRIC_LABEL,
+  ORDER_STATUS_LABEL,
+  SKIRT_LABEL,
+} from "@/lib/constants";
 
 type OrderDetail = {
   id: string;
@@ -22,15 +26,12 @@ type OrderDetail = {
   };
 };
 
-const STATUS_LABEL: Record<string, { text: string; className: string }> = {
-  pending: { text: "待付款", className: "bg-amber-50 text-amber-600" },
-  paid: { text: "待发货", className: "bg-sky-50 text-sky-600" },
-  shipped: { text: "已发货", className: "bg-indigo-50 text-indigo-600" },
-  completed: {
-    text: "已完成",
-    className: "bg-emerald-50 text-emerald-600",
-  },
-  cancelled: { text: "已取消", className: "bg-gray-100 text-gray-500" },
+const STATUS_CLASSNAME: Record<string, string> = {
+  pending: "bg-amber-50 text-amber-600",
+  paid: "bg-sky-50 text-sky-600",
+  shipped: "bg-indigo-50 text-indigo-600",
+  completed: "bg-emerald-50 text-emerald-600",
+  cancelled: "bg-gray-100 text-gray-500",
 };
 
 function formatDate(iso: string) {
@@ -340,15 +341,13 @@ function Row({
 }
 
 function BigStatusBadge({ status }: { status: string }) {
-  const meta = STATUS_LABEL[status] ?? {
-    text: status,
-    className: "bg-gray-100 text-gray-500",
-  };
+  const text = ORDER_STATUS_LABEL[status] ?? status;
+  const className = STATUS_CLASSNAME[status] ?? "bg-gray-100 text-gray-500";
   return (
     <span
-      className={`rounded-full px-4 py-1.5 text-sm font-semibold ${meta.className}`}
+      className={`rounded-full px-4 py-1.5 text-sm font-semibold ${className}`}
     >
-      {meta.text}
+      {text}
     </span>
   );
 }

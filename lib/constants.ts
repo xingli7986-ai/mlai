@@ -41,3 +41,11 @@ export const SKIRT_LABEL: Record<string, string> = Object.fromEntries(
 export const FABRIC_LABEL: Record<string, string> = Object.fromEntries(
   FABRICS.map((f) => [f.id, f.name])
 );
+
+export const ORDER_STATUS_LABEL: Record<string, string> = {
+  pending: "待付款",
+  paid: "待发货",
+  shipped: "已发货",
+  completed: "已完成",
+  cancelled: "已取消",
+};
