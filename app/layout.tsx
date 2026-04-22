@@ -44,6 +44,10 @@ export const metadata: Metadata = {
       "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/og-image.png",
     ],
   },
+  icons: {
+    icon: "/icon",
+    apple: "/apple-icon",
+  },
 };
 
 export const viewport: Viewport = {
