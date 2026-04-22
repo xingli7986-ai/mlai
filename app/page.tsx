@@ -178,17 +178,16 @@ export default function HomePage() {
       </header>
 
       {/* ======= 区域 1: Hero ======= */}
-      <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-5 text-center">
-        <div
-          className="absolute inset-0 -z-10"
-          style={{
-            background:
-              "linear-gradient(135deg, #FF6B9D 0%, #C084FC 50%, #FF6B9D 100%)",
-            backgroundSize: "200% 200%",
-            animation: "gradientShift 20s ease infinite",
-          }}
-        />
-        <div className="pointer-events-none absolute inset-0 -z-10">
+      <section
+        className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-5 text-center"
+        style={{
+          background:
+            "linear-gradient(135deg, #FF6B9D 0%, #C084FC 50%, #FF6B9D 100%)",
+          backgroundSize: "200% 200%",
+          animation: "gradientShift 20s ease infinite",
+        }}
+      >
+        <div className="pointer-events-none absolute inset-0">
           {FLOWERS.map((f, i) => (
             <div
               key={i}
@@ -206,7 +205,7 @@ export default function HomePage() {
         </div>
 
         <h1
-          className="text-5xl font-black tracking-tight text-white drop-shadow sm:text-7xl md:text-8xl"
+          className="relative text-5xl font-bold tracking-tight text-white md:text-7xl"
           style={{
             animation: "fadeInUp 0.8s ease-out backwards",
             animationDelay: "0.1s",
@@ -215,7 +214,7 @@ export default function HomePage() {
           Fashion For You
         </h1>
         <p
-          className="mt-5 text-xl font-medium text-white/95 sm:text-2xl md:text-3xl"
+          className="relative mt-5 text-xl font-medium text-white md:text-2xl"
           style={{
             animation: "fadeInUp 0.8s ease-out backwards",
             animationDelay: "0.3s",
@@ -224,7 +223,7 @@ export default function HomePage() {
           每一朵印花，都由你绽放
         </p>
         <p
-          className="mt-6 max-w-md text-sm leading-relaxed text-white/85 sm:text-base md:text-lg"
+          className="relative mt-6 max-w-md text-base leading-relaxed text-white/80 md:text-lg"
           style={{
             animation: "fadeInUp 0.8s ease-out backwards",
             animationDelay: "0.5s",
@@ -234,7 +233,7 @@ export default function HomePage() {
         </p>
         <Link
           href="/design"
-          className="mt-10 inline-flex items-center gap-2 rounded-full bg-white px-10 py-4 text-base font-bold shadow-2xl shadow-black/20 transition hover:scale-105 sm:text-lg"
+          className="relative mt-10 inline-flex items-center gap-2 rounded-full bg-white px-10 py-4 text-base font-bold shadow-lg transition hover:scale-105 sm:text-lg"
           style={{
             animation: "fadeInUp 0.8s ease-out backwards",
             animationDelay: "0.7s",
@@ -259,7 +258,7 @@ export default function HomePage() {
         </Link>
 
         <div
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/70"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60"
           aria-hidden
         >
           <svg
@@ -504,7 +503,7 @@ function FlowerSVG({ size = 48 }: { size?: number }) {
       aria-hidden
       style={{ filter: "drop-shadow(0 4px 8px rgba(255,255,255,0.3))" }}
     >
-      <g fill="white" fillOpacity="0.35">
+      <g fill="white" fillOpacity="0.22">
         {[0, 60, 120, 180, 240, 300].map((angle) => (
           <ellipse
             key={angle}
@@ -516,7 +515,7 @@ function FlowerSVG({ size = 48 }: { size?: number }) {
           />
         ))}
       </g>
-      <circle cx="30" cy="30" r="5" fill="white" fillOpacity="0.6" />
+      <circle cx="30" cy="30" r="5" fill="white" fillOpacity="0.4" />
     </svg>
   );
 }
