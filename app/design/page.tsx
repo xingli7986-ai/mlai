@@ -266,6 +266,22 @@ function DesignPageInner() {
     }
   }
 
+  async function handleShareDesign() {
+    if (!savedDesignId) return;
+    const url = `${window.location.origin}/share/${savedDesignId}`;
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        throw new Error("Clipboard API not available");
+      }
+      showToast("分享链接已复制");
+    } catch {
+      // fallback: show the URL in a prompt so user can copy manually
+      window.prompt("复制这个分享链接：", url);
+    }
+  }
+
   function handlePickSkirt(id: string) {
     setSkirtType(id);
   }
@@ -623,6 +639,15 @@ function DesignPageInner() {
                     >
                       ↻ 重新生成
                     </button>
+                    {savedDesignId && (
+                      <button
+                        type="button"
+                        onClick={handleShareDesign}
+                        className="rounded-full border border-[#C084FC] bg-white px-6 py-2.5 text-sm font-medium text-[#C084FC] transition hover:bg-[#C084FC]/5"
+                      >
+                        🔗 分享设计
+                      </button>
+                    )}
                     <span className="text-xs text-gray-400">
                       不满意可以保留描述重新出图
                     </span>
