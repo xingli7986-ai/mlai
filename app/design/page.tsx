@@ -773,7 +773,7 @@ function DesignPageInner() {
                     不确定尺码？查看尺码指南 →
                   </a>
                 </div>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
                   {SIZE_OPTIONS.map((s) => {
                     const picked = size === s;
                     return (

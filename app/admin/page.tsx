@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { isAdmin } from "@/lib/admin";
+import { FABRIC_LABEL, SKIRT_LABEL } from "@/lib/constants";
 
 type AdminOrder = {
   id: string;
@@ -30,23 +31,6 @@ const TABS = [
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
-
-const SKIRT_LABEL: Record<string, string> = {
-  "a-line": "A 字裙",
-  straight: "直筒裙",
-  half: "半身裙",
-  pleated: "百褶裙",
-  flared: "鱼尾裙",
-  wrap: "一片式裹裙",
-};
-
-const FABRIC_LABEL: Record<string, string> = {
-  cotton: "棉麻",
-  silk: "真丝",
-  chiffon: "雪纺",
-  denim: "牛仔",
-  velvet: "丝绒",
-};
 
 const STATUS_META: Record<string, { text: string; className: string }> = {
   pending: { text: "待付款", className: "bg-amber-50 text-amber-600" },

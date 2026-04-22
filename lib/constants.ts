@@ -31,7 +31,7 @@ export const FABRICS: Fabric[] = [
   { id: "velvet", name: "丝绒", desc: "复古质感，秋冬优选", price: 429 },
 ];
 
-export const SIZE_OPTIONS = ["S", "M", "L", "XL"] as const;
+export const SIZE_OPTIONS = ["XS", "S", "M", "L", "XL", "XXL"] as const;
 export type SizeOption = (typeof SIZE_OPTIONS)[number];
 
 export const SKIRT_LABEL: Record<string, string> = Object.fromEntries(
