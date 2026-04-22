@@ -1337,6 +1337,111 @@ function SkirtIcon({ type }: { type: string }) {
       </svg>
     );
   }
+  if (type === "shift") {
+    return (
+      <svg {...common}>
+        <path d="M44 22 L76 22 L76 104 L44 104 Z" />
+        <path d="M44 104 Q60 108 76 104" />
+        <line x1="60" y1="22" x2="60" y2="104" strokeDasharray="3 4" opacity="0.35" />
+      </svg>
+    );
+  }
+  if (type === "bodycon") {
+    return (
+      <svg {...common}>
+        <path d="M48 22 L72 22 L74 30 L46 30 Z" />
+        <path d="M46 30 Q40 56 46 78 Q52 98 54 108 L66 108 Q68 98 74 78 Q80 56 74 30" />
+        <path d="M54 108 Q60 112 66 108" />
+        <line x1="60" y1="30" x2="60" y2="108" strokeDasharray="3 4" opacity="0.35" />
+      </svg>
+    );
+  }
+  if (type === "mermaid") {
+    return (
+      <svg {...common}>
+        <path d="M46 24 L74 24 L76 34 L44 34 Z" />
+        <path d="M44 34 Q40 60 44 82 Q18 100 18 112 Q60 118 102 112 Q102 100 76 82 Q80 60 76 34" />
+        <path d="M18 112 Q60 118 102 112" />
+        <line x1="60" y1="34" x2="60" y2="112" strokeDasharray="3 4" opacity="0.35" />
+      </svg>
+    );
+  }
+  if (type === "shirt-dress") {
+    return (
+      <svg {...common}>
+        <path d="M48 22 L54 22 L60 28 L66 22 L72 22" />
+        <path d="M48 22 L52 30" />
+        <path d="M72 22 L68 30" />
+        <path d="M46 30 L46 60 L74 60 L74 30" />
+        <rect x="46" y="60" width="28" height="4" />
+        <path d="M46 64 L40 104 L80 104 L74 64" />
+        <path d="M40 104 Q60 108 80 104" />
+        <line x1="60" y1="30" x2="60" y2="58" strokeDasharray="2 2" opacity="0.4" />
+        <circle cx="60" cy="38" r="1" fill="#111827" stroke="none" />
+        <circle cx="60" cy="46" r="1" fill="#111827" stroke="none" />
+        <circle cx="60" cy="54" r="1" fill="#111827" stroke="none" />
+      </svg>
+    );
+  }
+  if (type === "slip") {
+    return (
+      <svg {...common}>
+        <line x1="50" y1="22" x2="52" y2="36" />
+        <line x1="70" y1="22" x2="68" y2="36" />
+        <path d="M52 36 L60 48 L68 36" />
+        <path d="M48 36 Q50 37 52 36" />
+        <path d="M68 36 Q70 37 72 36" />
+        <path d="M48 36 Q44 70 40 104" />
+        <path d="M72 36 Q76 70 80 104" />
+        <path d="M40 104 Q60 108 80 104" />
+      </svg>
+    );
+  }
+  if (type === "cheongsam") {
+    return (
+      <svg {...common}>
+        <path d="M54 22 L66 22 L66 28 L54 28 Z" />
+        <path d="M54 28 L46 34" />
+        <path d="M66 28 L74 34" />
+        <path d="M46 34 L46 104" />
+        <path d="M74 34 L74 104" />
+        <path d="M55 28 Q64 38 72 36" />
+        <circle cx="61" cy="32" r="1" fill="#111827" stroke="none" />
+        <circle cx="66" cy="34" r="1" fill="#111827" stroke="none" />
+        <circle cx="71" cy="36" r="1" fill="#111827" stroke="none" />
+        <line x1="74" y1="82" x2="78" y2="104" opacity="0.5" />
+        <path d="M46 104 Q60 107 74 104" />
+      </svg>
+    );
+  }
+  if (type === "ball-gown") {
+    return (
+      <svg {...common}>
+        <path d="M50 24 L70 24 L68 42 L52 42 Z" />
+        <line x1="52" y1="42" x2="68" y2="42" opacity="0.5" />
+        <path d="M52 46 Q6 74 8 108" />
+        <path d="M68 46 Q114 74 112 108" />
+        <path d="M8 108 Q60 118 112 108" />
+        <path d="M22 100 Q40 104 60 100 Q80 104 98 100" opacity="0.35" />
+      </svg>
+    );
+  }
+  if (type === "tiered") {
+    return (
+      <svg {...common}>
+        <path d="M46 24 L74 24 L76 32 L44 32 Z" />
+        <path d="M44 32 L32 56" />
+        <path d="M76 32 L88 56" />
+        <path d="M32 56 Q60 62 88 56" />
+        <path d="M32 56 L26 82" />
+        <path d="M88 56 L94 82" />
+        <path d="M26 82 Q60 88 94 82" />
+        <path d="M26 82 L20 108" />
+        <path d="M94 82 L100 108" />
+        <path d="M20 108 Q60 114 100 108" />
+      </svg>
+    );
+  }
   return null;
 }
 
@@ -1509,6 +1614,70 @@ function buildSkirtPath(type: string): Path2D {
       p.quadraticCurveTo(200, 490, 60, 460);
       p.closePath();
       break;
+    case "shift":
+      p.moveTo(158, 40);
+      p.lineTo(242, 40);
+      p.lineTo(245, 475);
+      p.quadraticCurveTo(200, 488, 155, 475);
+      p.closePath();
+      break;
+    case "bodycon":
+      p.moveTo(166, 40);
+      p.lineTo(234, 40);
+      p.bezierCurveTo(258, 180, 252, 340, 232, 472);
+      p.quadraticCurveTo(200, 484, 168, 472);
+      p.bezierCurveTo(148, 340, 142, 180, 166, 40);
+      p.closePath();
+      break;
+    case "mermaid":
+      p.moveTo(160, 40);
+      p.lineTo(240, 40);
+      p.bezierCurveTo(248, 160, 250, 280, 242, 310);
+      p.bezierCurveTo(290, 380, 350, 440, 360, 480);
+      p.quadraticCurveTo(200, 498, 40, 480);
+      p.bezierCurveTo(50, 440, 110, 380, 158, 310);
+      p.bezierCurveTo(150, 280, 152, 160, 160, 40);
+      p.closePath();
+      break;
+    case "shirt-dress":
+      p.moveTo(152, 40);
+      p.lineTo(248, 40);
+      p.lineTo(300, 472);
+      p.quadraticCurveTo(200, 488, 100, 472);
+      p.closePath();
+      break;
+    case "slip":
+      p.moveTo(158, 40);
+      p.lineTo(242, 40);
+      p.quadraticCurveTo(275, 260, 295, 472);
+      p.quadraticCurveTo(200, 490, 105, 472);
+      p.quadraticCurveTo(125, 260, 158, 40);
+      p.closePath();
+      break;
+    case "cheongsam":
+      p.moveTo(162, 40);
+      p.lineTo(238, 40);
+      p.bezierCurveTo(252, 160, 254, 340, 250, 470);
+      p.quadraticCurveTo(200, 482, 150, 470);
+      p.bezierCurveTo(146, 340, 148, 160, 162, 40);
+      p.closePath();
+      break;
+    case "ball-gown":
+      p.moveTo(152, 40);
+      p.lineTo(248, 40);
+      p.lineTo(258, 90);
+      p.bezierCurveTo(400, 180, 400, 420, 370, 480);
+      p.quadraticCurveTo(200, 502, 30, 480);
+      p.bezierCurveTo(0, 420, 0, 180, 142, 90);
+      p.closePath();
+      break;
+    case "tiered":
+      p.moveTo(152, 40);
+      p.lineTo(248, 40);
+      p.lineTo(350, 470);
+      p.quadraticCurveTo(200, 490, 50, 470);
+      p.closePath();
+      break;
     default:
       p.rect(60, 40, 280, 420);
   }
@@ -1564,6 +1733,55 @@ function drawSkirtDetails(
     ctx.beginPath();
     ctx.moveTo(170, 290);
     ctx.lineTo(230, 290);
+    ctx.stroke();
+    ctx.restore();
+  }
+  if (type === "tiered") {
+    ctx.save();
+    ctx.clip(path);
+    ctx.strokeStyle = "rgba(31,41,55,0.45)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(100, 190);
+    ctx.quadraticCurveTo(200, 206, 300, 190);
+    ctx.moveTo(60, 320);
+    ctx.quadraticCurveTo(200, 338, 340, 320);
+    ctx.stroke();
+    ctx.restore();
+  }
+  if (type === "shirt-dress") {
+    ctx.save();
+    ctx.clip(path);
+    ctx.strokeStyle = "rgba(31,41,55,0.5)";
+    ctx.lineWidth = 1.8;
+    ctx.setLineDash([6, 8]);
+    ctx.beginPath();
+    ctx.moveTo(200, 40);
+    ctx.lineTo(200, 468);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+  if (type === "cheongsam") {
+    ctx.save();
+    ctx.clip(path);
+    ctx.strokeStyle = "rgba(31,41,55,0.5)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(248, 320);
+    ctx.lineTo(252, 470);
+    ctx.stroke();
+    ctx.restore();
+  }
+  if (type === "ball-gown") {
+    ctx.save();
+    ctx.clip(path);
+    ctx.strokeStyle = "rgba(31,41,55,0.3)";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(40, 430);
+    ctx.quadraticCurveTo(120, 446, 200, 432);
+    ctx.quadraticCurveTo(280, 446, 360, 430);
     ctx.stroke();
     ctx.restore();
   }

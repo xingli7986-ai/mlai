@@ -37,19 +37,23 @@ model Design {
 }
 
 model Order {
-  id            String    @id @default(cuid())
-  userId        String
-  user          User      @relation(fields: [userId], references: [id])
-  designId      String    @unique
-  design        Design    @relation(fields: [designId], references: [id])
-  skirtType     String
-  fabric        String
-  size          String
-  neckline      String?
-  sleeveType    String?
-  skirtLength   String?
-  status        String    @default("pending")
-  paymentId     String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id])
+  designId         String    @unique
+  design           Design    @relation(fields: [designId], references: [id])
+  skirtType        String
+  fabric           String
+  size             String
+  neckline         String?
+  sleeveType       String?
+  skirtLength      String?
+  recipientName    String?
+  recipientPhone   String?
+  recipientRegion  String?
+  recipientAddress String?
+  status           String    @default("pending")
+  paymentId        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }

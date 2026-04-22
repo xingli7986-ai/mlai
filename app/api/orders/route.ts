@@ -36,6 +36,10 @@ export async function POST(req: Request) {
     neckline?: unknown;
     sleeveType?: unknown;
     skirtLength?: unknown;
+    recipientName?: unknown;
+    recipientPhone?: unknown;
+    recipientRegion?: unknown;
+    recipientAddress?: unknown;
   };
   try {
     body = await req.json();
@@ -55,6 +59,18 @@ export async function POST(req: Request) {
     typeof body.sleeveType === "string" ? body.sleeveType : null;
   const skirtLength =
     typeof body.skirtLength === "string" ? body.skirtLength : null;
+  const recipientName =
+    typeof body.recipientName === "string" ? body.recipientName.trim() : "";
+  const recipientPhone =
+    typeof body.recipientPhone === "string" ? body.recipientPhone.trim() : "";
+  const recipientRegion =
+    typeof body.recipientRegion === "string"
+      ? body.recipientRegion.trim()
+      : "";
+  const recipientAddress =
+    typeof body.recipientAddress === "string"
+      ? body.recipientAddress.trim()
+      : "";
 
   if (!prompt) {
     return NextResponse.json(
@@ -86,6 +102,30 @@ export async function POST(req: Request) {
   if (skirtLength !== null && !VALID_LENGTHS.has(skirtLength)) {
     return NextResponse.json({ error: "invalid skirtLength" }, { status: 400 });
   }
+  if (!recipientName) {
+    return NextResponse.json(
+      { error: "recipientName is required" },
+      { status: 400 }
+    );
+  }
+  if (!recipientPhone) {
+    return NextResponse.json(
+      { error: "recipientPhone is required" },
+      { status: 400 }
+    );
+  }
+  if (!recipientRegion) {
+    return NextResponse.json(
+      { error: "recipientRegion is required" },
+      { status: 400 }
+    );
+  }
+  if (!recipientAddress) {
+    return NextResponse.json(
+      { error: "recipientAddress is required" },
+      { status: 400 }
+    );
+  }
 
   const price = calculatePrice(fabric, skirtType);
 
@@ -111,6 +151,10 @@ export async function POST(req: Request) {
             neckline,
             sleeveType,
             skirtLength,
+            recipientName,
+            recipientPhone,
+            recipientRegion,
+            recipientAddress,
             status: "paid",
           },
         },
