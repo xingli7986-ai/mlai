@@ -154,6 +154,25 @@ export async function GET(
     const pomData = calculateAllSizes(order.skirtLength ?? "knee");
     const price = calculatePrice(order.fabric, order.skirtType);
 
+    let colorAnalysis: TechPackProps["colorAnalysis"];
+    if (order.design.colorAnalysis) {
+      try {
+        const parsed = JSON.parse(order.design.colorAnalysis);
+        if (Array.isArray(parsed)) {
+          colorAnalysis = parsed.filter(
+            (c): c is NonNullable<TechPackProps["colorAnalysis"]>[number] =>
+              c &&
+              typeof c.hex === "string" &&
+              typeof c.pantoneCode === "string" &&
+              typeof c.pantoneName === "string" &&
+              typeof c.percentage === "number"
+          );
+        }
+      } catch {
+        /* fall through */
+      }
+    }
+
     const props: TechPackProps = {
       styleCode,
       styleName,
@@ -172,6 +191,8 @@ export async function GET(
       bomItems,
       pomData,
       price,
+      vectorFileUrl: order.design.vectorImageUrl ?? undefined,
+      colorAnalysis,
     };
 
     // Calling TechPackDocument directly (vs. createElement) returns the

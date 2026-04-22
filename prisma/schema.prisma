@@ -31,6 +31,8 @@ model Design {
   sleeveType         String?
   skirtLength        String?
   productionImageUrl String?
+  vectorImageUrl     String?
+  colorAnalysis      String?
   processingStatus   String?   @default("pending")
   status             String    @default("draft")
   createdAt          DateTime  @default(now())

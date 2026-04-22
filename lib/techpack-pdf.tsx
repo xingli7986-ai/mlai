@@ -64,6 +64,13 @@ export interface TechPackProps {
   }>;
   pomData: Record<string, Record<string, number>>;
   price: number;
+  vectorFileUrl?: string;
+  colorAnalysis?: Array<{
+    hex: string;
+    pantoneCode: string;
+    pantoneName: string;
+    percentage: number;
+  }>;
 }
 
 // ---------------------------------------------------------------------------
@@ -286,6 +293,8 @@ export function TechPackDocument(props: TechPackProps) {
     bomItems,
     pomData,
     price,
+    vectorFileUrl,
+    colorAnalysis,
   } = props;
 
   const sizeLabel =
@@ -345,6 +354,69 @@ export function TechPackDocument(props: TechPackProps) {
               打印前需提供分色稿与色卡 (Pantone TCX), 初样通过后批量生产。
             </Text>
           </View>
+
+          {vectorFileUrl ? (
+            <>
+              <Text style={styles.h3}>印花源文件 Production Vector</Text>
+              <Text style={styles.p}>
+                矢量分色文件 (.ai 格式) 已生成, 共 {colorAnalysis?.length ?? 0} 个分色层。
+              </Text>
+              <Text style={[styles.pMuted, { marginBottom: 6 }]}>
+                下载链接 Download: {vectorFileUrl}
+              </Text>
+            </>
+          ) : null}
+
+          {colorAnalysis && colorAnalysis.length > 0 ? (
+            <>
+              <Text style={styles.h3}>分色表 Color Separation</Text>
+              <View style={styles.table}>
+                <View style={styles.tableHeaderRow}>
+                  <Text style={[styles.cellHeader, { width: 28 }]}>#</Text>
+                  <Text style={[styles.cellHeader, { width: 34 }]}>色块</Text>
+                  <Text style={[styles.cellHeader, { width: 110 }]}>Pantone TPX</Text>
+                  <Text style={[styles.cellHeader, { flex: 1 }]}>颜色名称 Name</Text>
+                  <Text style={[styles.cellHeader, { width: 60, textAlign: "right" }]}>
+                    占比 %
+                  </Text>
+                </View>
+                {colorAnalysis.map((c, i) => (
+                  <View
+                    key={`${c.pantoneCode}-${i}`}
+                    style={styles.tableRow}
+                    wrap={false}
+                  >
+                    <Text style={[styles.cell, { width: 28 }]}>{i + 1}</Text>
+                    <View
+                      style={[
+                        styles.cell,
+                        { width: 34, justifyContent: "center" },
+                      ]}
+                    >
+                      <View
+                        style={{
+                          width: 22,
+                          height: 14,
+                          backgroundColor: c.hex,
+                          borderWidth: 0.5,
+                          borderColor: "#9ca3af",
+                        }}
+                      />
+                    </View>
+                    <Text style={[styles.cell, { width: 110 }]}>
+                      {c.pantoneCode}
+                    </Text>
+                    <Text style={[styles.cell, { flex: 1 }]}>
+                      {c.pantoneName}
+                    </Text>
+                    <Text style={[styles.cell, { width: 60, textAlign: "right" }]}>
+                      {c.percentage.toFixed(1)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            </>
+          ) : null}
         </Frame>
       </Page>
 

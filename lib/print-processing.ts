@@ -18,6 +18,7 @@ import sharp from "sharp";
 import Replicate from "replicate";
 import { prisma } from "./prisma";
 import { uploadBufferToR2 } from "./upload";
+import { generateProductionAI } from "./vectorize";
 
 // Real-ESRGAN version pin. If this stops working, bump to the latest version
 // hash from https://replicate.com/nightmareai/real-esrgan.
@@ -225,10 +226,40 @@ export async function processForProduction(designId: string): Promise<string> {
       "image/png"
     );
 
+    // 7. Vector color-separation + .ai file. Runs on the seamless tile (small,
+    //    fast) and emits a 4096-point PDF which is what printers want.
+    let vectorUrl: string | null = null;
+    let colorAnalysisJson: string | null = null;
+    try {
+      const { aiBuffer, svgString, colors } =
+        await generateProductionAI(seamlessBuffer);
+
+      const aiKey = `production/${designId}_print.ai`;
+      vectorUrl = await uploadBufferToR2(aiBuffer, aiKey, "application/pdf");
+
+      const svgKey = `production/${designId}_print.svg`;
+      await uploadBufferToR2(
+        Buffer.from(svgString, "utf8"),
+        svgKey,
+        "image/svg+xml"
+      );
+
+      colorAnalysisJson = JSON.stringify(colors);
+    } catch (vectorErr) {
+      // Vector generation is nice-to-have: raster production file already
+      // succeeded. Log and continue so the raster URL still lands in the row.
+      console.error(
+        `Vector generation failed for ${designId} (raster is still available):`,
+        vectorErr
+      );
+    }
+
     await prisma.design.update({
       where: { id: designId },
       data: {
         productionImageUrl: finalUrl,
+        vectorImageUrl: vectorUrl,
+        colorAnalysis: colorAnalysisJson,
         processingStatus: "completed",
       },
     });

@@ -24,8 +24,35 @@ type OrderDetail = {
     prompt: string;
     selectedImage: string | null;
     images: string[];
+    vectorImageUrl: string | null;
+    colorAnalysis: string | null;
   };
 };
+
+type ColorSeparation = {
+  hex: string;
+  pantoneCode: string;
+  pantoneName: string;
+  percentage: number;
+};
+
+function parseColorAnalysis(raw: string | null): ColorSeparation[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (c): c is ColorSeparation =>
+        c &&
+        typeof c.hex === "string" &&
+        typeof c.pantoneCode === "string" &&
+        typeof c.pantoneName === "string" &&
+        typeof c.percentage === "number"
+    );
+  } catch {
+    return [];
+  }
+}
 
 function formatSize(size: string, customMeasurements: string | null): string {
   if (size !== "custom") return size;
@@ -300,30 +327,63 @@ export default function OrderDetailPage() {
             </section>
 
             {["paid", "shipped", "completed"].includes(order.status) && (
-              <section className="mt-8 flex flex-col items-start gap-1 sm:items-end">
-                <button
-                  type="button"
-                  onClick={() =>
-                    window.open(`/api/orders/${orderId}/techpack`, "_blank")
-                  }
-                  className="inline-flex items-center gap-2 rounded-full border-2 border-transparent px-6 py-2.5 font-semibold transition hover:opacity-90"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(white, white), linear-gradient(90deg, #FF6B9D, #C084FC)",
-                    backgroundOrigin: "border-box",
-                    backgroundClip: "padding-box, border-box",
-                  }}
-                >
-                  <span className="text-[#C084FC]">
-                    <DocumentIcon />
+              <section className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-start sm:justify-end">
+                <div className="flex flex-col items-start gap-1 sm:items-end">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      window.open(
+                        `/api/orders/${orderId}/techpack`,
+                        "_blank"
+                      )
+                    }
+                    className="inline-flex items-center gap-2 rounded-full border-2 border-transparent px-6 py-2.5 font-semibold transition hover:opacity-90"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(white, white), linear-gradient(90deg, #FF6B9D, #C084FC)",
+                      backgroundOrigin: "border-box",
+                      backgroundClip: "padding-box, border-box",
+                    }}
+                  >
+                    <span className="text-[#C084FC]">
+                      <DocumentIcon />
+                    </span>
+                    <span className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-sm text-transparent">
+                      下载 Tech Pack
+                    </span>
+                  </button>
+                  <span className="text-xs text-gray-400">
+                    工艺技术文件，可发送给工厂用于打样生产
                   </span>
-                  <span className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-sm text-transparent">
-                    下载 Tech Pack
-                  </span>
-                </button>
-                <span className="text-xs text-gray-400">
-                  工艺技术文件，可发送给工厂用于打样生产
-                </span>
+                </div>
+
+                {order.design.vectorImageUrl && (
+                  <div className="flex flex-col items-start gap-1 sm:items-end">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        window.open(order.design.vectorImageUrl!, "_blank")
+                      }
+                      className="inline-flex items-center gap-2 rounded-full border-2 border-transparent px-6 py-2.5 font-semibold transition hover:opacity-90"
+                      style={{
+                        backgroundImage:
+                          "linear-gradient(white, white), linear-gradient(90deg, #FF6B9D, #C084FC)",
+                        backgroundOrigin: "border-box",
+                        backgroundClip: "padding-box, border-box",
+                      }}
+                    >
+                      <span className="text-[#C084FC]">
+                        <VectorIcon />
+                      </span>
+                      <span className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-sm text-transparent">
+                        下载印花源文件 (.ai)
+                      </span>
+                    </button>
+                    <ColorAnalysisStrip
+                      colors={parseColorAnalysis(order.design.colorAnalysis)}
+                    />
+                  </div>
+                )}
               </section>
             )}
 
@@ -510,5 +570,56 @@ function DocumentIcon() {
       <line x1="16" y1="17" x2="8" y2="17" />
       <line x1="10" y1="9" x2="8" y2="9" />
     </svg>
+  );
+}
+
+function VectorIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <polygon points="12 2 20 8 20 16 12 22 4 16 4 8 12 2" />
+      <line x1="12" y1="2" x2="12" y2="22" />
+      <line x1="4" y1="8" x2="20" y2="16" />
+      <line x1="20" y1="8" x2="4" y2="16" />
+    </svg>
+  );
+}
+
+function ColorAnalysisStrip({ colors }: { colors: ColorSeparation[] }) {
+  if (colors.length === 0) {
+    return null;
+  }
+  return (
+    <div className="mt-1 flex flex-col items-start gap-1.5 sm:items-end">
+      <span className="text-xs text-gray-500">
+        {colors.length} 个分色层 | Pantone TPX 色号
+      </span>
+      <div className="flex flex-wrap items-center gap-1.5 sm:justify-end">
+        {colors.map((c, i) => (
+          <div
+            key={`${c.pantoneCode}-${i}`}
+            className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-2 py-0.5"
+            title={`${c.pantoneCode} · ${c.pantoneName} · ${c.percentage.toFixed(1)}%`}
+          >
+            <span
+              className="h-3 w-3 rounded-sm border border-gray-300"
+              style={{ backgroundColor: c.hex }}
+            />
+            <span className="text-[10px] font-mono text-gray-600">
+              {c.pantoneCode}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

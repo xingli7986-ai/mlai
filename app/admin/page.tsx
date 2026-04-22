@@ -23,7 +23,11 @@ type AdminOrder = {
   status: string;
   createdAt: string;
   user: { phone: string; name: string | null };
-  design: { prompt: string; selectedImage: string | null };
+  design: {
+    prompt: string;
+    selectedImage: string | null;
+    vectorImageUrl: string | null;
+  };
 };
 
 function formatSize(size: string, customMeasurements: string | null): string {
@@ -340,7 +344,7 @@ export default function AdminOrdersPage() {
                     <div className="hidden text-[11px] text-gray-400 sm:block">
                       用户 ID: <span className="font-mono">{o.userId.slice(-8)}</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         type="button"
                         onClick={() =>
@@ -353,6 +357,17 @@ export default function AdminOrdersPage() {
                       >
                         📄 Tech Pack
                       </button>
+                      {o.design.vectorImageUrl && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            window.open(o.design.vectorImageUrl!, "_blank")
+                          }
+                          className="rounded-full border border-[#FF6B9D]/60 bg-white px-3 py-1.5 text-[11px] font-medium text-[#FF6B9D] transition hover:bg-[#FF6B9D]/5"
+                        >
+                          🎨 .ai 源文件
+                        </button>
+                      )}
                       {o.status === "paid" ? (
                         <button
                           type="button"
