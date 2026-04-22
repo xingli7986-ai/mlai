@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import {
   BASE_PRICE_BY_LEVEL,
   FABRICS,
+  INCOMPATIBLE_COMBOS,
   NECKLINES,
   SIZE_OPTIONS,
   SKIRT_LENGTHS,
@@ -811,17 +812,21 @@ function DesignPageInner() {
                 <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
                   {NECKLINES.map((n) => {
                     const picked = neckline === n.id;
+                    const incompat =
+                      skirtType &&
+                      INCOMPATIBLE_COMBOS[skirtType]?.necklines?.includes(n.id);
                     return (
                       <button
                         key={n.id}
                         type="button"
                         onClick={() => setNeckline(n.id)}
-                        className={`flex flex-col items-start gap-0.5 rounded-2xl border px-3 py-3 text-left transition ${
+                        className={`relative flex flex-col items-start gap-0.5 rounded-2xl border px-3 py-3 text-left transition ${
                           picked
                             ? "border-[#C084FC] bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/5 shadow-md shadow-[#C084FC]/20"
                             : "border-gray-200 hover:border-gray-300"
-                        }`}
+                        } ${incompat ? "opacity-50" : ""}`}
                       >
+                        {incompat && <IncompatWarnBadge />}
                         <span className="text-sm font-semibold">{n.name}</span>
                         <span className="text-[10px] uppercase tracking-wide text-gray-400">
                           {n.enName}
@@ -830,6 +835,19 @@ function DesignPageInner() {
                     );
                   })}
                 </div>
+                {skirtType &&
+                  neckline &&
+                  INCOMPATIBLE_COMBOS[skirtType]?.necklines?.includes(
+                    neckline
+                  ) && (
+                    <p className="mt-3 inline-flex items-start gap-1 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                      <span aria-hidden>⚠️</span>
+                      <span>
+                        不推荐搭配：
+                        {INCOMPATIBLE_COMBOS[skirtType].reason}
+                      </span>
+                    </p>
+                  )}
               </div>
 
               <div>
@@ -840,17 +858,23 @@ function DesignPageInner() {
                 <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-5 sm:gap-4">
                   {SLEEVE_TYPES.map((s) => {
                     const picked = sleeveType === s.id;
+                    const incompat =
+                      skirtType &&
+                      INCOMPATIBLE_COMBOS[skirtType]?.sleeveTypes?.includes(
+                        s.id
+                      );
                     return (
                       <button
                         key={s.id}
                         type="button"
                         onClick={() => setSleeveType(s.id)}
-                        className={`flex flex-col items-start gap-0.5 rounded-2xl border px-3 py-3 text-left transition ${
+                        className={`relative flex flex-col items-start gap-0.5 rounded-2xl border px-3 py-3 text-left transition ${
                           picked
                             ? "border-[#C084FC] bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/5 shadow-md shadow-[#C084FC]/20"
                             : "border-gray-200 hover:border-gray-300"
-                        }`}
+                        } ${incompat ? "opacity-50" : ""}`}
                       >
+                        {incompat && <IncompatWarnBadge />}
                         <span className="text-sm font-semibold">{s.name}</span>
                         <span className="text-[10px] uppercase tracking-wide text-gray-400">
                           {s.enName}
@@ -859,6 +883,19 @@ function DesignPageInner() {
                     );
                   })}
                 </div>
+                {skirtType &&
+                  sleeveType &&
+                  INCOMPATIBLE_COMBOS[skirtType]?.sleeveTypes?.includes(
+                    sleeveType
+                  ) && (
+                    <p className="mt-3 inline-flex items-start gap-1 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
+                      <span aria-hidden>⚠️</span>
+                      <span>
+                        不推荐搭配：
+                        {INCOMPATIBLE_COMBOS[skirtType].reason}
+                      </span>
+                    </p>
+                  )}
               </div>
 
               <div>
@@ -921,17 +958,30 @@ function DesignPageInner() {
                         <div className="flex h-14 w-full items-center justify-center rounded-xl bg-gradient-to-br from-[#FF6B9D]/5 to-[#C084FC]/5">
                           <FabricIcon type={f.id} />
                         </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center justify-between gap-2">
+                        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                          <div className="flex items-baseline gap-2">
                             <span className="truncate text-sm font-semibold">
                               {f.name}
                             </span>
-                            <span className="shrink-0 bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-xs font-bold text-transparent">
-                              ¥{BASE_PRICE_BY_LEVEL[f.priceLevel]} 起
+                            <span className="text-[10px] uppercase tracking-wide text-gray-400">
+                              {f.enName}
                             </span>
                           </div>
-                          <div className="mt-0.5 line-clamp-2 text-xs text-gray-500">
+                          <div className="text-xs text-gray-500">
                             {f.composition} · {f.gsm}
+                          </div>
+                          <p className="text-[11px] italic leading-snug text-gray-500">
+                            {f.handFeel}
+                          </p>
+                          <div>
+                            <span className="inline-block rounded-full bg-[#C084FC]/10 px-2 py-0.5 text-[10px] font-medium text-[#C084FC]">
+                              {f.season}
+                            </span>
+                          </div>
+                          <div className="mt-auto flex justify-end border-t border-gray-100 pt-2">
+                            <span className="bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] bg-clip-text text-xs font-bold text-transparent">
+                              ¥{BASE_PRICE_BY_LEVEL[f.priceLevel]} 起
+                            </span>
                           </div>
                         </div>
                       </button>
@@ -1311,6 +1361,18 @@ function Row({ label, value }: { label: string; value: string }) {
         {value}
       </span>
     </div>
+  );
+}
+
+function IncompatWarnBadge() {
+  return (
+    <span
+      aria-label="不推荐搭配"
+      title="不推荐搭配"
+      className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-amber-400 text-[10px] font-bold text-white shadow"
+    >
+      !
+    </span>
   );
 }
 

@@ -59,9 +59,16 @@ function lookupLength(id: string | null) {
 
 function lookupFabric(id: string) {
   const f = FABRICS.find((x) => x.id === id);
-  return f
-    ? { id: f.id, name: f.name, composition: f.composition, gsm: f.gsm }
-    : { id, name: id, composition: "—", gsm: "—" };
+  if (f) {
+    return {
+      info: { id: f.id, name: f.name, composition: f.composition, gsm: f.gsm },
+      careInstructions: f.careInstructions,
+    };
+  }
+  return {
+    info: { id, name: id, composition: "—", gsm: "—" },
+    careInstructions: undefined as string | undefined,
+  };
 }
 
 function parseCustomMeasurements(
@@ -133,7 +140,9 @@ export async function GET(
     const neckline = lookupNeckline(order.neckline);
     const sleeveType = lookupSleeve(order.sleeveType);
     const skirtLength = lookupLength(order.skirtLength);
-    const fabric = lookupFabric(order.fabric);
+    const fabricLookup = lookupFabric(order.fabric);
+    const fabric = fabricLookup.info;
+    const careInstructions = fabricLookup.careInstructions;
 
     const customMeasurements = parseCustomMeasurements(order.customMeasurements);
 
@@ -193,6 +202,7 @@ export async function GET(
       price,
       vectorFileUrl: order.design.vectorImageUrl ?? undefined,
       colorAnalysis,
+      careInstructions,
     };
 
     // Calling TechPackDocument directly (vs. createElement) returns the

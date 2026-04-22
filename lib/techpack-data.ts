@@ -1,7 +1,7 @@
 // Tech Pack static data: POM database, grading rules, construction templates, BOM templates.
 // Pure data — no React, imported by PDF template and future /api/techpack generation route.
 
-import { SKIRT_LENGTHS } from "./constants";
+import { FABRICS, SKIRT_LENGTHS, type Fabric } from "./constants";
 
 // ---------------------------------------------------------------------------
 // POM (Points of Measure) definitions — 17 standard dress measurements.
@@ -241,61 +241,104 @@ export const SHARED_BOM_ITEMS: BomItem[] = [
   { item: "PE 袋", spec: "独立透明 PE 袋 30×40cm", quantity: "1 个", placement: "外包装" },
 ];
 
-export const BOM_TEMPLATES: Record<string, BomItem[]> = {
-  cotton: [
-    { item: "主面料", spec: "100% Cotton 纯棉平纹, 180GSM, 幅宽 150cm", quantity: "1.5–1.8 m", placement: "主体" },
-    ...SHARED_BOM_ITEMS,
-  ],
-  "cotton-linen": [
-    { item: "主面料", spec: "55% Cotton 45% Linen, 200GSM, 幅宽 145cm", quantity: "1.5–1.8 m", placement: "主体" },
-    ...SHARED_BOM_ITEMS,
-  ],
-  silk: [
-    { item: "主面料", spec: "100% Mulberry Silk 真丝缎, 16 姆米, 幅宽 114cm", quantity: "1.8–2.2 m", placement: "主体" },
-    { item: "内衬", spec: "素绉缎 100% Polyester 衬里, 幅宽 140cm", quantity: "1.2–1.5 m", placement: "身片衬里" },
-    ...SHARED_BOM_ITEMS,
-  ],
-  chiffon: [
-    { item: "主面料", spec: "100% Polyester 雪纺, 75GSM, 幅宽 150cm", quantity: "2.0–2.5 m", placement: "主体" },
-    { item: "内衬", spec: "素绉缎 100% Polyester 衬里, 幅宽 150cm", quantity: "1.2–1.5 m", placement: "身片衬里" },
-    ...SHARED_BOM_ITEMS,
-  ],
-  satin: [
-    { item: "主面料", spec: "97% Polyester 3% Spandex 缎面, 135GSM, 幅宽 148cm", quantity: "1.5–1.8 m", placement: "主体" },
-    ...SHARED_BOM_ITEMS,
-  ],
-  denim: [
-    { item: "主面料", spec: "98% Cotton 2% Spandex 牛仔, 280GSM, 幅宽 145cm", quantity: "1.5–1.8 m", placement: "主体" },
-    { item: "金属扣", spec: "工字扣 8mm 金属色", quantity: "4 颗", placement: "口袋 / 腰头" },
-    ...SHARED_BOM_ITEMS,
-  ],
-  velvet: [
-    { item: "主面料", spec: "92% Polyester 8% Spandex 丝绒, 220GSM, 幅宽 150cm", quantity: "1.5–1.8 m", placement: "主体" },
-    ...SHARED_BOM_ITEMS,
-  ],
-  lace: [
-    { item: "主面料", spec: "90% Nylon 10% Spandex 蕾丝, 115GSM, 幅宽 145cm", quantity: "1.5–1.8 m", placement: "主体" },
-    { item: "内衬", spec: "肤色素绉缎 100% Polyester 衬里, 幅宽 150cm", quantity: "1.2–1.5 m", placement: "身片衬里" },
-    ...SHARED_BOM_ITEMS,
-  ],
-  polyester: [
-    { item: "主面料", spec: "100% Polyester 涤纶, 140GSM, 幅宽 150cm", quantity: "1.5–1.8 m", placement: "主体" },
-    ...SHARED_BOM_ITEMS,
-  ],
-  organza: [
-    { item: "主面料", spec: "100% Polyester 欧根纱, 50GSM, 幅宽 145cm", quantity: "2.0–2.5 m", placement: "主体" },
-    { item: "内衬", spec: "素绉缎 100% Polyester 衬里, 幅宽 150cm", quantity: "1.2–1.5 m", placement: "身片衬里" },
-    ...SHARED_BOM_ITEMS,
-  ],
-  knit: [
-    { item: "主面料", spec: "95% Cotton 5% Spandex 针织, 200GSM, 幅宽 175cm", quantity: "1.3–1.6 m", placement: "主体" },
-    ...SHARED_BOM_ITEMS,
-  ],
-  acetate: [
-    { item: "主面料", spec: "100% Acetate 醋酸, 115GSM, 幅宽 145cm", quantity: "1.5–1.8 m", placement: "主体" },
-    ...SHARED_BOM_ITEMS,
-  ],
+// Per-fabric BOM overrides. Everything else (main-fabric spec, wash label, etc.)
+// is derived from the `FABRICS` entry so width / shrinkage / care instructions
+// stay in sync with the product catalog.
+const LINING_STANDARD: BomItem = {
+  item: "内衬",
+  spec: "素绉缎 100% Polyester 衬里, 幅宽 150cm",
+  quantity: "1.2–1.5 m",
+  placement: "身片衬里",
 };
+
+const LINING_NUDE: BomItem = {
+  item: "内衬",
+  spec: "肤色素绉缎 100% Polyester 衬里, 幅宽 150cm",
+  quantity: "1.2–1.5 m",
+  placement: "身片衬里",
+};
+
+const BOM_FABRIC_OVERRIDES: Record<
+  string,
+  { mainQuantity?: string; extras?: BomItem[] }
+> = {
+  silk: { mainQuantity: "1.8–2.2 m", extras: [LINING_STANDARD] },
+  chiffon: { mainQuantity: "2.0–2.5 m", extras: [LINING_STANDARD] },
+  organza: { mainQuantity: "2.0–2.5 m", extras: [LINING_STANDARD] },
+  lace: { extras: [LINING_NUDE] },
+  denim: {
+    extras: [
+      {
+        item: "金属扣",
+        spec: "工字扣 8mm 金属色",
+        quantity: "4 颗",
+        placement: "口袋 / 腰头",
+      },
+    ],
+  },
+  knit: { mainQuantity: "1.3–1.6 m" },
+};
+
+function buildBomForFabric(f: Fabric): BomItem[] {
+  const ov = BOM_FABRIC_OVERRIDES[f.id] ?? {};
+  const mainQuantity = ov.mainQuantity ?? "1.5–1.8 m";
+  const extras = ov.extras ?? [];
+  return [
+    {
+      item: "主面料",
+      spec: `${f.composition}, ${f.gsm}, 幅宽 ${f.width}, 缩水率 ${f.shrinkage}`,
+      quantity: mainQuantity,
+      placement: "主体",
+    },
+    ...extras,
+    {
+      item: "缝线",
+      spec: "涤纶 #30, 与面料同色号",
+      quantity: "约 100 m / 件",
+      placement: "各缝合部位",
+    },
+    {
+      item: "隐形拉链",
+      spec: "YKK 尼龙隐形拉链 25cm, 同色",
+      quantity: "1 根",
+      placement: "后中缝或侧缝",
+    },
+    {
+      item: "品牌织标",
+      spec: "MaxLuLu 织唛 3×1.5cm",
+      quantity: "1 枚",
+      placement: "后领中",
+    },
+    {
+      item: "洗标",
+      spec: `尼龙满幅洗标 10×2.5cm, 中英双语。洗涤说明: ${f.careInstructions}`,
+      quantity: "1 枚",
+      placement: "左侧缝距腰 15cm",
+    },
+    {
+      item: "尺码标",
+      spec: "纸质尺码标 1×2cm",
+      quantity: "1 枚",
+      placement: "品牌织标下方",
+    },
+    {
+      item: "吊牌",
+      spec: "双联纸质吊牌 300gsm",
+      quantity: "1 套",
+      placement: "左侧腋下",
+    },
+    {
+      item: "PE 袋",
+      spec: "独立透明 PE 袋 30×40cm",
+      quantity: "1 个",
+      placement: "外包装",
+    },
+  ];
+}
+
+export const BOM_TEMPLATES: Record<string, BomItem[]> = Object.fromEntries(
+  FABRICS.map((f) => [f.id, buildBomForFabric(f)])
+);
 
 // ---------------------------------------------------------------------------
 // Labeling & packaging — fixed template applied on Page 7 of the Tech Pack.

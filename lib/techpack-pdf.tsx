@@ -71,6 +71,7 @@ export interface TechPackProps {
     pantoneName: string;
     percentage: number;
   }>;
+  careInstructions?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -295,7 +296,12 @@ export function TechPackDocument(props: TechPackProps) {
     price,
     vectorFileUrl,
     colorAnalysis,
+    careInstructions,
   } = props;
+
+  const careLabelBody = careInstructions
+    ? `尼龙满幅洗标 10×2.5cm, 印刷中英双语, 洗涤说明: ${careInstructions}。缝于左侧缝距腰 15cm 处, 与品牌织标同一缝线。`
+    : PACKAGING_TEMPLATE.careLabel.spec;
 
   const sizeLabel =
     size === "custom" && customMeasurements
@@ -562,7 +568,7 @@ export function TechPackDocument(props: TechPackProps) {
           />
           <Section
             title={PACKAGING_TEMPLATE.careLabel.title}
-            body={PACKAGING_TEMPLATE.careLabel.spec}
+            body={careLabelBody}
           />
           <Section
             title={PACKAGING_TEMPLATE.sizeLabel.title}
