@@ -16,6 +16,14 @@ model User {
   updatedAt     DateTime  @updatedAt
   orders        Order[]
   designs       Design[]
+  isDesigner    Boolean   @default(false)
+  designer      Designer?
+  groupBuyOrders GroupBuyOrder[]
+  likes         Like[]
+  favorites     Favorite[]
+  comments      Comment[]
+  invitationsSent     Invitation[] @relation("InviterUser")
+  invitationsReceived Invitation[] @relation("InviteeUser")
 }
 
 model Design {
@@ -38,6 +46,176 @@ model Design {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   order              Order?
+  publishedDesign    PublishedDesign?
+}
+
+model Designer {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  displayName     String
+  bio             String?
+  avatarUrl       String?
+  totalEarnings   Int      @default(0)
+  withdrawable    Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  publishedDesigns PublishedDesign[]
+  withdrawals     Withdrawal[]
+}
+
+model PublishedDesign {
+  id              String   @id @default(cuid())
+  designerId      String
+  designer        Designer @relation(fields: [designerId], references: [id])
+  designId        String?  @unique
+  design          Design?  @relation(fields: [designId], references: [id])
+  title           String
+  description     String?
+  coverImages     String[]
+  patternImage    String?
+  skirtType       String
+  neckline        String?
+  sleeveType      String?
+  skirtLength     String?
+  fabric          String
+  styleTags       String[]
+  groupPrice      Int
+  customPrice     Int
+  costBreakdown   String?
+  status          String   @default("draft")
+  publishedAt     DateTime?
+  viewCount       Int      @default(0)
+  likeCount       Int      @default(0)
+  favoriteCount   Int      @default(0)
+  orderCount      Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  groupBuys       GroupBuy[]
+  likes           Like[]
+  favorites       Favorite[]
+  comments        Comment[]
+
+  @@index([designerId])
+  @@index([status])
+  @@index([fabric])
+  @@index([skirtType])
+}
+
+model GroupBuy {
+  id                String   @id @default(cuid())
+  publishedDesignId String
+  publishedDesign   PublishedDesign @relation(fields: [publishedDesignId], references: [id])
+  targetCount       Int      @default(30)
+  currentCount      Int      @default(0)
+  status            String   @default("open")
+  expiresAt         DateTime
+  fulfilledAt       DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  orders            GroupBuyOrder[]
+
+  @@index([publishedDesignId])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model GroupBuyOrder {
+  id                  String   @id @default(cuid())
+  groupBuyId          String
+  groupBuy            GroupBuy @relation(fields: [groupBuyId], references: [id])
+  userId              String
+  user                User     @relation(fields: [userId], references: [id])
+  size                String
+  customMeasurements  String?
+  recipientName       String
+  recipientPhone      String
+  recipientRegion     String
+  recipientAddress    String
+  invitedByUserId     String?
+  discountAmount      Int      @default(0)
+  totalAmount         Int
+  paidAmount          Int
+  status              String   @default("paid")
+  paymentId           String?
+  refundId            String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([groupBuyId])
+  @@index([userId])
+  @@index([status])
+}
+
+model Invitation {
+  id              String   @id @default(cuid())
+  inviterUserId   String
+  inviter         User     @relation("InviterUser", fields: [inviterUserId], references: [id])
+  inviteeUserId   String
+  invitee         User     @relation("InviteeUser", fields: [inviteeUserId], references: [id])
+  groupBuyId      String
+  inviterDiscount Int
+  inviteeDiscount Int
+  status          String   @default("pending")
+  createdAt       DateTime @default(now())
+
+  @@index([inviterUserId])
+  @@index([inviteeUserId])
+  @@index([groupBuyId])
+}
+
+model Like {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  publishedDesignId String
+  publishedDesign   PublishedDesign @relation(fields: [publishedDesignId], references: [id])
+  createdAt         DateTime @default(now())
+
+  @@unique([userId, publishedDesignId])
+  @@index([publishedDesignId])
+}
+
+model Favorite {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  publishedDesignId String
+  publishedDesign   PublishedDesign @relation(fields: [publishedDesignId], references: [id])
+  createdAt         DateTime @default(now())
+
+  @@unique([userId, publishedDesignId])
+  @@index([publishedDesignId])
+}
+
+model Comment {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  publishedDesignId String
+  publishedDesign   PublishedDesign @relation(fields: [publishedDesignId], references: [id])
+  content           String
+  rating            Int?
+  images            String[]
+  isPurchased       Boolean  @default(false)
+  createdAt         DateTime @default(now())
+
+  @@index([publishedDesignId])
+  @@index([userId])
+}
+
+model Withdrawal {
+  id            String    @id @default(cuid())
+  designerId    String
+  designer      Designer  @relation(fields: [designerId], references: [id])
+  amount        Int
+  alipayAccount String
+  status        String    @default("pending")
+  createdAt     DateTime  @default(now())
+  completedAt   DateTime?
+
+  @@index([designerId])
+  @@index([status])
 }
 
 model VerificationCode {
