@@ -174,6 +174,9 @@ function DesignPageInner() {
   const [loadDesignError, setLoadDesignError] = useState("");
   const [step, setStep] = useState<Step>(1);
   const [prompt, setPrompt] = useState("");
+  const [selectedModel, setSelectedModel] = useState<"gpt-image-2" | "gemini">(
+    "gpt-image-2"
+  );
   const [images, setImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
   const [skirtType, setSkirtType] = useState<string | null>(null);
@@ -304,7 +307,7 @@ function DesignPageInner() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: trimmed }),
+        body: JSON.stringify({ prompt: trimmed, model: selectedModel }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -755,6 +758,51 @@ function DesignPageInner() {
               />
               <div className="mt-1 text-right text-xs text-gray-400">
                 {prompt.length}/300
+              </div>
+              <div className="mt-5">
+                <div className="mb-2 text-xs font-medium text-gray-500">
+                  生成模式
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {(
+                    [
+                      {
+                        id: "gpt-image-2" as const,
+                        icon: "⚡",
+                        title: "极速模式",
+                        subtitle: "推荐 · 出图快",
+                      },
+                      {
+                        id: "gemini" as const,
+                        icon: "✨",
+                        title: "精细模式",
+                        subtitle: "高质 · 更精致",
+                      },
+                    ]
+                  ).map((m) => {
+                    const active = selectedModel === m.id;
+                    return (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setSelectedModel(m.id)}
+                        className={`rounded-2xl border px-4 py-3 text-left transition ${
+                          active
+                            ? "border-[#C8A875] bg-[#C8A875]/5 shadow-sm"
+                            : "border-gray-200 bg-white hover:border-gray-300"
+                        }`}
+                      >
+                        <div className="text-base font-semibold text-gray-900">
+                          <span className="mr-1">{m.icon}</span>
+                          {m.title}
+                        </div>
+                        <div className="mt-0.5 text-xs text-gray-500">
+                          {m.subtitle}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               {genError && (
                 <p className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-600">

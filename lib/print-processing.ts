@@ -15,17 +15,10 @@
 //      before re-throwing.
 
 import sharp from "sharp";
-import Replicate from "replicate";
 import { prisma } from "./prisma";
 import { uploadBufferToR2 } from "./upload";
+import { makeSuperResolution } from "./aliyun-sr";
 import { generateProductionAI } from "./vectorize";
-
-// Real-ESRGAN version pin. If this stops working, bump to the latest version
-// hash from https://replicate.com/nightmareai/real-esrgan.
-const REAL_ESRGAN_VERSION =
-  "nightmareai/real-esrgan:f121d640bd286e1fdc67f9799164c1d5be36ff74576ee11c803ae5b665dd46aa";
-
-const UPSCALE_TIMEOUT_MS = 120_000;
 
 // ---------------------------------------------------------------------------
 // Stage 1: makeSeamlessTile
@@ -119,45 +112,11 @@ export async function makeSeamlessTile(input: Buffer): Promise<Buffer> {
 }
 
 // ---------------------------------------------------------------------------
-// Stage 2: upscaleImage (Real-ESRGAN 4x via Replicate)
+// Stage 2: upscaleImage (Aliyun Vision 4x)
 // ---------------------------------------------------------------------------
 
 export async function upscaleImage(imageUrl: string): Promise<string> {
-  const token = process.env.REPLICATE_API_TOKEN;
-  if (!token) {
-    throw new Error("REPLICATE_API_TOKEN is not configured");
-  }
-
-  const replicate = new Replicate({ auth: token });
-
-  const timeout = new Promise<never>((_, reject) => {
-    setTimeout(
-      () => reject(new Error(`Upscale timeout after ${UPSCALE_TIMEOUT_MS}ms`)),
-      UPSCALE_TIMEOUT_MS
-    );
-  });
-
-  const runPromise = replicate.run(REAL_ESRGAN_VERSION, {
-    input: { image: imageUrl, scale: 4 },
-  });
-
-  const output = await Promise.race([runPromise, timeout]);
-
-  // Real-ESRGAN typically returns a single URL string, but some versions
-  // wrap it in an array.
-  if (typeof output === "string") return output;
-  if (Array.isArray(output) && typeof output[0] === "string") return output[0];
-  if (
-    output &&
-    typeof output === "object" &&
-    "url" in output &&
-    typeof (output as { url: unknown }).url === "function"
-  ) {
-    // Newer replicate SDK may return a FileOutput-like object.
-    const url = (output as { url: () => URL }).url();
-    return url.toString();
-  }
-  throw new Error("Unexpected Replicate output shape");
+  return await makeSuperResolution(imageUrl, 4);
 }
 
 // ---------------------------------------------------------------------------

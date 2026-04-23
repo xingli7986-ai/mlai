@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { getAuthUser } from "@/lib/getAuthUser";
 import { uploadBufferToR2 } from "@/lib/upload";
+import { generateWithGPTImage2 } from "@/lib/suchuang";
 
-// TODO: Add GOOGLE_AI_KEY to Vercel environment variables
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
-const MODEL_ID = "gemini-3-pro-image-preview";
+const GEMINI_MODEL_ID = "gemini-3-pro-image-preview";
 const NUM_VARIANTS = 4;
 
 const styleMap: Record<string, string> = {
@@ -50,15 +50,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "未登录" }, { status: 401 });
   }
 
-  const apiKey = process.env.GOOGLE_AI_KEY;
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "GOOGLE_AI_KEY is not configured" },
-      { status: 500 }
-    );
-  }
-
-  let body: { prompt?: unknown; style?: unknown };
+  let body: { prompt?: unknown; style?: unknown; model?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -68,22 +60,80 @@ export async function POST(req: Request) {
   const prompt =
     typeof body.prompt === "string" ? body.prompt.trim() : "";
   const style = typeof body.style === "string" ? body.style : undefined;
+  const rawModel = typeof body.model === "string" ? body.model : "gpt-image-2";
+  const model: "gpt-image-2" | "gemini" =
+    rawModel === "gemini" ? "gemini" : "gpt-image-2";
+
   if (!prompt) {
+    return NextResponse.json({ error: "请输入设计描述" }, { status: 400 });
+  }
+
+  const brandPrompt = buildMaxLuLuPrompt(prompt, style);
+  const batchId = Date.now();
+
+  if (model === "gpt-image-2") {
+    if (!process.env.SUCHUANG_API_KEY) {
+      return NextResponse.json(
+        { error: "SUCHUANG_API_KEY is not configured" },
+        { status: 500 }
+      );
+    }
+
+    async function generateOneGPT(index: number): Promise<string | null> {
+      try {
+        const variantPrompt = `${brandPrompt}\n\n(Variation ${index + 1}: slightly different composition and color emphasis)`;
+        const urls = await generateWithGPTImage2(variantPrompt, { size: "1:1" });
+        const sourceUrl = urls[0];
+        if (!sourceUrl) return null;
+
+        const imgRes = await fetch(sourceUrl);
+        if (!imgRes.ok) {
+          console.error(`Failed to fetch GPT-Image-2 output: ${imgRes.status}`);
+          return null;
+        }
+        const buffer = Buffer.from(await imgRes.arrayBuffer());
+        const key = `designs/${batchId}_${index}.png`;
+        return await uploadBufferToR2(buffer, key, "image/png");
+      } catch (err) {
+        console.error(`GPT-Image-2 generation failed for variant ${index}:`, err);
+        return null;
+      }
+    }
+
+    try {
+      const results = await Promise.all(
+        Array.from({ length: NUM_VARIANTS }, (_, i) => generateOneGPT(i))
+      );
+      const images = results.filter((u): u is string => typeof u === "string");
+
+      if (images.length === 0) {
+        return NextResponse.json({ error: "生成失败，请重试" }, { status: 502 });
+      }
+
+      return NextResponse.json({ images });
+    } catch (err) {
+      console.error("GPT-Image-2 generate error:", err);
+      const message = err instanceof Error ? err.message : "生成失败";
+      return NextResponse.json({ error: message }, { status: 500 });
+    }
+  }
+
+  // Gemini branch (unchanged logic)
+  const apiKey = process.env.GOOGLE_AI_KEY;
+  if (!apiKey) {
     return NextResponse.json(
-      { error: "请输入设计描述" },
-      { status: 400 }
+      { error: "GOOGLE_AI_KEY is not configured" },
+      { status: 500 }
     );
   }
 
   const ai = new GoogleGenAI({ apiKey });
-  const brandPrompt = buildMaxLuLuPrompt(prompt, style);
-  const batchId = Date.now();
 
-  async function generateOne(index: number): Promise<string | null> {
+  async function generateOneGemini(index: number): Promise<string | null> {
     try {
       const variantPrompt = `${brandPrompt}\n\n(Variation ${index + 1}: slightly different composition and color emphasis)`;
       const response = await ai.models.generateContent({
-        model: MODEL_ID,
+        model: GEMINI_MODEL_ID,
         contents: [
           {
             role: "user",
@@ -121,15 +171,12 @@ export async function POST(req: Request) {
 
   try {
     const results = await Promise.all(
-      Array.from({ length: NUM_VARIANTS }, (_, i) => generateOne(i))
+      Array.from({ length: NUM_VARIANTS }, (_, i) => generateOneGemini(i))
     );
     const images = results.filter((u): u is string => typeof u === "string");
 
     if (images.length === 0) {
-      return NextResponse.json(
-        { error: "生成失败，请重试" },
-        { status: 502 }
-      );
+      return NextResponse.json({ error: "生成失败，请重试" }, { status: 502 });
     }
 
     return NextResponse.json({ images });
