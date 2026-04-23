@@ -2,8 +2,6 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 
-const MVP_VERIFICATION_CODE = "1234";
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" },
@@ -22,7 +20,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const code =
           typeof credentials?.code === "string" ? credentials.code.trim() : "";
 
-        if (!phone || code !== MVP_VERIFICATION_CODE) return null;
+        if (!phone || !code) return null;
+
+        const verification = await prisma.verificationCode.findFirst({
+          where: {
+            phone,
+            code,
+            used: false,
+            expiresAt: { gt: new Date() },
+          },
+          orderBy: { createdAt: "desc" },
+        });
+
+        if (!verification) {
+          throw new Error("验证码错误或已过期");
+        }
+
+        await prisma.verificationCode.update({
+          where: { id: verification.id },
+          data: { used: true },
+        });
 
         const user = await prisma.user.upsert({
           where: { phone },

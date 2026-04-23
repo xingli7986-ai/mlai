@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 
@@ -14,8 +14,60 @@ export default function LoginPage() {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const isValidPhone = /^1[3-9]\d{9}$/.test(phone);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
+
+  function startCountdown() {
+    setCountdown(60);
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  }
+
+  async function sendCode(): Promise<boolean> {
+    setError("");
+    setSending(true);
+    try {
+      const res = await fetch("/api/auth/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data?.success) {
+        setError(
+          typeof data?.error === "string" ? data.error : "验证码发送失败，请稍后再试"
+        );
+        return false;
+      }
+      startCountdown();
+      return true;
+    } catch {
+      setError("网络错误，请稍后再试");
+      return false;
+    } finally {
+      setSending(false);
+    }
+  }
 
   async function handlePhoneSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -24,14 +76,20 @@ export default function LoginPage() {
       setError("请输入有效的 11 位手机号");
       return;
     }
-    setStep("code");
+    const ok = await sendCode();
+    if (ok) setStep("code");
+  }
+
+  async function handleResend() {
+    if (countdown > 0 || sending) return;
+    await sendCode();
   }
 
   async function handleCodeSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    if (code.length !== 4) {
-      setError("请输入 4 位验证码");
+    if (code.length !== 6) {
+      setError("请输入 6 位验证码");
       return;
     }
     setLoading(true);
@@ -42,7 +100,7 @@ export default function LoginPage() {
     });
     setLoading(false);
     if (res?.error) {
-      setError("验证码错误，请输入 1234");
+      setError("验证码错误或已过期");
       return;
     }
     router.replace("/");
@@ -82,36 +140,47 @@ export default function LoginPage() {
             {error && <p className="text-sm text-rose-500">{error}</p>}
             <button
               type="submit"
-              disabled={!isValidPhone}
+              disabled={!isValidPhone || sending}
               className="w-full rounded-xl bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] py-3 text-base font-medium text-white shadow-lg shadow-[#C084FC]/30 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              获取验证码
+              {sending ? "发送中..." : "获取验证码"}
             </button>
           </form>
         ) : (
           <form onSubmit={handleCodeSubmit} className="space-y-4">
             <label className="block">
               <span className="text-xs font-medium text-gray-600">验证码</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                autoFocus
-                maxLength={4}
-                value={code}
-                onChange={(e) =>
-                  setCode(e.target.value.replace(/\D/g, "").slice(0, 4))
-                }
-                placeholder="1234"
-                className="mt-1 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-center text-2xl tracking-[0.6em] text-gray-900 outline-none transition focus:border-[#C084FC] focus:ring-2 focus:ring-[#C084FC]/30"
-              />
+              <div className="mt-1 flex items-stretch gap-2">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoFocus
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) =>
+                    setCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                  }
+                  placeholder="请输入短信验证码"
+                  className="min-w-0 flex-1 rounded-xl border border-gray-200 bg-white px-4 py-3 text-center text-xl tracking-[0.35em] text-gray-900 outline-none transition focus:border-[#C084FC] focus:ring-2 focus:ring-[#C084FC]/30"
+                />
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={countdown > 0 || sending}
+                  className="shrink-0 rounded-xl border border-[#C084FC]/40 bg-white px-3 text-sm font-medium text-[#C084FC] transition hover:bg-[#C084FC]/5 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {countdown > 0
+                    ? `${countdown}s后重发`
+                    : sending
+                      ? "发送中"
+                      : "发送验证码"}
+                </button>
+              </div>
             </label>
-            <p className="rounded-lg bg-gradient-to-r from-[#FF6B9D]/10 to-[#C084FC]/10 px-3 py-2 text-xs text-gray-600">
-              MVP 测试阶段，请输入验证码 <span className="font-semibold text-[#C084FC]">1234</span>
-            </p>
             {error && <p className="text-sm text-rose-500">{error}</p>}
             <button
               type="submit"
-              disabled={loading || code.length !== 4}
+              disabled={loading || code.length !== 6}
               className="w-full rounded-xl bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] py-3 text-base font-medium text-white shadow-lg shadow-[#C084FC]/30 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {loading ? "登录中..." : "登录"}

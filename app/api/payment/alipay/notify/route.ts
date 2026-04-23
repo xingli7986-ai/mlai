@@ -2,6 +2,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { verifyAlipayNotification } from "@/lib/alipay";
 import { prisma } from "@/lib/prisma";
 import { processForProduction } from "@/lib/print-processing";
+import { sendSmsNotification } from "@/lib/sms";
 
 export const runtime = "nodejs";
 // `after()` runs the production print pipeline post-response (seamless → R2 →
@@ -39,11 +40,18 @@ export async function POST(req: NextRequest) {
           status: "paid",
           paymentId: tradeNo,
         },
-        select: { designId: true },
+        select: {
+          designId: true,
+          recipientPhone: true,
+          totalAmount: true,
+        },
       });
       console.log(`Order ${outTradeNo} paid, alipay trade: ${tradeNo}`);
 
       const designId = updated.designId;
+      const recipientPhone = updated.recipientPhone;
+      const totalAmount = updated.totalAmount;
+      const notifyTemplateCode = process.env.SMS_ORDER_PAID_TEMPLATE || "";
       after(async () => {
         try {
           await processForProduction(designId);
@@ -52,6 +60,17 @@ export async function POST(req: NextRequest) {
             `Print processing failed for design ${designId}:`,
             err
           );
+        }
+
+        if (notifyTemplateCode && recipientPhone) {
+          const amountYuan = (totalAmount / 100).toFixed(0);
+          try {
+            await sendSmsNotification(recipientPhone, notifyTemplateCode, {
+              amount: amountYuan,
+            });
+          } catch (err) {
+            console.error("Order paid SMS notification failed:", err);
+          }
         }
       });
     }
