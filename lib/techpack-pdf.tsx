@@ -2,6 +2,7 @@
 // @react-pdf/renderer's Image component doesn't accept an `alt` attribute,
 // so the jsx-a11y/alt-text rule (which applies to HTML <img>) is irrelevant here.
 
+import path from "path";
 import {
   Document,
   Font,
@@ -22,14 +23,14 @@ import {
 // Fonts.
 //
 // @react-pdf/renderer ships with Helvetica by default (Latin-only). Without a
-// CJK-capable font, Chinese characters render as boxes. We register Noto Sans
-// SC from a public CDN; if the CDN is unreachable at generation time, swap
-// this URL for a locally bundled .otf / .ttf in /public/fonts.
+// CJK-capable font, Chinese characters render as boxes. The font file is
+// bundled under /public/fonts so PDF generation does not depend on CDN
+// reachability (which is flaky from mainland China networks).
 // ---------------------------------------------------------------------------
 
 Font.register({
   family: "NotoSansSC",
-  src: "https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/Sans/OTF/SimplifiedChinese/NotoSansSC-Regular.otf",
+  src: path.join(process.cwd(), "public/fonts/NotoSansSC-Regular.ttf"),
 });
 
 // ---------------------------------------------------------------------------
