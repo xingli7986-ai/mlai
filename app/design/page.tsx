@@ -32,7 +32,7 @@ function parseMeasurement(raw: string, min: number, max: number): number | null 
   return n;
 }
 
-type Step = 1 | 2 | 3 | 4 | 5 | 6;
+type Step = 1 | 2 | 3 | 4 | 5 | 6 | 7;
 
 const STEPS: { id: Step; title: string; subtitle: string }[] = [
   { id: 1, title: "描述印花", subtitle: "告诉 AI 你想要的图案" },
@@ -40,7 +40,8 @@ const STEPS: { id: Step; title: string; subtitle: string }[] = [
   { id: 3, title: "选择裙型", subtitle: "挑一款剪影最合适的" },
   { id: 4, title: "领型/袖型/裙长", subtitle: "细化版型设计" },
   { id: 5, title: "面料尺码", subtitle: "定面料、选尺码，看价格" },
-  { id: 6, title: "确认下单", subtitle: "填收货地址，提交订单" },
+  { id: 6, title: "模拟试穿", subtitle: "AI 生成上身效果（可跳过）" },
+  { id: 7, title: "确认下单", subtitle: "填收货地址，提交订单" },
 ];
 
 const STYLE_PRESETS: { label: string; text: string }[] = [
@@ -98,6 +99,45 @@ const LOADING_MESSAGES = [
   "即将绽放...",
 ];
 
+const TRY_ON_MESSAGES = [
+  "正在为您挑选最佳模特...",
+  "AI 造型师搭配中...",
+  "灯光、面料、姿势就位...",
+  "最后打磨细节...",
+];
+
+const TRY_ON_HEIGHTS = ["155cm", "160cm", "165cm", "170cm", "175cm", "180cm"];
+
+const TRY_ON_BODY_TYPES = [
+  { id: "slim", name: "纤细" },
+  { id: "standard", name: "标准" },
+  { id: "curvy", name: "微胖" },
+  { id: "plus", name: "丰满" },
+] as const;
+
+const TRY_ON_SKIN_TONES = [
+  { id: "fair", name: "白皙" },
+  { id: "natural", name: "自然" },
+  { id: "tan", name: "小麦" },
+  { id: "dark", name: "深肤色" },
+] as const;
+
+const TRY_ON_SCENES = [
+  { id: "studio", name: "棚拍" },
+  { id: "street", name: "街拍" },
+  { id: "office", name: "办公" },
+  { id: "garden", name: "花园" },
+  { id: "beach", name: "海边" },
+  { id: "evening", name: "晚宴" },
+] as const;
+
+const TRY_ON_POSES = [
+  { id: "front", name: "正面" },
+  { id: "side", name: "侧面" },
+  { id: "three-quarter", name: "3/4 侧" },
+  { id: "walking", name: "行走" },
+] as const;
+
 const BASE_PRICE = BASE_PRICE_BY_LEVEL[1];
 
 function calcPrice(
@@ -150,6 +190,16 @@ function DesignPageInner() {
   const [customWaist, setCustomWaist] = useState("");
   const [customHip, setCustomHip] = useState("");
   const [customHeight, setCustomHeight] = useState("");
+  const [modelHeight, setModelHeight] = useState<string>("165cm");
+  const [bodyType, setBodyType] = useState<string>("standard");
+  const [skinTone, setSkinTone] = useState<string>("natural");
+  const [scene, setScene] = useState<string>("studio");
+  const [pose, setPose] = useState<string>("front");
+  const [tryOnImages, setTryOnImages] = useState<string[]>([]);
+  const [tryOnLoading, setTryOnLoading] = useState(false);
+  const [tryOnError, setTryOnError] = useState("");
+  const [tryOnMsgIdx, setTryOnMsgIdx] = useState(0);
+  const [tryOnZoomUrl, setTryOnZoomUrl] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [genError, setGenError] = useState("");
   const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
@@ -177,6 +227,23 @@ function DesignPageInner() {
     }, 2000);
     return () => window.clearInterval(t);
   }, [generating]);
+
+  useEffect(() => {
+    if (!tryOnLoading) return;
+    const t = window.setInterval(() => {
+      setTryOnMsgIdx((i) => (i + 1) % TRY_ON_MESSAGES.length);
+    }, 3000);
+    return () => window.clearInterval(t);
+  }, [tryOnLoading]);
+
+  useEffect(() => {
+    if (!tryOnZoomUrl) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setTryOnZoomUrl(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [tryOnZoomUrl]);
 
   useEffect(() => {
     if (!designIdParam || status !== "authenticated") return;
@@ -335,6 +402,59 @@ function DesignPageInner() {
     setFabric(id);
   }
 
+  async function handleTryOn() {
+    if (
+      tryOnLoading ||
+      selectedImage === null ||
+      !skirtType ||
+      !neckline ||
+      !sleeveType ||
+      !skirtLength ||
+      !fabric
+    )
+      return;
+    const printImageUrl = images[selectedImage];
+    if (!printImageUrl || !prompt.trim()) return;
+    setTryOnError("");
+    setTryOnImages([]);
+    setTryOnMsgIdx(0);
+    setTryOnLoading(true);
+    try {
+      const res = await fetch("/api/try-on", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          printImageUrl,
+          prompt: prompt.trim(),
+          skirtType,
+          neckline,
+          sleeveType,
+          skirtLength,
+          fabric,
+          modelHeight,
+          bodyType,
+          skinTone,
+          scene,
+          pose,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(
+          typeof data?.error === "string" ? data.error : "生成失败，请稍后再试"
+        );
+      }
+      if (!Array.isArray(data.images) || data.images.length === 0) {
+        throw new Error("生成结果为空，请重试");
+      }
+      setTryOnImages(data.images as string[]);
+    } catch (err) {
+      setTryOnError(err instanceof Error ? err.message : "生成失败");
+    } finally {
+      setTryOnLoading(false);
+    }
+  }
+
   async function handleSubmitOrder() {
     if (
       submitting ||
@@ -437,7 +557,8 @@ function DesignPageInner() {
       fabric !== null &&
       size !== null &&
       (size !== "custom" || customValid)) ||
-    step === 6;
+    step === 6 ||
+    step === 7;
 
   return (
     <div className="relative flex min-h-screen flex-col bg-white">
@@ -445,6 +566,37 @@ function DesignPageInner() {
         <div className="pointer-events-none fixed left-1/2 top-6 z-50 -translate-x-1/2">
           <div className="rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] px-6 py-2.5 text-sm font-medium text-white shadow-lg shadow-[#C084FC]/40">
             {toast}
+          </div>
+        </div>
+      )}
+      {tryOnZoomUrl && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setTryOnZoomUrl(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setTryOnZoomUrl(null);
+            }}
+            aria-label="关闭"
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-xl text-white backdrop-blur-sm transition hover:bg-white/20"
+          >
+            ×
+          </button>
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-h-full max-w-full"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={tryOnZoomUrl}
+              alt="试穿效果放大"
+              className="max-h-[90vh] max-w-[90vw] rounded-2xl object-contain shadow-2xl"
+            />
           </div>
         </div>
       )}
@@ -1108,6 +1260,235 @@ function DesignPageInner() {
           )}
 
           {step === 6 && (
+            <div className="space-y-8">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  模拟试穿
+                </h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  选择模特参数与场景，AI 生成两张上身效果图
+                </p>
+              </div>
+
+              <div className="space-y-5">
+                <div>
+                  <div className="mb-2 text-xs font-medium text-gray-500">
+                    模特身高
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {TRY_ON_HEIGHTS.map((h) => {
+                      const active = modelHeight === h;
+                      return (
+                        <button
+                          key={h}
+                          type="button"
+                          onClick={() => setModelHeight(h)}
+                          className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                            active
+                              ? "bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] text-white shadow-md shadow-[#C084FC]/30"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          {h}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-xs font-medium text-gray-500">
+                    体型
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {TRY_ON_BODY_TYPES.map((b) => {
+                      const active = bodyType === b.id;
+                      return (
+                        <button
+                          key={b.id}
+                          type="button"
+                          onClick={() => setBodyType(b.id)}
+                          className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                            active
+                              ? "bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] text-white shadow-md shadow-[#C084FC]/30"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          {b.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-xs font-medium text-gray-500">
+                    肤色
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {TRY_ON_SKIN_TONES.map((s) => {
+                      const active = skinTone === s.id;
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => setSkinTone(s.id)}
+                          className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                            active
+                              ? "bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] text-white shadow-md shadow-[#C084FC]/30"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          {s.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-xs font-medium text-gray-500">
+                    场景
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {TRY_ON_SCENES.map((s) => {
+                      const active = scene === s.id;
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => setScene(s.id)}
+                          className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                            active
+                              ? "bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] text-white shadow-md shadow-[#C084FC]/30"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          {s.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 text-xs font-medium text-gray-500">
+                    姿势
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {TRY_ON_POSES.map((p) => {
+                      const active = pose === p.id;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setPose(p.id)}
+                          className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+                            active
+                              ? "bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] text-white shadow-md shadow-[#C084FC]/30"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
+                        >
+                          {p.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {tryOnError && (
+                <p className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-600">
+                  {tryOnError}
+                </p>
+              )}
+
+              <button
+                type="button"
+                onClick={handleTryOn}
+                disabled={
+                  tryOnLoading ||
+                  selectedImage === null ||
+                  !skirtType ||
+                  !neckline ||
+                  !sleeveType ||
+                  !skirtLength ||
+                  !fabric
+                }
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#FF6B9D] to-[#C084FC] py-3 text-sm font-semibold text-white shadow-md shadow-[#C084FC]/30 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {tryOnLoading ? (
+                  <>
+                    <SpinningFlower />
+                    <span>{TRY_ON_MESSAGES[tryOnMsgIdx]}</span>
+                  </>
+                ) : tryOnImages.length > 0 ? (
+                  <>↻ 重新试穿</>
+                ) : (
+                  <>生成试穿效果 ✨</>
+                )}
+              </button>
+              <p className="-mt-4 text-center text-xs text-gray-400">
+                生成约需 20–40 秒 · 共 2 张效果图
+              </p>
+
+              {tryOnLoading && tryOnImages.length === 0 && (
+                <div className="grid grid-cols-2 gap-4">
+                  {[0, 1].map((i) => (
+                    <div
+                      key={i}
+                      className="aspect-[3/4] animate-pulse rounded-2xl bg-gradient-to-br from-gray-100 via-gray-200 to-gray-100"
+                      style={{ animationDelay: `${i * 200}ms` }}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {tryOnImages.length > 0 && (
+                <div>
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="text-sm font-medium text-gray-700">
+                      试穿效果
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      点击图片放大查看
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {tryOnImages.map((url, i) => (
+                      <button
+                        key={url}
+                        type="button"
+                        onClick={() => setTryOnZoomUrl(url)}
+                        className="group relative aspect-[3/4] overflow-hidden rounded-2xl ring-2 ring-[#C084FC]/20 transition hover:ring-[#C084FC] hover:shadow-lg hover:shadow-[#C084FC]/30"
+                      >
+                        <NextImage
+                          src={url}
+                          alt={`试穿 ${i + 1}`}
+                          width={768}
+                          height={1024}
+                          loading="lazy"
+                          className="h-full w-full object-cover transition group-hover:scale-[1.02]"
+                        />
+                        <div className="absolute bottom-2 left-2 rounded-full bg-black/40 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
+                          效果图 {i + 1}
+                        </div>
+                        <div className="absolute right-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/40 text-xs text-white opacity-0 backdrop-blur-sm transition group-hover:opacity-100">
+                          ⤢
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <p className="text-center text-xs text-gray-400">
+                效果图仅供参考，实物以收到为准 · 可跳过此步骤直接下单
+              </p>
+            </div>
+          )}
+
+          {step === 7 && (
             <div>
               <h2 className="text-2xl font-semibold tracking-tight">
                 确认订单
@@ -1312,7 +1693,7 @@ function DesignPageInner() {
             >
               上一步
             </button>
-            {step >= 2 && step <= 5 ? (
+            {step >= 2 && step <= 6 ? (
               <button
                 type="button"
                 onClick={() => setStep((s) => (s + 1) as Step)}
@@ -1321,7 +1702,7 @@ function DesignPageInner() {
               >
                 下一步 →
               </button>
-            ) : step === 6 ? (
+            ) : step === 7 ? (
               <span className="text-xs text-gray-400">最后一步</span>
             ) : (
               <span />
