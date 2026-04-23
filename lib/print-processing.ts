@@ -170,6 +170,15 @@ export async function processForProduction(designId: string): Promise<string> {
     throw new Error(`Design ${designId} not found`);
   }
 
+  // Idempotency guard: Alipay notify can retry up to 24h; short-circuit when
+  // the pipeline already finished so we don't burn Replicate credits twice.
+  if (
+    design.processingStatus === "completed" &&
+    design.productionImageUrl
+  ) {
+    return design.productionImageUrl;
+  }
+
   const sourceUrl = design.selectedImage || design.images[0];
   if (!sourceUrl) {
     throw new Error(`Design ${designId} has no source image`);

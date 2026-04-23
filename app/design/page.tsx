@@ -509,12 +509,36 @@ function DesignPageInner() {
         }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data?.success) {
+      if (!res.ok || !data?.success || !data?.data?.id) {
         throw new Error(
           typeof data?.error === "string" ? data.error : "下单失败，请稍后再试"
         );
       }
-      router.push("/my?toast=ordered");
+
+      const payRes = await fetch("/api/payment/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: data.data.id }),
+      });
+      const payData = await payRes.json().catch(() => ({}));
+      if (!payRes.ok || typeof payData?.formHtml !== "string") {
+        throw new Error(
+          typeof payData?.error === "string"
+            ? payData.error
+            : "创建支付失败，请稍后再试"
+        );
+      }
+
+      const div = document.createElement("div");
+      div.innerHTML = payData.formHtml;
+      document.body.appendChild(div);
+      const form = div.querySelector("form");
+      if (form) {
+        form.submit();
+      } else {
+        document.body.removeChild(div);
+        throw new Error("支付表单异常，请稍后再试");
+      }
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "下单失败");
       setSubmitting(false);
