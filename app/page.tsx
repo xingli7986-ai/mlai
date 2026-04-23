@@ -255,6 +255,18 @@ export default function HomePage() {
           </svg>
         </Link>
 
+        <Link
+          href="/studio"
+          className="relative mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-white/80 underline-offset-4 transition hover:text-white hover:underline"
+          style={{
+            animation: "fadeInUp 0.8s ease-out backwards",
+            animationDelay: "0.85s",
+          }}
+        >
+          <span>进入 AI 设计工作室</span>
+          <span aria-hidden>→</span>
+        </Link>
+
         <div
           className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/60"
           aria-hidden
