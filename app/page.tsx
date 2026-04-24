@@ -13,46 +13,22 @@ const NAV_LINKS = [
   { label: "ABOUT", href: "/studio" },
 ];
 
+const R2_BRAND = "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/brand";
+
 const FEATURED = [
-  {
-    url: "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/1776808085069_1.webp",
-    title: "樱花水彩",
-    category: "WATERCOLOR · FLORAL",
-    price: 599,
-  },
-  {
-    url: "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/1776808434564_2.webp",
-    title: "几何花卉",
-    category: "GEOMETRIC · MODERN",
-    price: 649,
-  },
-  {
-    url: "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/1776808481930_1.webp",
-    title: "热带植物",
-    category: "TROPICAL · SUMMER",
-    price: 599,
-  },
-  {
-    url: "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/1776808504320_1.webp",
-    title: "水墨牡丹",
-    category: "INK · PEONY",
-    price: 699,
-  },
-  {
-    url: "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/1776808085069_2.webp",
-    title: "莫兰迪花园",
-    category: "MORANDI · GARDEN",
-    price: 579,
-  },
-  {
-    url: "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/designs/1776808434564_3.webp",
-    title: "抽象几何",
-    category: "ABSTRACT · LINE",
-    price: 629,
-  },
+  { url: `${R2_BRAND}/featured-01.png`, title: "Parisian Reverie", category: "PRINT DRESS · MAXI", price: 899 },
+  { url: `${R2_BRAND}/featured-02.png`, title: "Shanghai Dusk", category: "MAXI DRESS · FLORAL", price: 799 },
+  { url: `${R2_BRAND}/featured-03.png`, title: "Black Tie Paris", category: "EVENING GOWN · SATIN", price: 999 },
+  { url: `${R2_BRAND}/featured-04.png`, title: "Rose Garden", category: "PRINT DRESS · FLORAL", price: 699 },
+  { url: `${R2_BRAND}/featured-05.png`, title: "Willow Whisper", category: "MAXI DRESS · BOTANICAL", price: 649 },
+  { url: `${R2_BRAND}/featured-06.png`, title: "Ink Waltz", category: "PRINT DRESS · MAXI", price: 849 },
+  { url: `${R2_BRAND}/featured-07.png`, title: "Porcelain Bloom", category: "PRINT DRESS · CHIFFON", price: 699 },
+  { url: `${R2_BRAND}/featured-08.png`, title: "Bohemian Rose", category: "MAXI DRESS · BOHO", price: 749 },
+  { url: `${R2_BRAND}/featured-09.png`, title: "Midnight Noir", category: "EVENING GOWN · SILK", price: 929 },
+  { url: `${R2_BRAND}/featured-10.png`, title: "Courtyard Bloom", category: "PRINT DRESS · CLASSIC", price: 779 },
 ];
 
-const HERO_IMAGE = "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/brand/hero-banner.png";
+const HERO_IMAGE = `${R2_BRAND}/hero-banner.png`;
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -273,40 +249,44 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="-mx-5 overflow-x-auto px-5 pb-2 sm:mx-0 sm:px-0">
-            <div className="flex gap-5 sm:grid sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+          <div className="-mx-5 overflow-x-auto px-5 pb-4 sm:-mx-8 sm:px-8">
+            <div className="flex gap-4 sm:gap-5">
               {FEATURED.map((item) => (
                 <article
                   key={item.url}
-                  className="group w-[240px] flex-shrink-0 sm:w-auto"
+                  className="group w-[220px] flex-shrink-0 overflow-hidden rounded-lg sm:w-[240px] lg:w-[260px]"
+                  style={{
+                    backgroundColor: "#FFFFFF",
+                    boxShadow: "0 1px 2px rgba(12,12,15,0.04), 0 4px 12px rgba(12,12,15,0.06)",
+                  }}
                 >
                   <div
-                    className="relative aspect-[3/4] overflow-hidden rounded-sm"
+                    className="relative aspect-[3/4] w-full overflow-hidden"
                     style={{ backgroundColor: "#F1EDE6" }}
                   >
                     <Image
                       src={item.url}
                       alt={item.title}
                       fill
-                      sizes="(min-width: 1024px) 340px, (min-width: 640px) 45vw, 240px"
+                      sizes="(min-width: 1024px) 20vw, (min-width: 640px) 240px, 220px"
                       loading="lazy"
-                      className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                      className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
                     />
                   </div>
-                  <div className="mt-3 flex items-baseline justify-between gap-2">
-                    <div>
+                  <div className="flex items-baseline justify-between gap-2 px-4 py-3 sm:px-4 sm:py-4">
+                    <div className="min-w-0">
                       <p
-                        className="text-[10px] uppercase"
+                        className="truncate text-[10px] uppercase"
                         style={{
                           color: "#7D5B6E",
-                          letterSpacing: "0.25em",
+                          letterSpacing: "0.2em",
                           fontFamily: "var(--font-body)",
                         }}
                       >
                         {item.category}
                       </p>
                       <h3
-                        className="mt-1 text-base"
+                        className="mt-1 truncate text-base"
                         style={{
                           color: "#0C0C0F",
                           fontFamily: "var(--font-display)",
@@ -317,14 +297,14 @@ export default function HomePage() {
                       </h3>
                     </div>
                     <span
-                      className="text-sm"
+                      className="flex-shrink-0 text-sm"
                       style={{
                         color: "#C8A875",
                         fontFamily: "var(--font-body)",
                         fontWeight: 600,
                       }}
                     >
-                      ¥ {item.price}
+                      ¥{item.price}
                     </span>
                   </div>
                 </article>
