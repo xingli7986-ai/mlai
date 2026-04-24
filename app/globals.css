@@ -1,20 +1,64 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Primary */
+  --deep-noir: #0C0C0F;
+  --charcoal: #1E1E1E;
+  --warm-ivory: #F7F0E9;
+
+  /* Secondary */
+  --taupe: #B8B176;
+  --soft-rose: #F7D4CF;
+  --misty-sage: #A3AC98;
+
+  /* Accent */
+  --champagne-gold: #C8A875;
+  --terracotta: #C68A44;
+  --dusty-plum: #7D5B6E;
+
+  /* Neutrals */
+  --silver-gray: #D8D7D3;
+  --light-linen: #F1EDE6;
+  --white: #F9F9FF;
+
+  /* Background/foreground aliases (legacy) */
+  --background: var(--warm-ivory);
+  --foreground: var(--deep-noir);
+
+  /* Typography */
+  --font-display: var(--font-playfair), "Noto Serif SC", "Songti SC", "SimSun", serif;
+  --font-body: var(--font-cormorant), "Noto Serif SC", "Songti SC", "SimSun", serif;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  --color-deep-noir: var(--deep-noir);
+  --color-charcoal: var(--charcoal);
+  --color-warm-ivory: var(--warm-ivory);
+  --color-taupe: var(--taupe);
+  --color-soft-rose: var(--soft-rose);
+  --color-misty-sage: var(--misty-sage);
+  --color-champagne-gold: var(--champagne-gold);
+  --color-terracotta: var(--terracotta);
+  --color-dusty-plum: var(--dusty-plum);
+  --color-silver-gray: var(--silver-gray);
+  --color-light-linen: var(--light-linen);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-sans: var(--font-body);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-body);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
 }
 
 /* Homepage animations */
