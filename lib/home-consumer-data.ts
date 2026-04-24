@@ -1,0 +1,385 @@
+export type ProductStatus = '正在众定' | '即将成团' | '新品' | '人气款';
+
+export type HomeProduct = {
+  id: string;
+  name: string;
+  subtitle: string;
+  price: string;
+  joined: number;
+  target: number;
+  delivery: string;
+  status: ProductStatus;
+  tags: string[];
+  image: string;
+  tone: 'ink' | 'camellia' | 'blue' | 'wine' | 'coffee' | 'green' | 'rose' | 'gold';
+};
+
+export const hero = {
+  eyebrow: 'MAXLULU SUMMER 2026',
+  title: '夏季针织印花裹身裙',
+  subtitle:
+    '柔软针织、标志性印花与高腰剪裁，为成熟自信的都市女性打造舒适显腰的夏日连衣裙。',
+  primaryCta: '浏览夏季新品',
+  secondaryCta: '参与正在众定',
+  image: '/assets/images/home/01-hero/summer-knit-wrap-dress-hero.png',
+};
+
+export const navItems = [
+  { label: '首页', href: '#home' },
+  { label: '夏季新品', href: '#new-arrivals' },
+  { label: '正在众定', href: '#group-buy' },
+  { label: '印花风格', href: '#prints' },
+  { label: '穿搭场景', href: '#scenes' },
+  { label: '品牌故事', href: '#brand-story' },
+];
+
+export const stats = [
+  { value: '15年', label: '印花连衣裙经验' },
+  { value: '30+', label: '成熟都市女性' },
+  { value: '18款', label: '夏季首发系列' },
+  { value: '小批量', label: '众定生产' },
+];
+
+export const consumerSteps = [
+  { index: '01', title: '选择喜欢的印花裙', desc: '按场景与印花浏览' },
+  { index: '02', title: '参与众定', desc: '锁定尺码与价格' },
+  { index: '03', title: '满员即生产', desc: '小批量减少库存' },
+  { index: '04', title: '工厂质检', desc: '版型与面料检查' },
+  { index: '05', title: '夏季交付', desc: '安心等待上身' },
+];
+
+export const products: HomeProduct[] = [
+  {
+    id: 'ink-garden-knit-wrap-dress',
+    name: '墨影花园针织裹身裙',
+    subtitle: '经典 V 领 · 高腰显瘦 · 柔软针织',
+    price: '¥699–899',
+    joined: 22,
+    target: 30,
+    delivery: '15–20 天交付',
+    status: '即将成团',
+    tags: ['V领', '高腰', '针织印花'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/01-ink-garden-knit-wrap-dress.png',
+    tone: 'ink',
+  },
+  {
+    id: 'camellia-ink-v-neck-dress',
+    name: '山茶水墨 V 领裙',
+    subtitle: '东方花影 · 交叠领口 · 轻盈垂坠',
+    price: '¥699–899',
+    joined: 18,
+    target: 30,
+    delivery: '15–20 天交付',
+    status: '正在众定',
+    tags: ['山茶', '水墨', '裹身'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/02-camellia-ink-v-neck-dress.png',
+    tone: 'camellia',
+  },
+  {
+    id: 'black-white-abstract-wrap-dress',
+    name: '黑白抽象花影裙',
+    subtitle: '黑白对比 · 腰部褶裥 · 通勤聚会皆宜',
+    price: '¥729–929',
+    joined: 26,
+    target: 30,
+    delivery: '12–18 天交付',
+    status: '即将成团',
+    tags: ['黑白', '抽象', '显腰'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/03-black-white-abstract-wrap-dress.png',
+    tone: 'ink',
+  },
+  {
+    id: 'wine-rose-waist-tie-dress',
+    name: '酒红蔷薇腰结裙',
+    subtitle: '酒红花卉 · 腰侧系带 · 晚餐约会款',
+    price: '¥759–959',
+    joined: 16,
+    target: 30,
+    delivery: '15–20 天交付',
+    status: '新品',
+    tags: ['酒红', '蔷薇', '腰结'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/04-wine-rose-waist-tie-dress.png',
+    tone: 'wine',
+  },
+  {
+    id: 'blue-white-sea-breeze-wrap-dress',
+    name: '蓝白海风裹身裙',
+    subtitle: '蓝白印花 · 夏日清爽 · 旅行友好',
+    price: '¥699–899',
+    joined: 20,
+    target: 30,
+    delivery: '15–20 天交付',
+    status: '人气款',
+    tags: ['蓝白', '度假', '轻盈'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/05-blue-white-sea-breeze-wrap-dress.png',
+    tone: 'blue',
+  },
+  {
+    id: 'vintage-coffee-floral-wrap-dress',
+    name: '咖金复古花卉裙',
+    subtitle: '复古咖金 · 油画花感 · 成熟优雅',
+    price: '¥759–969',
+    joined: 14,
+    target: 30,
+    delivery: '18–22 天交付',
+    status: '正在众定',
+    tags: ['复古', '咖金', '花卉'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/06-vintage-coffee-floral-wrap-dress.png',
+    tone: 'coffee',
+  },
+  {
+    id: 'navy-geometry-commute-dress',
+    name: '藏蓝几何通勤裙',
+    subtitle: '小 V 领 · 藏蓝几何 · 办公室友好',
+    price: '¥659–829',
+    joined: 19,
+    target: 30,
+    delivery: '15–20 天交付',
+    status: '正在众定',
+    tags: ['通勤', '小V领', '几何'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/07-navy-geometry-commute-dress.png',
+    tone: 'blue',
+  },
+  {
+    id: 'almond-floral-high-waist-dress',
+    name: '米杏小花高腰裙',
+    subtitle: '柔和浅底 · 高腰线 · 轻熟日常',
+    price: '¥639–799',
+    joined: 12,
+    target: 30,
+    delivery: '18–22 天交付',
+    status: '新品',
+    tags: ['米杏', '小花', '高腰'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/08-almond-floral-high-waist-dress.png',
+    tone: 'rose',
+  },
+  {
+    id: 'dusty-rose-ink-short-sleeve-dress',
+    name: '灰粉水墨短袖裙',
+    subtitle: '灰粉水墨 · 短袖修饰 · 夏日通勤',
+    price: '¥659–829',
+    joined: 17,
+    target: 30,
+    delivery: '15–20 天交付',
+    status: '正在众定',
+    tags: ['短袖', '灰粉', '水墨'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/09-dusty-rose-ink-short-sleeve-dress.png',
+    tone: 'rose',
+  },
+  {
+    id: 'black-fine-floral-office-dress',
+    name: '黑底细花通勤裙',
+    subtitle: '深色显瘦 · 细花克制 · 会议友好',
+    price: '¥679–859',
+    joined: 25,
+    target: 30,
+    delivery: '12–18 天交付',
+    status: '即将成团',
+    tags: ['黑底', '细花', '通勤'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/10-black-fine-floral-office-dress.png',
+    tone: 'ink',
+  },
+  {
+    id: 'ink-green-botanical-midi-dress',
+    name: '墨绿植物中袖裙',
+    subtitle: '植物花影 · 中袖遮臂 · 知性气质',
+    price: '¥699–899',
+    joined: 11,
+    target: 30,
+    delivery: '18–22 天交付',
+    status: '新品',
+    tags: ['墨绿', '中袖', '植物'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/11-ink-green-botanical-midi-dress.png',
+    tone: 'green',
+  },
+  {
+    id: 'island-blue-knit-midi-dress',
+    name: '海岛蓝针织长裙',
+    subtitle: '蓝白花影 · 中长裙摆 · 度假轻盈',
+    price: '¥699–899',
+    joined: 21,
+    target: 30,
+    delivery: '15–20 天交付',
+    status: '人气款',
+    tags: ['旅行', '蓝白', '中长'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/12-island-blue-knit-midi-dress.png',
+    tone: 'blue',
+  },
+  {
+    id: 'morning-mist-tea-dress',
+    name: '晨雾浅杏茶歇裙',
+    subtitle: '浅杏底色 · 茶歇版型 · 轻柔日常',
+    price: '¥639–799',
+    joined: 13,
+    target: 30,
+    delivery: '18–22 天交付',
+    status: '新品',
+    tags: ['茶歇', '浅杏', '日常'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/13-morning-mist-tea-dress.png',
+    tone: 'rose',
+  },
+  {
+    id: 'coral-floral-flutter-sleeve-dress',
+    name: '珊瑚花卉飘袖裙',
+    subtitle: '珊瑚花色 · 飘袖修饰 · 夏日约会',
+    price: '¥669–849',
+    joined: 15,
+    target: 30,
+    delivery: '15–20 天交付',
+    status: '正在众定',
+    tags: ['飘袖', '珊瑚', '约会'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/14-coral-floral-flutter-sleeve-dress.png',
+    tone: 'camellia',
+  },
+  {
+    id: 'palm-shadow-light-wrap-dress',
+    name: '棕榈花影轻裹身裙',
+    subtitle: '棕榈花影 · 轻裹身 · 旅行拍照款',
+    price: '¥699–899',
+    joined: 10,
+    target: 30,
+    delivery: '18–22 天交付',
+    status: '新品',
+    tags: ['棕榈', '度假', '裹身'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/15-palm-shadow-light-wrap-dress.png',
+    tone: 'green',
+  },
+  {
+    id: 'black-gold-floral-evening-dress',
+    name: '黑金花影聚会裙',
+    subtitle: '黑金大花 · 深 V 安全位 · 晚餐聚会',
+    price: '¥789–989',
+    joined: 24,
+    target: 30,
+    delivery: '12–18 天交付',
+    status: '即将成团',
+    tags: ['黑金', '聚会', '深V'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/16-black-gold-floral-evening-dress.png',
+    tone: 'gold',
+  },
+  {
+    id: 'twilight-rose-slim-dress',
+    name: '暮色玫瑰修身裙',
+    subtitle: '暮色玫瑰 · 修身垂坠 · 成熟女人味',
+    price: '¥759–959',
+    joined: 18,
+    target: 30,
+    delivery: '15–20 天交付',
+    status: '正在众定',
+    tags: ['玫瑰', '修身', '聚会'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/17-twilight-rose-slim-dress.png',
+    tone: 'wine',
+  },
+  {
+    id: 'deep-sea-abstract-slit-dress',
+    name: '深海抽象开衩裙',
+    subtitle: '深海蓝调 · 抽象笔触 · 轻微开衩',
+    price: '¥789–989',
+    joined: 20,
+    target: 30,
+    delivery: '15–20 天交付',
+    status: '人气款',
+    tags: ['深海', '开衩', '抽象'],
+    image: '/assets/images/home/02-featured-designs/dresses-summer/18-deep-sea-abstract-slit-dress.png',
+    tone: 'blue',
+  },
+];
+
+export const scenes = [
+  {
+    title: '通勤',
+    desc: '小 V 领、低饱和印花，会议和办公室都适合。',
+    image: '/assets/images/home/03-scenes/commute-knit-print-dress.png',
+    tone: 'blue',
+  },
+  {
+    title: '约会',
+    desc: '柔和花色与腰部线条，轻松有女人味。',
+    image: '/assets/images/home/03-scenes/date-floral-wrap-dress.png',
+    tone: 'rose',
+  },
+  {
+    title: '晚餐',
+    desc: '深色底与大花印花，低调但有气场。',
+    image: '/assets/images/home/03-scenes/dinner-black-gold-dress.png',
+    tone: 'gold',
+  },
+  {
+    title: '旅行',
+    desc: '蓝白与浅色印花，适合夏日城市与度假。',
+    image: '/assets/images/home/03-scenes/travel-blue-white-dress.png',
+    tone: 'blue',
+  },
+  {
+    title: '日常',
+    desc: '轻薄针织不紧绷，散步、咖啡、周末都舒服。',
+    image: '/assets/images/home/03-scenes/daily-soft-knit-dress.png',
+    tone: 'coffee',
+  },
+  {
+    title: '聚会',
+    desc: 'V 领、高腰与开衩细节，成熟而不夸张。',
+    image: '/assets/images/home/03-scenes/party-v-neck-dress.png',
+    tone: 'wine',
+  },
+];
+
+export const printStyles = [
+  {
+    name: '墨影花卉',
+    desc: '黑白留白与花影层次，显瘦也高级。',
+    image: '/assets/images/home/04-prints/ink-floral-print.png',
+    tone: 'ink',
+  },
+  {
+    name: '山茶水墨',
+    desc: '东方花型与轻水墨肌理，温柔而有辨识度。',
+    image: '/assets/images/home/04-prints/camellia-ink-print.png',
+    tone: 'camellia',
+  },
+  {
+    name: '蓝白几何',
+    desc: '清爽蓝白与几何节奏，夏日通勤两用。',
+    image: '/assets/images/home/04-prints/blue-white-geometry-print.png',
+    tone: 'blue',
+  },
+  {
+    name: '复古油画',
+    desc: '咖金、驼色与花卉笔触，成熟复古。',
+    image: '/assets/images/home/04-prints/vintage-oil-floral-print.png',
+    tone: 'coffee',
+  },
+  {
+    name: '黑金晚宴',
+    desc: '黑色底与金色花影，适合晚餐和聚会。',
+    image: '/assets/images/home/04-prints/black-gold-evening-print.png',
+    tone: 'gold',
+  },
+  {
+    name: '灰粉小花',
+    desc: '低饱和粉调，轻熟、柔和、不甜腻。',
+    image: '/assets/images/home/04-prints/dusty-rose-floral-print.png',
+    tone: 'rose',
+  },
+];
+
+export const knitBenefits = [
+  { title: '柔软弹力', desc: '坐下、走动、通勤都不紧绷。' },
+  { title: '垂坠显瘦', desc: '修饰腰腹与臀部线条。' },
+  { title: '贴合不贴肉', desc: '针织弹性贴合身体，但保持呼吸感。' },
+  { title: '印花细腻', desc: '花色层次丰富，远看有气质，近看有细节。' },
+  { title: '夏季好打理', desc: '轻薄、易搭配，适合日常高频穿着。' },
+];
+
+export const qualityItems = [
+  { title: '精选针织面料', desc: '轻薄弹力，柔软垂坠，适合夏季。' },
+  { title: '稳定版型打样', desc: 'V 领安全位、高腰线与腰部褶裥反复确认。' },
+  { title: '小批量生产', desc: '按众定人数生产，减少库存浪费。' },
+  { title: '质检后交付', desc: '面料、尺码、车缝、包装逐项检查。' },
+];
+
+export const brandStoryImages = [
+  '/assets/images/home/07-brand-story/elegant-fashion-studio-with-city-view.png',
+  '/assets/images/home/07-brand-story/serene-fabric-studio-in-muted-tones.png',
+  '/assets/images/home/07-brand-story/fashion-design-workspace-in-soft-light.png',
+];
