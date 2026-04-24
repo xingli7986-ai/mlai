@@ -1,0 +1,680 @@
+/* Pull base variables + fallback styles from the consumer home stylesheet
+   so product pages can render standalone. */
+@import "./home-consumer.css";
+
+.productPage {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(255,255,255,.8), transparent 32%),
+    linear-gradient(180deg, #fbf7f2 0%, #f7f1ea 52%, #f3e9df 100%);
+  color: var(--text-main);
+  padding-bottom: 88px;
+}
+
+.productTopbar {
+  height: 78px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 max(32px, calc((100vw - var(--container)) / 2));
+  border-bottom: 1px solid rgba(185,147,108,.18);
+  background: rgba(251,247,242,.92);
+  backdrop-filter: blur(14px);
+}
+
+.productBrand {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.productBrand span {
+  font-family: "Cormorant Garamond", "Noto Serif SC", Georgia, serif;
+  font-size: 28px;
+  letter-spacing: -.03em;
+}
+
+.productBrand small {
+  margin-top: 6px;
+  color: var(--gold);
+  font-size: 10px;
+  letter-spacing: .3em;
+}
+
+.productTopbar nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  color: var(--text-sub);
+  font-size: 14px;
+}
+
+.productBack {
+  width: min(var(--container), calc(100vw - 64px));
+  margin: 34px auto 0;
+  display: block;
+  color: var(--gold-dark);
+  font-size: 14px;
+}
+
+.collectionHero,
+.detailHero,
+.detailSection,
+.detailTwoCol,
+.filterRail,
+.collectionGrid {
+  width: min(var(--container), calc(100vw - 64px));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.collectionHero {
+  padding: 82px 0 34px;
+  max-width: var(--container);
+}
+
+.collectionHero h1,
+.detailInfo h1,
+.detailSection h2,
+.storyPanel h2 {
+  margin: 0;
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", Georgia, serif;
+  font-weight: 400;
+  letter-spacing: -.055em;
+  color: var(--text-main);
+}
+
+.collectionHero h1 {
+  font-size: clamp(48px, 4.6vw, 76px);
+  line-height: 1.08;
+}
+
+.collectionHero p:not(.eyebrow) {
+  max-width: 690px;
+  margin: 22px 0 0;
+  color: var(--text-sub);
+  font-size: 17px;
+  line-height: 1.9;
+}
+
+.filterRail {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.filterRail button {
+  min-height: 86px;
+  padding: 18px 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(255,250,245,.7);
+  color: var(--text-main);
+  text-align: left;
+  cursor: pointer;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.filterRail button:hover,
+.filterRail button.is-active {
+  transform: translateY(-1px);
+  border-color: rgba(185,147,108,.58);
+  background: rgba(255,250,245,.96);
+}
+
+.filterRail strong,
+.filterRail span {
+  display: block;
+}
+
+.filterRail strong {
+  font-size: 15px;
+}
+
+.filterRail span {
+  margin-top: 8px;
+  color: var(--text-sub);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.collectionGrid {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.collectionCard {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: rgba(255,250,245,.86);
+  box-shadow: var(--shadow-card);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.collectionCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 22px 48px rgba(60,40,25,.11);
+}
+
+.collectionCard__media {
+  position: relative;
+  aspect-ratio: .78;
+  background: var(--bg-deep);
+  overflow: hidden;
+}
+
+.collectionCard__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.collectionCard__series {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255,250,245,.86);
+  color: var(--gold-dark);
+  font-size: 12px;
+}
+
+.collectionCard__body {
+  position: relative;
+  padding: 20px;
+}
+
+.collectionCard__index {
+  position: absolute;
+  right: 20px;
+  top: -21px;
+  font-family: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  color: rgba(255,250,245,.9);
+  font-size: 48px;
+  line-height: 1;
+  text-shadow: 0 4px 18px rgba(68,45,28,.14);
+}
+
+.collectionCard h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.collectionCard p {
+  margin: 9px 0 0;
+  color: var(--text-sub);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.collectionCard__tags {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.collectionCard__tags span,
+.detailTags span,
+.detailOccasions b {
+  height: 26px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: rgba(185,147,108,.12);
+  color: var(--gold-dark);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.collectionCard__meta {
+  margin-top: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.collectionCard__meta strong {
+  font-family: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  font-size: 25px;
+}
+
+.collectionCard__meta span {
+  color: var(--text-sub);
+  font-size: 12px;
+}
+
+.collectionProgress {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 12px;
+  color: var(--text-sub);
+  font-size: 12px;
+}
+
+.collectionProgress b {
+  color: var(--gold-dark);
+}
+
+.collectionProgress i {
+  grid-column: 1 / -1;
+  height: 7px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(185,147,108,.16);
+}
+
+.collectionProgress em {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #c58e89, #b9936c);
+}
+
+.detailHero {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: minmax(0, .92fr) minmax(420px, .78fr);
+  gap: 48px;
+  align-items: start;
+}
+
+.detailGallery {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 116px;
+  gap: 16px;
+}
+
+.detailGallery__main,
+.detailGallery__thumb {
+  width: 100%;
+  object-fit: cover;
+  object-position: center top;
+  border-radius: 24px;
+  border: 1px solid var(--border);
+  background: var(--bg-deep);
+  box-shadow: var(--shadow-card);
+}
+
+.detailGallery__main {
+  aspect-ratio: .78;
+  height: auto;
+}
+
+.detailGallery__thumbs {
+  display: grid;
+  gap: 14px;
+}
+
+.detailGallery__thumb {
+  aspect-ratio: 1;
+}
+
+.detailInfo {
+  position: sticky;
+  top: 112px;
+  padding: 34px;
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  background: rgba(255,250,245,.9);
+  box-shadow: var(--shadow-soft);
+}
+
+.detailInfo h1 {
+  font-size: clamp(38px, 3.4vw, 58px);
+  line-height: 1.13;
+}
+
+.detailLead {
+  margin: 20px 0 0;
+  color: var(--text-sub);
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+.detailTags {
+  margin-top: 22px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.detailPriceRow {
+  margin-top: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+}
+
+.detailPriceRow strong {
+  font-family: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  font-size: 42px;
+  line-height: 1;
+}
+
+.detailPriceRow span {
+  color: #fff;
+  background: #c58e89;
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 13px;
+}
+
+.detailProgress {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 14px;
+  color: var(--text-sub);
+}
+
+.detailProgress span,
+.detailProgress strong {
+  display: block;
+}
+
+.detailProgress strong {
+  margin-top: 4px;
+  color: var(--text-main);
+  font-size: 20px;
+}
+
+.detailProgress b {
+  align-self: end;
+  color: var(--gold-dark);
+}
+
+.detailProgress i {
+  grid-column: 1 / -1;
+  height: 9px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(185,147,108,.16);
+}
+
+.detailProgress em {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #c58e89, #b9936c);
+}
+
+.detailCtas {
+  margin-top: 28px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.detailOccasions {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+}
+
+.detailOccasions > span {
+  display: block;
+  color: var(--text-sub);
+  font-size: 13px;
+}
+
+.detailOccasions > div {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.detailSection,
+.detailTwoCol {
+  margin-top: 64px;
+}
+
+.detailSection__title {
+  max-width: 640px;
+  margin-bottom: 26px;
+}
+
+.detailSection h2,
+.storyPanel h2 {
+  font-size: clamp(30px, 2.7vw, 44px);
+  line-height: 1.18;
+}
+
+.detailSection__title p:not(.eyebrow),
+.storyPanel p,
+.storyPanel li {
+  color: var(--text-sub);
+  line-height: 1.85;
+  font-size: 15px;
+}
+
+.benefitCards {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.benefitCards article,
+.storyPanel,
+.specGrid div,
+.timelineGrid article {
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: rgba(255,250,245,.84);
+  box-shadow: var(--shadow-card);
+}
+
+.benefitCards article {
+  min-height: 112px;
+  padding: 24px;
+}
+
+.benefitCards span {
+  display: block;
+  color: var(--gold);
+  font-size: 20px;
+}
+
+.benefitCards strong {
+  display: block;
+  margin-top: 14px;
+  font-size: 18px;
+}
+
+.detailTwoCol {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.storyPanel {
+  padding: 30px;
+}
+
+.storyPanel ul {
+  margin: 18px 0 0;
+  padding-left: 1.1em;
+}
+
+.specGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.specGrid div {
+  min-height: 104px;
+  padding: 22px;
+}
+
+.specGrid span {
+  display: block;
+  color: var(--text-sub);
+  font-size: 13px;
+}
+
+.specGrid strong {
+  display: block;
+  margin-top: 12px;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.sizeTableWrap {
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: rgba(255,250,245,.84);
+  box-shadow: var(--shadow-card);
+}
+
+.sizeTable {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+
+.sizeTable th,
+.sizeTable td {
+  padding: 18px 16px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+.sizeTable th {
+  color: var(--gold-dark);
+  font-weight: 600;
+  background: rgba(185,147,108,.08);
+}
+
+.sizeTable td:first-child {
+  font-weight: 700;
+}
+
+.sizeTable tr:last-child td {
+  border-bottom: 0;
+}
+
+.timelineGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.timelineGrid article {
+  padding: 24px;
+}
+
+.timelineGrid span {
+  color: var(--gold);
+  font-family: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  font-size: 28px;
+}
+
+.timelineGrid strong {
+  display: block;
+  margin-top: 16px;
+  font-size: 18px;
+}
+
+.timelineGrid p {
+  margin: 10px 0 0;
+  color: var(--text-sub);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.productNotFound {
+  padding: 92px max(32px, calc((100vw - var(--container)) / 2));
+}
+
+.productNotFound h1 {
+  font-family: "Noto Serif SC", "Songti SC", Georgia, serif;
+  font-weight: 400;
+  font-size: 48px;
+}
+
+@media (max-width: 1180px) {
+  .collectionGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .detailHero {
+    grid-template-columns: 1fr;
+  }
+  .detailInfo {
+    position: relative;
+    top: auto;
+  }
+  .filterRail,
+  .benefitCards,
+  .timelineGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .productTopbar {
+    height: auto;
+    padding-top: 18px;
+    padding-bottom: 18px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .productTopbar nav {
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+  .collectionHero,
+  .detailHero,
+  .detailSection,
+  .detailTwoCol,
+  .filterRail,
+  .collectionGrid,
+  .productBack {
+    width: min(100% - 32px, var(--container));
+  }
+  .collectionHero {
+    padding-top: 48px;
+  }
+  .filterRail,
+  .collectionGrid,
+  .detailTwoCol,
+  .benefitCards,
+  .specGrid,
+  .timelineGrid {
+    grid-template-columns: 1fr;
+  }
+  .detailGallery {
+    grid-template-columns: 1fr;
+  }
+  .detailGallery__thumbs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .detailInfo {
+    padding: 24px;
+  }
+  .detailPriceRow strong {
+    font-size: 34px;
+  }
+}

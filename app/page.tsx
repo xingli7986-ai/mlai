@@ -1,6 +1,5 @@
-"use client";
-
-import { useState } from "react";
+import Link from "next/link";
+import AssetImage from "@/components/AssetImage";
 import {
   brandStoryImages,
   consumerSteps,
@@ -15,45 +14,6 @@ import {
   type HomeProduct,
 } from "@/lib/home-consumer-data";
 import "./home-consumer.css";
-
-function AssetImage({
-  src,
-  alt,
-  className = "",
-  tone = "ink",
-  label,
-}: {
-  src: string;
-  alt: string;
-  className?: string;
-  tone?: string;
-  label?: string;
-}) {
-  const [failed, setFailed] = useState(false);
-
-  if (failed) {
-    return (
-      <div
-        className={`${className} asset-fallback pattern-${tone}`}
-        aria-label={alt}
-        role="img"
-      >
-        <span>{label ?? "MaxLuLu"}</span>
-      </div>
-    );
-  }
-
-  return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={src}
-      alt={alt}
-      className={className}
-      loading="lazy"
-      onError={() => setFailed(true)}
-    />
-  );
-}
 
 function IconMark({
   type,
@@ -115,7 +75,7 @@ function ProductCard({
   );
 
   return (
-    <article className="productCard">
+    <Link href={`/products/${product.id}`} className="productCard">
       <div className="productCard__media">
         <AssetImage
           src={product.image}
@@ -157,7 +117,7 @@ function ProductCard({
           </div>
         </div>
       </div>
-    </article>
+    </Link>
   );
 }
 
