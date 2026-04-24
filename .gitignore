@@ -37,6 +37,14 @@ yarn-error.log*
 # OG image should be uploaded to R2, not committed
 og-image.png
 
+# Raw asset sources — uploaded to R2 via scripts/upload-assets.mjs
+/assets/
+/reference/
+/reference-mvp/
+/首页素材图/
+hero-banner.png
+scripts/upload-assets-result.json
+
 # vercel
 .vercel
 

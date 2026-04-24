@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
+import "./studio.css";
 
 type IconName =
   | "dashboard"
@@ -12,7 +13,10 @@ type IconName =
   | "sparkles"
   | "book"
   | "settings"
-  | "crown";
+  | "crown"
+  | "search"
+  | "bell"
+  | "menu";
 
 function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
   const common = {
@@ -24,6 +28,7 @@ function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
     strokeWidth: 1.6,
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
+    "aria-hidden": true,
   };
   switch (name) {
     case "dashboard":
@@ -81,214 +86,197 @@ function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
           <path d="M3 7l4 5 5-8 5 8 4-5-2 12H5L3 7Z" />
         </svg>
       );
+    case "search":
+      return (
+        <svg {...common}>
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3-3" />
+        </svg>
+      );
+    case "bell":
+      return (
+        <svg {...common}>
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+        </svg>
+      );
+    case "menu":
+      return (
+        <svg {...common}>
+          <path d="M3 6h18M3 12h18M3 18h18" />
+        </svg>
+      );
   }
 }
 
 interface NavItem {
-  key: string;
   label: string;
   href: string;
   icon: IconName;
+  matcher: (pathname: string) => boolean;
 }
 
-const NAV_ITEMS: NavItem[] = [
-  { key: "dashboard", label: "Dashboard", href: "/studio", icon: "dashboard" },
-  { key: "projects", label: "My Projects", href: "/studio", icon: "folder" },
-  { key: "designs", label: "My Designs", href: "/my", icon: "image" },
-  { key: "favorites", label: "Favorites", href: "/studio", icon: "heart" },
-  { key: "inspiration", label: "Inspiration", href: "/studio", icon: "sparkles" },
-  { key: "brand", label: "Brand Library", href: "/studio", icon: "book" },
-  { key: "settings", label: "Settings", href: "/my", icon: "settings" },
+const PRIMARY_NAV: NavItem[] = [
+  {
+    label: "Dashboard",
+    href: "/studio",
+    icon: "dashboard",
+    matcher: (p) => p === "/studio",
+  },
+  {
+    label: "My Projects",
+    href: "/studio",
+    icon: "folder",
+    matcher: () => false,
+  },
+  {
+    label: "My Designs",
+    href: "/my",
+    icon: "image",
+    matcher: () => false,
+  },
+  {
+    label: "Favorites",
+    href: "/studio",
+    icon: "heart",
+    matcher: () => false,
+  },
+  {
+    label: "Inspiration",
+    href: "/studio",
+    icon: "sparkles",
+    matcher: () => false,
+  },
+  {
+    label: "Brand Library",
+    href: "/studio",
+    icon: "book",
+    matcher: () => false,
+  },
+  {
+    label: "Settings",
+    href: "/my",
+    icon: "settings",
+    matcher: () => false,
+  },
 ];
 
 function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname() || "/studio";
   return (
-    <aside
-      className="flex h-full w-60 flex-col border-r"
-      style={{ backgroundColor: "#1E1E1E", borderColor: "#2A2A2A" }}
-    >
-      <nav className="flex-1 overflow-y-auto px-3 py-5">
-        <ul className="space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const active =
-              item.key === "dashboard"
-                ? pathname === "/studio"
-                : false;
-            return (
-              <li key={item.key}>
-                <Link
-                  href={item.href}
-                  onClick={onNavigate}
-                  className="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition"
-                  style={{
-                    color: active ? "#C8A875" : "#D8D7D3",
-                    backgroundColor: active ? "rgba(200,168,117,0.08)" : "transparent",
-                  }}
-                >
-                  <span
-                    className="inline-flex h-5 w-5 items-center justify-center"
-                    style={{ color: active ? "#C8A875" : "#D8D7D3" }}
-                  >
-                    <Icon name={item.icon} />
-                  </span>
-                  <span className="tracking-wide">{item.label}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+    <aside className="sidebar">
+      <div className="nav-group">
+        <div className="group-label">Workspace</div>
+        {PRIMARY_NAV.slice(0, 4).map((item) => {
+          const active = item.matcher(pathname);
+          return (
+            <Link
+              key={item.label}
+              href={item.href}
+              className={`nav-item${active ? " is-active" : ""}`}
+              onClick={onNavigate}
+            >
+              <Icon name={item.icon} />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </div>
 
-      <div
-        className="mx-3 my-4 border-t"
-        style={{ borderColor: "#2A2A2A" }}
-      />
-
-      <div className="px-5 pb-6">
-        <div className="flex items-center gap-2" style={{ color: "#C8A875" }}>
-          <Icon name="crown" size={16} />
-          <span
-            className="text-xs uppercase tracking-[0.2em]"
-            style={{ fontFamily: "var(--font-display)" }}
+      <div className="nav-group">
+        <div className="group-label">Discover</div>
+        {PRIMARY_NAV.slice(4, 6).map((item) => (
+          <Link
+            key={item.label}
+            href={item.href}
+            className="nav-item"
+            onClick={onNavigate}
           >
-            Designer
-          </span>
+            <Icon name={item.icon} />
+            <span>{item.label}</span>
+          </Link>
+        ))}
+      </div>
+
+      <div className="nav-group">
+        <div className="group-label">Account</div>
+        {PRIMARY_NAV.slice(6).map((item) => (
+          <Link
+            key={item.label}
+            href={item.href}
+            className="nav-item"
+            onClick={onNavigate}
+          >
+            <Icon name={item.icon} />
+            <span>{item.label}</span>
+          </Link>
+        ))}
+      </div>
+
+      <div className="designer-badge">
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Icon name="crown" size={16} />
+          <h4>Designer Plan</h4>
         </div>
-        <p className="mt-1 text-xs" style={{ color: "#8A8A8A" }}>
-          Premium toolkit
-        </p>
+        <p>开启设计师权益，解锁高级工具与收益分润。</p>
       </div>
     </aside>
   );
 }
 
 export default function StudioLayout({ children }: { children: ReactNode }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [open, setOpen] = useState(false);
 
   return (
-    <div
-      className="flex min-h-screen flex-col"
-      style={{ backgroundColor: "#0C0C0F", color: "#F9F9FF" }}
-    >
-      <header
-        className="sticky top-0 z-40 flex h-14 items-center justify-between border-b px-4 sm:h-[60px] sm:px-6"
-        style={{
-          backgroundColor: "rgba(12,12,15,0.92)",
-          borderColor: "#2A2A2A",
-          backdropFilter: "blur(10px)",
-        }}
-      >
-        <div className="flex items-center gap-3">
+    <div className="studio-root">
+      <header className="topbar">
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <button
+            className="hamburger"
             type="button"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg md:hidden"
-            style={{ backgroundColor: "#1E1E1E", color: "#D8D7D3" }}
-            onClick={() => setMobileOpen((v) => !v)}
             aria-label="Toggle menu"
+            onClick={() => setOpen((v) => !v)}
           >
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-            >
-              <path d="M3 6h18M3 12h18M3 18h18" />
-            </svg>
+            <Icon name="menu" />
           </button>
-          <Link
-            href="/studio"
-            className="text-lg tracking-tight sm:text-xl"
-            style={{ fontFamily: "var(--font-display)", color: "#F9F9FF" }}
-          >
-            MaxLuLu <span style={{ color: "#C8A875" }}>AI</span>
+          <Link href="/studio" aria-label="MaxLuLu AI Studio">
+            <span className="brand-name">
+              MaxLuLu <em>AI</em>
+            </span>
+            <span className="brand-sub">AI Design Studio</span>
           </Link>
         </div>
 
-        <div className="flex items-center gap-3 sm:gap-4">
-          <button
-            type="button"
-            aria-label="Search"
-            className="hidden h-9 w-9 items-center justify-center rounded-full sm:inline-flex"
-            style={{ backgroundColor: "#1E1E1E", color: "#D8D7D3" }}
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="m20 20-3-3" />
-            </svg>
+        <div className="topbar-actions">
+          <button type="button" className="icon-btn" aria-label="搜索">
+            <Icon name="search" />
           </button>
-          <button
-            type="button"
-            aria-label="Notifications"
-            className="hidden h-9 w-9 items-center justify-center rounded-full sm:inline-flex"
-            style={{ backgroundColor: "#1E1E1E", color: "#D8D7D3" }}
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
-              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
-            </svg>
+          <button type="button" className="icon-btn" aria-label="通知">
+            <Icon name="bell" />
           </button>
-          <Link
-            href="/my"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-xs font-medium"
-            style={{ backgroundColor: "#C8A875", color: "#0C0C0F" }}
-            aria-label="Account"
-          >
+          <Link href="/my" className="avatar" aria-label="账户">
             M
           </Link>
-          <Link
-            href="/studio/pattern/generate"
-            className="hidden rounded-lg px-3.5 py-2 text-xs font-medium tracking-wide transition hover:opacity-90 sm:inline-flex"
-            style={{ backgroundColor: "#C8A875", color: "#0C0C0F" }}
-          >
+          <Link href="/studio/pattern/generate" className="btn gold small">
             + New Project
           </Link>
         </div>
       </header>
 
-      <div className="flex flex-1">
-        <div className="hidden md:block">
-          <Sidebar />
+      <div className="layout">
+        <Sidebar />
+
+        <div
+          className="mobile-sidebar"
+          data-open={open ? "true" : "false"}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="scrim" onClick={() => setOpen(false)} />
+          <Sidebar onNavigate={() => setOpen(false)} />
         </div>
 
-        {mobileOpen && (
-          <div
-            className="fixed inset-0 z-50 md:hidden"
-            role="dialog"
-            aria-modal="true"
-          >
-            <div
-              className="absolute inset-0"
-              style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
-              onClick={() => setMobileOpen(false)}
-            />
-            <div className="absolute inset-y-0 left-0">
-              <Sidebar onNavigate={() => setMobileOpen(false)} />
-            </div>
-          </div>
-        )}
-
-        <main className="flex-1 px-4 py-6 sm:px-8 sm:py-8">{children}</main>
+        <main className="main">{children}</main>
       </div>
     </div>
   );
