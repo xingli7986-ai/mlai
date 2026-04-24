@@ -52,7 +52,7 @@ const FEATURED = [
   },
 ];
 
-const HERO_IMAGE = FEATURED[0].url;
+const HERO_IMAGE = "https://pub-39ccb989bffa4f729bb1ae58876f3b36.r2.dev/brand/hero-banner.png";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -143,23 +143,43 @@ export default function HomePage() {
 
       {/* ======= Hero ======= */}
       <section
-        className="relative"
+        className="relative w-full overflow-hidden h-[50vh] min-h-[420px] md:h-[70vh] md:min-h-[560px]"
         style={{ backgroundColor: "#F7F0E9" }}
       >
-        <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-5 py-16 sm:px-8 sm:py-20 lg:grid-cols-2 lg:gap-12 lg:py-28">
-          <div>
+        <div className="absolute inset-0">
+          <Image
+            src={HERO_IMAGE}
+            alt="MaxLuLu AI — Design the Extraordinary"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+            style={{ objectPosition: "75% center" }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to right, rgba(247,240,233,0.85) 0%, rgba(247,240,233,0.55) 35%, rgba(247,240,233,0) 65%)",
+            }}
+          />
+        </div>
+
+        <div className="relative mx-auto flex h-full max-w-7xl items-center px-5 sm:px-8">
+          <div className="max-w-xl">
             <p
-              className="mb-4 text-[11px] uppercase"
+              className="mb-3 text-[10px] uppercase sm:mb-4 sm:text-[11px]"
               style={{
-                color: "#C8A875",
+                color: "#0C0C0F",
                 letterSpacing: "0.3em",
                 fontFamily: "var(--font-body)",
+                opacity: 0.7,
               }}
             >
               AI-POWERED DESIGN TOOLS · MEET TIMELESS ELEGANCE
             </p>
             <h1
-              className="text-[44px] leading-[1.05] tracking-tight sm:text-[56px]"
+              className="text-[32px] leading-[1.05] tracking-tight sm:text-[48px]"
               style={{
                 color: "#0C0C0F",
                 fontFamily: "var(--font-display)",
@@ -171,32 +191,33 @@ export default function HomePage() {
               <span style={{ fontStyle: "italic" }}>Extraordinary</span>
             </h1>
             <p
-              className="mt-6 max-w-md text-base leading-relaxed sm:text-lg"
+              className="mt-4 max-w-md text-sm leading-relaxed sm:mt-5 sm:text-base"
               style={{
-                color: "#4A4A4A",
+                color: "#0C0C0F",
                 fontFamily: "var(--font-body)",
               }}
             >
-              每一朵印花，都由你绽放。用 AI 描述你的灵感，生成专属印花，定制你的裙装。
+              每一朵印花，都由你绽放。
             </p>
             <p
-              className="mt-4 text-[11px] uppercase"
+              className="mt-3 text-[10px] uppercase sm:text-[11px]"
               style={{
-                color: "#7D5B6E",
+                color: "#0C0C0F",
                 letterSpacing: "0.25em",
                 fontFamily: "var(--font-body)",
+                opacity: 0.65,
               }}
             >
               15 YEARS OF PRINT DRESSES · SHANGHAI · PARIS · WORLDWIDE
             </p>
 
-            <div className="mt-10 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap gap-3 sm:mt-8">
               <Link
                 href="/studio"
-                className="inline-flex items-center gap-2 px-7 py-3.5 text-[11px] uppercase transition hover:opacity-90"
+                className="inline-flex items-center gap-2 px-6 py-3 text-[11px] uppercase transition hover:opacity-90 sm:px-7 sm:py-3.5"
                 style={{
-                  backgroundColor: "#0C0C0F",
-                  color: "#F9F9FF",
+                  backgroundColor: "#F9F9FF",
+                  color: "#0C0C0F",
                   letterSpacing: "0.25em",
                   fontFamily: "var(--font-body)",
                   fontWeight: 600,
@@ -207,9 +228,9 @@ export default function HomePage() {
               </Link>
               <Link
                 href="/design"
-                className="inline-flex items-center gap-2 border px-7 py-3.5 text-[11px] uppercase transition hover:bg-[#0C0C0F] hover:text-[#F9F9FF]"
+                className="inline-flex items-center gap-2 border px-6 py-3 text-[11px] uppercase transition hover:bg-[#F9F9FF] sm:px-7 sm:py-3.5"
                 style={{
-                  borderColor: "#0C0C0F",
+                  borderColor: "#F9F9FF",
                   color: "#0C0C0F",
                   letterSpacing: "0.25em",
                   fontFamily: "var(--font-body)",
@@ -218,31 +239,6 @@ export default function HomePage() {
               >
                 Shop New Arrivals
               </Link>
-            </div>
-          </div>
-
-          <div
-            className="relative aspect-[4/5] w-full overflow-hidden rounded-sm"
-            style={{ backgroundColor: "#F1EDE6" }}
-          >
-            <Image
-              src={HERO_IMAGE}
-              alt="Featured print dress"
-              fill
-              priority
-              sizes="(min-width: 1024px) 560px, 100vw"
-              className="object-cover"
-            />
-            <div
-              className="absolute left-4 top-4 rounded-full px-3 py-1 text-[10px] uppercase"
-              style={{
-                backgroundColor: "rgba(247,240,233,0.9)",
-                color: "#0C0C0F",
-                letterSpacing: "0.25em",
-                fontFamily: "var(--font-body)",
-              }}
-            >
-              Signature Print
             </div>
           </div>
         </div>
