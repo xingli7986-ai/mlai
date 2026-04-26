@@ -1,423 +1,466 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import AssetImage from "@/components/AssetImage";
-import {
-  brandStoryImages,
-  consumerSteps,
-  hero,
-  knitBenefits,
-  navItems,
-  printStyles,
-  products,
-  qualityItems,
-  scenes,
-  stats,
-  type HomeProduct,
-} from "@/lib/home-consumer-data";
 import "./home-consumer.css";
 
-function IconMark({
-  type,
-}: {
-  type: "dress" | "group" | "factory" | "quality" | "delivery" | "spark";
-}) {
-  const icons = {
-    dress: (
-      <svg viewBox="0 0 48 48" aria-hidden="true">
-        <path d="M18 8h12l4 6-7 6 8 23H13l8-23-7-6 4-6Z" />
-        <path d="M20 9c1.6 3 6.4 3 8 0M21 20h10M18 31h16" />
-      </svg>
-    ),
-    group: (
-      <svg viewBox="0 0 48 48" aria-hidden="true">
-        <path d="M16 22a7 7 0 1 0 0-14 7 7 0 0 0 0 14ZM32 22a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z" />
-        <path d="M7 39c1.8-8 7.1-12 13-12 2 0 3.8.4 5.3 1.2M24 39c1.8-8 7.1-12 13-12 2.4 0 4.6.6 6.4 1.8" />
-      </svg>
-    ),
-    factory: (
-      <svg viewBox="0 0 48 48" aria-hidden="true">
-        <path d="M7 38h34V18l-10 6v-6l-10 6v-9H7v23Z" />
-        <path d="M12 15V8h6v7M13 30h5M23 30h5M33 30h5" />
-      </svg>
-    ),
-    quality: (
-      <svg viewBox="0 0 48 48" aria-hidden="true">
-        <path d="M24 6 39 12v10c0 10-6 17-15 22C15 39 9 32 9 22V12l15-6Z" />
-        <path d="m17 24 5 5 10-12" />
-      </svg>
-    ),
-    delivery: (
-      <svg viewBox="0 0 48 48" aria-hidden="true">
-        <path d="M6 15h25v22H6V15Zm31 8h5l4 7v7h-9V23Z" />
-        <path d="M14 40a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM38 40a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
-      </svg>
-    ),
-    spark: (
-      <svg viewBox="0 0 48 48" aria-hidden="true">
-        <path d="M24 5c3 9 6 12 15 15-9 3-12 6-15 15-3-9-6-12-15-15 9-3 12-6 15-15Z" />
-        <path d="M38 4c1 4 3 6 7 7-4 1-6 3-7 7-1-4-3-6-7-7 4-1 6-3 7-7ZM11 33c1 3 2 4 5 5-3 1-4 2-5 5-1-3-2-4-5-5 3-1 4-2 5-5Z" />
-      </svg>
-    ),
-  } as const;
+const HERO_IMG = "/assets/images/home/01-hero/ChatGPT Image Apr 26, 2026, 02_09_53 PM.png";
+const CUSTOM_IMG = "/assets/images/home/04-custom/ChatGPT Image Apr 26, 2026, 02_31_21 PM.png";
 
-  return <span className="iconMark">{icons[type]}</span>;
+type HotState = "hot" | "almost" | "new";
+
+type HotCard = {
+  name: string;
+  series: string;
+  price: string;
+  progress: number;
+  joined: number;
+  countdown: number;
+  state: HotState;
+  tagText: string;
+  image: string;
+};
+
+const HOT_CARDS: HotCard[] = [
+  {
+    name: "山茶花漫舞 系列",
+    series: "水墨晕染长袖针织连衣裙",
+    price: "¥699",
+    progress: 72,
+    joined: 324,
+    countdown: 23 * 3600 + 45 * 60 + 40,
+    state: "hot",
+    tagText: "热拼中",
+    image: "/assets/images/home/02-hot-group/ChatGPT Image Apr 26, 2026, 02_13_25 PM.png",
+  },
+  {
+    name: "都市艺境 系列",
+    series: "几何色块拼针织裹身连衣裙",
+    price: "¥799",
+    progress: 85,
+    joined: 285,
+    countdown: 18 * 3600 + 9 * 60 + 35,
+    state: "hot",
+    tagText: "热拼中",
+    image: "/assets/images/home/02-hot-group/ChatGPT Image Apr 26, 2026, 02_13_53 PM.png",
+  },
+  {
+    name: "印象涟花园 系列",
+    series: "艺术花卉开叉针织连衣裙",
+    price: "¥699",
+    progress: 93,
+    joined: 182,
+    countdown: 30 * 3600 + 11 * 60 + 13,
+    state: "almost",
+    tagText: "即将成团",
+    image: "/assets/images/home/02-hot-group/ChatGPT Image Apr 26, 2026, 02_14_01 PM.png",
+  },
+  {
+    name: "抽象线条 系列",
+    series: "抽象印花针织裹身连衣裙",
+    price: "¥699",
+    progress: 48,
+    joined: 156,
+    countdown: 12 * 3600 + 33 * 60 + 56,
+    state: "new",
+    tagText: "新品团",
+    image: "/assets/images/home/02-hot-group/ChatGPT Image Apr 26, 2026, 02_14_07 PM.png",
+  },
+];
+
+type GalleryItem = {
+  name: string;
+  price: string;
+  favs: number;
+  image: string;
+};
+
+const GALLERY_ITEMS: GalleryItem[] = [
+  { name: "水墨丹青", price: "¥699", favs: 523, image: "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_22_48 PM.png" },
+  { name: "休闲真丝", price: "¥799", favs: 947, image: "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_27_48 PM.png" },
+  { name: "几何构成", price: "¥699", favs: 412, image: "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_27_57 PM.png" },
+  { name: "月光蓝印", price: "¥799", favs: 567, image: "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_28_33 PM.png" },
+  { name: "色彩拼接", price: "¥799", favs: 388, image: "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_28_45 PM.png" },
+  { name: "鎏金花园", price: "¥699", favs: 321, image: "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_28_53 PM.png" },
+  { name: "热带风情", price: "¥799", favs: 289, image: "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_29_02 PM.png" },
+  { name: "都市律动", price: "¥699", favs: 398, image: "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_29_09 PM.png" },
+];
+
+function formatCountdown(total: number) {
+  const safe = Math.max(0, total);
+  const h = Math.floor(safe / 3600);
+  const m = Math.floor((safe % 3600) / 60);
+  const s = safe % 60;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
-function ProductCard({
-  product,
-  index,
-}: {
-  product: HomeProduct;
-  index: number;
-}) {
-  const progress = Math.min(
-    100,
-    Math.round((product.joined / product.target) * 100)
+export default function HomePage() {
+  const [scrolled, setScrolled] = useState(false);
+  const [countdowns, setCountdowns] = useState<number[]>(() =>
+    HOT_CARDS.map((c) => c.countdown)
   );
 
-  return (
-    <Link href={`/products/${product.id}`} className="productCard">
-      <div className="productCard__media">
-        <AssetImage
-          src={product.image}
-          alt={product.name}
-          tone={product.tone}
-          label={product.name.slice(0, 4)}
-          className="productCard__image"
-        />
-        <div className="productCard__badges">
-          <span>{product.status}</span>
-          <span>{product.tags[0]}</span>
-        </div>
-        <span className="productCard__number">0{index + 1}</span>
-      </div>
-      <div className="productCard__body">
-        <h3>{product.name}</h3>
-        <p>{product.subtitle}</p>
-        <div className="productCard__tags">
-          {product.tags.map((tag) => (
-            <span key={tag}>{tag}</span>
-          ))}
-        </div>
-        <div className="productCard__meta">
-          <strong>{product.price}</strong>
-          <span>{product.delivery}</span>
-        </div>
-        <div
-          className="groupLine"
-          aria-label={`${product.joined} / ${product.target} 人已参与`}
-        >
-          <div className="groupLine__top">
-            <span>
-              {product.joined} / {product.target} 人已参与
-            </span>
-            <b>{progress}%</b>
-          </div>
-          <div className="groupLine__track">
-            <i style={{ width: `${progress}%` }} />
-          </div>
-        </div>
-      </div>
-    </Link>
-  );
-}
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-export default function HomeConsumer() {
-  const featured = products.slice(0, 8);
-  const moreProducts = products.slice(8, 18);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setCountdowns((prev) => prev.map((t) => (t > 0 ? t - 1 : 0)));
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
-    <main className="maxluluHome" id="home">
-      <div className="topRibbon">
-        <span>✦ 15年印花连衣裙经验</span>
-        <span>针织印花 · 高腰剪裁</span>
-        <span>上海原创 · 小批量众定</span>
-        <span>舒适 · 优雅 · 知性</span>
-      </div>
-
-      <header className="siteHeader">
-        <a className="brand" href="#home" aria-label="MaxLuLu AI 首页">
-          <span>MaxLuLu AI</span>
-          <small>FASHION FOR YOU</small>
-        </a>
-        <nav className="siteNav" aria-label="主导航">
-          {navItems.map((item) => (
-            <a key={item.href} href={item.href}>
-              {item.label}
-            </a>
-          ))}
-        </nav>
-        <div className="headerActions">
-          <button className="searchBtn" aria-label="搜索" type="button">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="m21 21-4.8-4.8M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14Z" />
-            </svg>
-          </button>
-          <a className="partnerBtn" href="#partner">
-            设计师合作
-          </a>
+    <div className="page-wrap">
+      <nav className={`nav${scrolled ? " scrolled" : ""}`}>
+        <div className="container inner">
+          <Link href="/" className="nav-logo">
+            MaxLuLu <span className="ai">AI</span>
+          </Link>
+          <div className="nav-center">
+            <a href="#gallery">灵感画廊</a>
+            <a href="#custom">个性定制</a>
+            <a href="#hot">热拼专区</a>
+          </div>
+          <div className="nav-right">
+            <a href="#member">会员</a>
+            <a href="#wardrobe">我的衣橱</a>
+            <span className="nav-divider" />
+            <Link href="/studio" className="designer-btn">
+              设计师入驻
+            </Link>
+          </div>
         </div>
-      </header>
+      </nav>
 
-      <section className="heroSection">
-        <div className="heroSection__copy">
-          <p className="eyebrow">{hero.eyebrow}</p>
-          <h1>{hero.title}</h1>
-          <p className="heroText">{hero.subtitle}</p>
-          <div className="heroCtas">
-            <a className="btn btnPrimary" href="#new-arrivals">
-              {hero.primaryCta}
-            </a>
-            <a className="btn btnGhost" href="#group-buy">
-              {hero.secondaryCta}
+      <section className="hero">
+        <div className="container">
+          <div className="hero-copy">
+            <h1>
+              让你的灵感，
+              <br />
+              与喜欢的设计，
+              <br />
+              都能穿上身
+            </h1>
+            <p className="sub">
+              通过上千款设计师原创艺术印花，
+              <br />
+              或定制你的专属针织印花连衣裙
+            </p>
+            <div className="ctas">
+              <Link href="/products" className="btn-primary">
+                去灵感画廊
+              </Link>
+              <Link href="/studio" className="btn-secondary">
+                定制专区
+              </Link>
+            </div>
+            <div className="trust-row">
+              <span className="trust-item">
+                <span className="ic">✦</span>设计师原创
+              </span>
+              <span className="trust-item">
+                <span className="ic">✦</span>1000+ 全球印花
+              </span>
+              <span className="trust-item">
+                <span className="ic">✦</span>支付宝担保
+              </span>
+              <span className="trust-item">
+                <span className="ic">✦</span>7天退换无忧
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="hero-visual">
+          <Image
+            src={HERO_IMG}
+            alt="模特 · 针织印花裹身裙"
+            fill
+            priority
+            sizes="(max-width: 1024px) 100vw, 45vw"
+            className="hero-img"
+          />
+          <div className="fade" />
+        </div>
+      </section>
+
+      <section className="section" id="hot">
+        <div className="container">
+          <div className="section-head">
+            <h2>正在热拼 · 拼满即产</h2>
+            <a href="#hot" className="more">
+              查看热拼 →
             </a>
           </div>
-          <div className="heroStats">
-            {stats.map((item) => (
-              <div key={item.label}>
-                <strong>{item.value}</strong>
-                <span>{item.label}</span>
-              </div>
+          <div className="hot-grid">
+            {HOT_CARDS.map((card, idx) => {
+              const tagClass =
+                card.state === "hot"
+                  ? "tag-hot"
+                  : card.state === "almost"
+                  ? "tag-almost"
+                  : "tag-new";
+              return (
+                <article key={card.name} className="hot-card">
+                  <div className="img-wrap">
+                    <Image
+                      src={card.image}
+                      alt={card.name}
+                      fill
+                      sizes="(max-width: 480px) 50vw, (max-width: 1024px) 50vw, 25vw"
+                      className="hot-img"
+                    />
+                    <span className={`tag ${tagClass}`}>{card.tagText}</span>
+                  </div>
+                  <div className="body">
+                    <div className="name">{card.name}</div>
+                    <div className="series">{card.series}</div>
+                    <div className="price">{card.price}</div>
+                    <div className="progress">
+                      <div
+                        className="pfill"
+                        style={{ width: `${card.progress}%` }}
+                      />
+                    </div>
+                    <div className="meta">
+                      <span className="joined">已拼 {card.joined}人</span>
+                      <span className="countdown">
+                        <span className="dot">●</span>{" "}
+                        {formatCountdown(countdowns[idx] ?? 0)}
+                      </span>
+                    </div>
+                    <button type="button" className="card-btn">
+                      去拼团
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="section" id="gallery">
+        <div className="container">
+          <div className="section-head">
+            <h2>灵感画廊 · 千款设计等你挑</h2>
+            <Link href="/products" className="more">
+              看更多 →
+            </Link>
+          </div>
+          <div className="gallery-grid">
+            {GALLERY_ITEMS.map((item) => (
+              <article key={item.name} className="gallery-card">
+                <div className="img-wrap">
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    sizes="(max-width: 480px) 50vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    className="gallery-img"
+                  />
+                  <div className="overlay">
+                    <button type="button">查看详情</button>
+                  </div>
+                </div>
+                <div className="info">
+                  <div className="gname">{item.name}</div>
+                  <div className="gbot">
+                    <span className="gprice">{item.price}</span>
+                    <span className="gfav">♡ {item.favs}</span>
+                  </div>
+                </div>
+              </article>
             ))}
           </div>
         </div>
-        <div className="heroSection__visual">
-          <div className="heroFrame">
-            <AssetImage
-              src={hero.image}
-              alt="夏季针织印花裹身裙主视觉"
-              className="heroImage"
-              label="Summer Dress"
-              tone="ink"
-            />
-            <div className="heroCard">
-              <b>MaxLuLu</b>
-              <span>SINCE 2009</span>
-              <span>PRINTED KNIT DRESS</span>
-              <span>SHANGHAI ORIGINAL</span>
-            </div>
-          </div>
-        </div>
       </section>
 
-      <section className="consumerFlow" aria-label="购买流程">
-        {consumerSteps.map((step, index) => (
-          <div className="flowItem" key={step.title}>
-            <span className="flowItem__circle">{step.index}</span>
-            <div>
-              <strong>{step.title}</strong>
-              <p>{step.desc}</p>
-            </div>
-            {index < consumerSteps.length - 1 && (
-              <i className="flowArrow">→</i>
-            )}
-          </div>
-        ))}
-      </section>
-
-      <section className="sectionBlock featuredBlock" id="new-arrivals">
-        <div className="sectionTitleRow">
-          <div>
-            <p className="eyebrow">FEATURED DESIGNS</p>
-            <h2>夏季新品 / 正在众定的针织印花裙</h2>
-          </div>
-          <a href="#group-buy" className="linkPill">
-            查看全部设计 →
-          </a>
-        </div>
-        <div className="productGrid productGrid--featured">
-          {featured.map((product, index) => (
-            <ProductCard key={product.id} product={product} index={index} />
-          ))}
-        </div>
-      </section>
-
-      <section className="sectionBlock scenesBlock" id="scenes">
-        <div className="sectionIntro">
-          <p className="eyebrow">OCCASION</p>
-          <h2>按场景选裙</h2>
-          <p>
-            通勤、约会、晚餐与旅行，不同夏日场景都有一条舒服显腰的针织印花裙。
-          </p>
-        </div>
-        <div className="sceneGrid">
-          {scenes.map((scene) => (
-            <article className="sceneCard" key={scene.title}>
-              <AssetImage
-                src={scene.image}
-                alt={`${scene.title}场景针织印花裙`}
-                tone={scene.tone}
-                label={scene.title}
-                className="sceneCard__image"
-              />
-              <div className="sceneCard__content">
-                <h3>{scene.title}</h3>
-                <p>{scene.desc}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="sectionBlock printsBlock" id="prints">
-        <div className="sectionTitleRow">
-          <div>
-            <p className="eyebrow">PRINT STORIES</p>
-            <h2>按印花选风格</h2>
-          </div>
-          <p className="sectionSideText">
-            标志性印花是 MaxLuLu 的品牌识别：远看有气质，近看有细节。
-          </p>
-        </div>
-        <div className="printGrid">
-          {printStyles.map((style) => (
-            <article className="printCard" key={style.name}>
-              <AssetImage
-                src={style.image}
-                alt={style.name}
-                tone={style.tone}
-                label={style.name}
-                className="printCard__image"
-              />
-              <div>
-                <h3>{style.name}</h3>
-                <p>{style.desc}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="sectionBlock knitBlock">
-        <div className="knitBlock__visual">
-          <div className="fabricOrb fabricOrb--one" />
-          <div className="fabricOrb fabricOrb--two" />
-          <div className="dressSketch" aria-hidden="true">
-            <svg viewBox="0 0 260 360">
-              <path d="M95 20h70l24 38-45 35 57 260H59l57-260-45-35 24-38Z" />
-              <path d="M106 24c12 20 48 20 60 0M118 93l55 0M99 164c32 20 58 17 91 0M88 235c45 26 83 24 126 0" />
-            </svg>
-          </div>
-        </div>
-        <div className="knitBlock__copy">
-          <p className="eyebrow">WHY PRINTED KNIT</p>
-          <h2>为什么选择针织印花</h2>
-          <p>
-            夏季连衣裙不只要好看，也要坐下舒服、走路自在、上身有线条。针织印花让版型和印花同时服务身体。
-          </p>
-          <div className="benefitList">
-            {knitBenefits.map((item) => (
-              <div className="benefitItem" key={item.title}>
-                <IconMark type="spark" />
-                <div>
-                  <strong>{item.title}</strong>
-                  <span>{item.desc}</span>
+      <section className="section custom" id="custom">
+        <div className="container">
+          <div className="custom-inner">
+            <div className="custom-left">
+              <h2>个性定制 · 专属你的独一无二</h2>
+              <p className="desc">
+                描述你心目中的印花图案，选择款式与面料，工厂直接为你生产。
+              </p>
+              <div className="steps-row">
+                <div className="step">
+                  <div className="step-num">1</div>
+                  <div className="step-t">选择印花图案</div>
+                  <div className="step-d">
+                    描述灵感或
+                    <br />
+                    浏览现有图案
+                  </div>
+                  <div className="step-line" />
+                </div>
+                <div className="step">
+                  <div className="step-num">2</div>
+                  <div className="step-t">选择裙型版型</div>
+                  <div className="step-d">
+                    裹身裙 · A字裙
+                    <br />
+                    直筒裙 · 百褶裙
+                  </div>
+                  <div className="step-line" />
+                </div>
+                <div className="step">
+                  <div className="step-num">3</div>
+                  <div className="step-t">下单定制生产</div>
+                  <div className="step-d">
+                    选面料尺码
+                    <br />
+                    专属一件起做
+                  </div>
                 </div>
               </div>
-            ))}
+            </div>
+            <div className="custom-right">
+              <div className="custom-img">
+                <Image
+                  src={CUSTOM_IMG}
+                  alt="定制效果展示"
+                  fill
+                  sizes="(max-width: 1024px) 90vw, 400px"
+                  className="custom-bg"
+                />
+                <div className="custom-card">
+                  <h3>
+                    不止是连衣裙，
+                    <br />
+                    设计你的专属款
+                  </h3>
+                  <div className="feats">
+                    <span className="feat">
+                      <span className="ck">✓</span> 定制印花
+                    </span>
+                    <span className="feat">
+                      <span className="ck">✓</span> 天然面料
+                    </span>
+                    <span className="feat">
+                      <span className="ck">✓</span> 贴合身形
+                    </span>
+                    <span className="feat">
+                      <span className="ck">✓</span> 专属一件
+                    </span>
+                  </div>
+                  <div className="price-row">
+                    <span className="plabel">定制价</span>
+                    <span className="pbig">¥1599</span>
+                    <span className="plabel">起</span>
+                  </div>
+                  <Link href="/studio" className="cbtn">
+                    立即定制
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="sectionBlock groupBuyBlock" id="group-buy">
-        <div className="sectionIntro sectionIntro--center">
-          <p className="eyebrow">GROUP BUY</p>
-          <h2>喜欢就参与，满员即生产</h2>
-          <p>小批量制作，减少库存，也让你以更好的价格买到原创印花裙。</p>
-        </div>
-        <div className="productGrid productGrid--compact">
-          {moreProducts.map((product, index) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              index={index + featured.length}
-            />
-          ))}
-        </div>
-      </section>
-
-      <section className="sectionBlock qualityBlock">
-        <div className="qualityBlock__copy">
-          <p className="eyebrow">QUALITY & DELIVERY</p>
-          <h2>好面料、好版型、安心交付</h2>
-          <p>
-            把原来的工艺单、打样、工厂对接逻辑，转化为消费者能理解的品质保障。
-          </p>
-          <a href="#new-arrivals" className="btn btnPrimary">
-            查看正在众定
-          </a>
-        </div>
-        <div className="qualityGrid">
-          {qualityItems.map((item, index) => {
-            const iconType = (
-              ["dress", "group", "factory", "quality"] as const
-            )[index];
-            return (
-              <article className="qualityCard" key={item.title}>
-                <IconMark type={iconType} />
-                <h3>{item.title}</h3>
-                <p>{item.desc}</p>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <section className="brandStory" id="brand-story">
-        <div className="brandStory__content">
-          <p className="eyebrow">BRAND STORY</p>
-          <h2>巴黎灵感，上海原创</h2>
-          <p>
-            MaxLuLu
-            从印花连衣裙出发，以舒适、优雅、知性的品牌气质服务成熟自信的都市女性。这个夏天，我们把经典印花与针织版型重新组织成更适合日常穿着的夏季系列。
-          </p>
-          <div className="brandChips">
-            <span>Since 2009</span>
-            <span>Printed Knit Dress</span>
-            <span>Shanghai Original</span>
+      <div className="trust-bar">
+        <div className="container">
+          <div className="trust-bar-row">
+            <div className="trust-item2">
+              <div className="trust-icon">✦</div>
+              <span className="trust-t">2009年上海创立</span>
+            </div>
+            <div className="trust-item2">
+              <div className="trust-icon">✦</div>
+              <span className="trust-t">15年印花连衣裙专家</span>
+            </div>
+            <div className="trust-item2">
+              <div className="trust-icon">✦</div>
+              <span className="trust-t">100+ 门店历史</span>
+            </div>
+            <div className="trust-item2">
+              <div className="trust-icon">✦</div>
+              <span className="trust-t">7天退换无忧</span>
+            </div>
           </div>
         </div>
-        <div className="brandStory__gallery">
-          {brandStoryImages.map((src, index) => (
-            <AssetImage
-              key={src}
-              src={src}
-              alt={`MaxLuLu 品牌故事素材 ${index + 1}`}
-              tone={index === 0 ? "coffee" : index === 1 ? "ink" : "rose"}
-              label={
-                index === 0 ? "Atelier" : index === 1 ? "Fabric" : "Design"
-              }
-              className="brandStory__image"
-            />
-          ))}
+      </div>
+
+      <section className="cta">
+        <div className="container">
+          <h2>从灵感到成衣，只需一步</h2>
+          <p className="sub">Fashion For You — 每一朵印花，都由你绽放</p>
+          <div className="btns">
+            <Link href="/products" className="btn-g">
+              探索灵感画廊
+            </Link>
+            <Link href="/studio" className="btn-ow">
+              开始定制
+            </Link>
+          </div>
         </div>
       </section>
 
-      <section className="partnerSection" id="partner">
-        <div>
-          <p className="eyebrow">CO-CREATION</p>
-          <h2>设计师与 OPC 合作入口</h2>
-          <p>
-            前台首页以消费者选购为主，设计师共创、AI Studio 与工厂生产能力放在底部，作为供给侧合作入口。
-          </p>
-        </div>
-        <a className="btn btnGhost" href="/studio">
-          进入 AI Studio
-        </a>
-      </section>
-
-      <footer className="siteFooter">
-        <div className="footerBrand">
-          <strong>MaxLuLu AI</strong>
-          <span>Fashion For You</span>
-          <p>夏季针织印花连衣裙 · 众定生产 · 上海原创</p>
-        </div>
-        <div className="footerLinks">
-          <a href="#new-arrivals">夏季新品</a>
-          <a href="#group-buy">正在众定</a>
-          <a href="#prints">印花风格</a>
-          <a href="#brand-story">品牌故事</a>
+      <footer className="footer">
+        <div className="container">
+          <div className="footer-top">
+            <div className="footer-brand">
+              <div className="logo">
+                MaxLuLu <span className="ai">AI</span>
+              </div>
+              <div className="info">
+                2009年上海创立
+                <br />
+                15年印花连衣裙专家
+                <br />
+                上海禄创企业管理有限公司
+              </div>
+              <div className="slogan">Fashion For You</div>
+              <div className="footer-social">
+                <a href="#weibo" aria-label="微博">微</a>
+                <a href="#weibo2" aria-label="微博">博</a>
+                <a href="#redbook" aria-label="小红书">书</a>
+                <a href="#douyin" aria-label="抖音">抖</a>
+              </div>
+            </div>
+            <div className="footer-cols">
+              <div className="footer-col">
+                <div className="ft">帮助中心</div>
+                <a href="#size">尺码指南</a>
+                <a href="#shipping">物流与退换</a>
+                <a href="#payment">支付说明</a>
+              </div>
+              <div className="footer-col">
+                <div className="ft">关于我们</div>
+                <a href="#story">品牌故事</a>
+                <a href="#designer">设计师招募</a>
+                <a href="#stores">门店查询</a>
+              </div>
+              <div className="footer-col">
+                <div className="ft">服务与支持</div>
+                <a href="#support">联系客服</a>
+                <a href="#privacy">隐私政策</a>
+                <a href="#terms">用户协议</a>
+              </div>
+              <div className="footer-col">
+                <div className="ft">关注我们</div>
+                <a href="#wechat">微信公众号</a>
+                <a href="#weibo3">微博</a>
+                <a href="#redbook2">小红书</a>
+              </div>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            <span>© 2009-2026 MaxLuLu AI</span>
+            <span>上海禄创企业管理有限公司</span>
+            <span>沪ICP备XXXXXXXX号</span>
+          </div>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }
