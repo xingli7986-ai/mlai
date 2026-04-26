@@ -54,6 +54,7 @@ maxlulu-homepage-v4.html
 *.zip
 instruction*.md
 MaxLuLu_AI_*.md
+指令*.txt
 
 # vercel
 .vercel
