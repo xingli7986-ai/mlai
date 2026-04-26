@@ -47,6 +47,13 @@ scripts/upload-assets-result.json
 maxlulu-consumer-home.zip
 maxlulu-consumer-home-v2.zip
 
+# Design references / spec drops — keep local, do not commit
+design-spec.png
+maxlulu-homepage-v4.html
+*.zip
+instruction*.md
+MaxLuLu_AI_*.md
+
 # vercel
 .vercel
 
