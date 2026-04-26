@@ -1,6 +1,11 @@
-/* ======================================================
-   MaxLuLu AI — 首页样式 (per design-spec.png + v4 reference)
-   ====================================================== */
+/* ============================================================
+   MaxLuLu AI — homepage stylesheet (clean rewrite)
+   - section backgrounds run full viewport width
+   - inner content centered via .container { max-width: 1200px }
+   - all column layouts use fr/percent — no fixed-px widths
+   - tokens at the bottom of :root are also consumed by
+     app/product-pages.css and app/products/** — do not rename
+   ============================================================ */
 
 :root {
   --gold: #B9936C;
@@ -32,17 +37,10 @@
   --serif: "Noto Serif SC", "Songti SC", "SimSun", Georgia, serif;
   --sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
   --display: "Playfair Display", "Cormorant Garamond", Georgia, serif;
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
   margin: 0;
   font-family: var(--sans);
@@ -51,25 +49,15 @@ body {
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
-
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
-button {
-  font-family: var(--sans);
-  cursor: pointer;
-  border: none;
-  background: none;
-}
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; cursor: pointer; border: none; background: none; }
 
 @keyframes maxlulu-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
 }
 
-/* ───── 全站共享 token: product / studio 页面也会用到 ───── */
+/* ─── shared global tokens consumed by product / studio pages ─── */
 .eyebrow {
   margin: 0 0 18px;
   color: var(--gold);
@@ -94,42 +82,41 @@ button {
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
   text-decoration: none;
 }
-
-.btn:hover {
-  transform: translateY(-1px);
-}
-
+.btn:hover { transform: translateY(-1px); }
 .btnPrimary {
   background: #111;
   color: white;
   box-shadow: 0 18px 32px rgba(0, 0, 0, 0.12);
 }
-
 .btnGhost {
   background: rgba(255, 250, 245, 0.72);
   color: #3b342e;
   border-color: var(--border);
 }
 
-/* ───── 页面外层 ───── */
+/* ============================================================
+   layout primitives
+   ============================================================ */
 .page-wrap {
   width: 100%;
   background: var(--bg);
 }
 
 .container {
+  width: 100%;
   max-width: var(--container);
   margin: 0 auto;
   padding: 0 24px;
 }
 
-/* ══════════════════════════════════════════════
-   01. 导航 — sticky 72px, scroll 后阴影
-   ══════════════════════════════════════════════ */
+/* ============================================================
+   01. nav — sticky, full-width, blurred
+   ============================================================ */
 .nav {
   position: sticky;
   top: 0;
   z-index: 100;
+  width: 100%;
   height: 72px;
   display: flex;
   align-items: center;
@@ -137,19 +124,16 @@ button {
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid transparent;
-  transition: border-color 200ms ease-out, box-shadow 200ms ease-out, background 200ms ease-out;
+  transition: border-color 200ms ease, box-shadow 200ms ease, background 200ms ease;
 }
-
 .nav.scrolled {
   border-bottom-color: var(--border);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
-
 .nav .inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
 }
 
 .nav-logo {
@@ -161,9 +145,7 @@ button {
   display: flex;
   align-items: center;
   gap: 6px;
-  min-width: 180px;
 }
-
 .nav-logo .ai {
   font-size: 9px;
   color: var(--gold);
@@ -180,59 +162,44 @@ button {
   gap: 32px;
   align-items: center;
 }
-
 .nav-center a {
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
   padding: 6px 0;
   position: relative;
-  transition: color 200ms ease-out;
-  letter-spacing: 0.3px;
+  transition: color 200ms ease;
 }
-
 .nav-center a::after {
   content: "";
   position: absolute;
   bottom: 0;
   left: 50%;
+  transform: translateX(-50%);
   width: 0;
   height: 2px;
   background: var(--gold);
-  transition: width 200ms ease-out;
-  transform: translateX(-50%);
+  transition: width 200ms ease;
 }
-
-.nav-center a:hover {
-  color: var(--gold);
-}
-
-.nav-center a:hover::after {
-  width: 100%;
-}
+.nav-center a:hover { color: var(--gold); }
+.nav-center a:hover::after { width: 100%; }
 
 .nav-right {
   display: flex;
   align-items: center;
   gap: 20px;
 }
-
 .nav-right a {
   font-size: 13px;
   color: var(--text2);
-  transition: color 200ms ease-out;
+  transition: color 200ms ease;
 }
-
-.nav-right a:hover {
-  color: var(--text);
-}
-
+.nav-right a:hover { color: var(--text); }
 .nav-divider {
   width: 1px;
   height: 20px;
   background: var(--border);
 }
-
 .designer-btn {
   font-size: 12px;
   color: var(--gold);
@@ -241,84 +208,67 @@ button {
   border-radius: 32px;
   font-weight: 500;
   background: transparent;
-  transition: background 200ms ease-out, color 200ms ease-out, border-color 200ms ease-out, transform 100ms ease-out;
   display: inline-flex;
   align-items: center;
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease, transform 100ms ease;
 }
-
 .designer-btn:hover {
   background: var(--gold);
   color: var(--white);
   border-color: var(--gold);
 }
-
 .designer-btn:active {
   background: var(--gold-pressed);
-  transform: translateY(2px);
+  transform: translateY(1px);
 }
 
-/* ══════════════════════════════════════════════
-   02. HERO — 高 660, 左 55% 右 45% 出血
-   ══════════════════════════════════════════════ */
+/* ============================================================
+   02. hero — fluid 2-col, full-bleed bg, content centered at 1200
+   ============================================================ */
 .hero {
-  height: 680px;
-  display: flex;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
+  width: 100%;
   background: var(--bg);
+  padding: 80px 0;
 }
-
 .hero .container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 40px;
-  align-items: stretch;
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  height: 100%;
+  gap: 56px;
+  align-items: center;
 }
-
 .hero-copy {
-  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding-bottom: 80px;
   min-width: 0;
 }
-
 .hero h1 {
   font-family: var(--serif);
-  font-size: 42px;
+  font-size: clamp(36px, 4vw, 56px);
   font-weight: 700;
   line-height: 1.18;
   color: var(--text);
-  margin: 0 0 24px;
+  margin: 0 0 20px;
 }
-
 .hero .sub {
   font-family: var(--sans);
   font-size: 16px;
-  line-height: 1.6;
+  line-height: 1.7;
   color: var(--text2);
-  margin: 0 0 48px;
-  max-width: 380px;
+  margin: 0 0 36px;
+  max-width: 460px;
 }
-
 .hero .ctas {
   display: flex;
   flex-direction: row;
   gap: 14px;
-  margin-bottom: 48px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
 }
-
 .hero .btn-primary {
   min-width: 160px;
   height: 48px;
   padding: 0 28px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   background: var(--gold);
   color: var(--white);
@@ -326,23 +276,18 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 200ms ease-out, transform 100ms ease-out;
+  transition: background 200ms ease, transform 100ms ease;
 }
-
-.hero .btn-primary:hover {
-  background: var(--gold-hover);
-}
-
+.hero .btn-primary:hover { background: var(--gold-hover); }
 .hero .btn-primary:active {
   background: var(--gold-pressed);
-  transform: translateY(2px);
+  transform: translateY(1px);
 }
-
 .hero .btn-secondary {
-  min-width: 136px;
+  min-width: 144px;
   height: 48px;
-  padding: 0 24px;
-  font-size: 16px;
+  padding: 0 28px;
+  font-size: 15px;
   font-weight: 600;
   background: var(--white);
   color: var(--gold);
@@ -351,37 +296,27 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: background 200ms ease-out, border-color 200ms ease-out, transform 100ms ease-out;
+  transition: background 200ms ease, border-color 200ms ease, transform 100ms ease;
 }
-
 .hero .btn-secondary:hover {
   background: var(--gold-bg);
   border-color: var(--gold-hover);
 }
-
-.hero .btn-secondary:active {
-  transform: translateY(2px);
-}
+.hero .btn-secondary:active { transform: translateY(1px); }
 
 .hero .trust-row {
-  position: absolute;
-  bottom: 28px;
-  left: 0;
-  right: 0;
   display: flex;
   flex-direction: row;
   gap: 24px;
   flex-wrap: wrap;
 }
-
 .hero .trust-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text2);
 }
-
 .hero .trust-item .ic {
   width: 16px;
   height: 16px;
@@ -398,104 +333,91 @@ button {
 .hero-visual {
   position: relative;
   width: 100%;
-  height: 100%;
+  aspect-ratio: 4 / 5;
   overflow: hidden;
-  border-radius: 4px;
+  border-radius: 8px;
   min-width: 0;
 }
-
 .hero-visual .hero-img {
   object-fit: cover;
   object-position: center;
 }
-
 .hero-visual .fade {
   position: absolute;
   top: 0;
   left: 0;
   bottom: 0;
-  width: 120px;
-  background: linear-gradient(90deg, var(--bg), transparent);
+  width: 80px;
+  background: linear-gradient(90deg, var(--bg) 0%, transparent 100%);
   z-index: 1;
   pointer-events: none;
 }
 
-/* ══════════════════════════════════════════════
-   Section 通用
-   ══════════════════════════════════════════════ */
+/* ============================================================
+   shared section header
+   ============================================================ */
 .section {
-  padding: 72px 0;
+  width: 100%;
+  padding: 80px 0;
 }
-
-#hot.section {
-  padding-top: 88px;
-}
-
 .section-head {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 32px;
+  margin-bottom: 40px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
-
 .section-head h2 {
   font-family: var(--serif);
-  font-size: 36px;
+  font-size: clamp(24px, 2.4vw, 32px);
   font-weight: 600;
   color: var(--text);
   margin: 0;
+  letter-spacing: -0.01em;
 }
-
 .section-head .more {
   font-size: 13px;
   color: var(--gold);
   font-weight: 500;
-  transition: opacity 200ms ease-out;
+  transition: opacity 200ms ease;
 }
+.section-head .more:hover { opacity: 0.7; }
 
-.section-head .more:hover {
-  opacity: 0.7;
-}
-
-/* ══════════════════════════════════════════════
-   03. 热拼卡片 — 4 列, 4 种状态
-   ══════════════════════════════════════════════ */
+/* ============================================================
+   03. hot-pin grid — 4-col fluid, 3:4 image
+   ============================================================ */
 .hot-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
-
 .hot-card {
   background: var(--card);
-  border-radius: 14px;
+  border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--border-light);
-  transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+  transition: transform 220ms ease, box-shadow 220ms ease;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
 }
-
 .hot-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 3px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
 }
-
 .hot-card .img-wrap {
+  position: relative;
   width: 100%;
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  position: relative;
 }
-
 .hot-card .hot-img {
   object-fit: cover;
   object-position: center;
-  transition: transform 300ms ease-out;
+  transition: transform 300ms ease;
 }
-
-.hot-card:hover .hot-img {
-  transform: scale(1.02);
-}
+.hot-card:hover .hot-img { transform: scale(1.03); }
 
 .hot-card .tag {
   position: absolute;
@@ -508,85 +430,64 @@ button {
   z-index: 2;
   color: #fff;
 }
+.tag-hot { background: rgba(185, 147, 108, 0.92); }
+.tag-almost { background: rgba(196, 92, 74, 0.88); }
+.tag-new { background: rgba(34, 34, 34, 0.85); }
 
-.tag-hot {
-  background: rgba(176, 136, 92, 0.92);
-}
-
-.tag-almost {
-  background: rgba(196, 92, 74, 0.88);
-}
-
-.tag-new {
-  background: rgba(43, 36, 30, 0.85);
-}
-
-.hot-card .body {
-  padding: 16px;
-}
-
+.hot-card .body { padding: 16px; }
 .hot-card .name {
   font-size: 16px;
   font-weight: 600;
   color: var(--text);
   margin-bottom: 2px;
 }
-
 .hot-card .series {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text2);
   margin-bottom: 12px;
   line-height: 1.4;
 }
-
 .hot-card .price {
   font-family: var(--display);
-  font-size: 32px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--gold);
   margin-bottom: 12px;
+  line-height: 1;
 }
-
 .hot-card .progress {
   height: 3px;
   background: var(--border-light);
   border-radius: 2px;
   overflow: hidden;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
-
 .hot-card .pfill {
   height: 100%;
   border-radius: 2px;
   background: linear-gradient(90deg, var(--gold), var(--gold-light));
-  transition: width 600ms ease-out;
+  transition: width 600ms ease;
 }
-
 .hot-card .meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
-
 .hot-card .joined {
   font-size: 12px;
   color: var(--gold);
   font-weight: 500;
 }
-
 .hot-card .countdown {
   font-size: 12px;
   color: var(--red);
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   font-variant-numeric: tabular-nums;
 }
-
-.hot-card .countdown .dot {
-  animation: maxlulu-pulse 1.5s infinite;
-}
+.hot-card .countdown .dot { animation: maxlulu-pulse 1.5s infinite; }
 
 .hot-card .card-btn {
   width: 100%;
@@ -597,194 +498,156 @@ button {
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
-  transition: background 200ms ease-out, color 200ms ease-out, border-color 200ms ease-out, transform 100ms ease-out;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease, transform 100ms ease;
 }
-
 .hot-card .card-btn:hover {
   background: var(--gold);
   color: var(--white);
   border-color: var(--gold);
 }
+.hot-card .card-btn:active { transform: translateY(1px); }
 
-.hot-card .card-btn:active {
-  transform: translateY(2px);
-}
-
-/* ══════════════════════════════════════════════
-   04. 灵感画廊 — 4 列, hover 金色边框
-   ══════════════════════════════════════════════ */
+/* ============================================================
+   04. gallery — 4-col fluid, 3:4 image, hover gold border
+   ============================================================ */
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
-
 .gallery-card {
   cursor: pointer;
   border-radius: 10px;
   overflow: hidden;
   border: 2px solid transparent;
   background: var(--card);
-  transition: transform 200ms ease-out, border-color 200ms ease-out, box-shadow 200ms ease-out;
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  display: flex;
+  flex-direction: column;
 }
-
 .gallery-card:hover {
   transform: translateY(-4px);
   border-color: var(--gold-border);
-  box-shadow: 0 3px 24px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
 }
-
 .gallery-card .img-wrap {
+  position: relative;
   width: 100%;
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  position: relative;
 }
-
 .gallery-card .gallery-img {
   object-fit: cover;
   object-position: center;
-  transition: transform 200ms ease-out;
+  transition: transform 220ms ease;
 }
-
-.gallery-card:hover .gallery-img {
-  transform: scale(1.03);
-}
+.gallery-card:hover .gallery-img { transform: scale(1.03); }
 
 .gallery-card .overlay {
   position: absolute;
   inset: 0;
-  background: rgba(43, 36, 30, 0.18);
+  background: rgba(34, 34, 34, 0.18);
   opacity: 0;
-  transition: opacity 200ms ease-out;
+  transition: opacity 200ms ease;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1;
 }
-
-.gallery-card:hover .overlay {
-  opacity: 1;
-}
-
+.gallery-card:hover .overlay { opacity: 1; }
 .gallery-card .overlay button {
   background: rgba(255, 255, 255, 0.94);
   color: var(--text);
   font-size: 13px;
   font-weight: 500;
-  padding: 10px 20px;
+  padding: 10px 22px;
   border-radius: 6px;
-  border: none;
   transform: translateY(6px);
   opacity: 0;
-  transition: transform 200ms ease-out 50ms, opacity 200ms ease-out 50ms, background 200ms ease-out;
   backdrop-filter: blur(4px);
+  transition: transform 200ms ease 50ms, opacity 200ms ease 50ms, background 200ms ease;
   cursor: pointer;
 }
-
 .gallery-card:hover .overlay button {
   transform: translateY(0);
   opacity: 1;
 }
+.gallery-card:hover .overlay button:hover { background: var(--white); }
 
-.gallery-card:hover .overlay button:hover {
-  background: var(--white);
-}
-
-.gallery-card .info {
-  padding: 10px 12px 12px;
-}
-
+.gallery-card .info { padding: 12px; }
 .gallery-card .gname {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
-
 .gallery-card .gbot {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-
 .gallery-card .gprice {
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--gold);
 }
-
 .gallery-card .gfav {
   font-size: 12px;
   color: var(--text3);
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 3px;
-  transition: color 200ms;
+  gap: 4px;
+  transition: color 200ms ease;
 }
+.gallery-card .gfav:hover { color: var(--red); }
 
-.gallery-card .gfav:hover {
-  color: var(--red);
-}
-
-/* ══════════════════════════════════════════════
-   05. 个性定制 — 左 58% 右 42%
-   ══════════════════════════════════════════════ */
+/* ============================================================
+   05. custom — 2-col fluid, light card surface
+   ============================================================ */
 .custom {
   background: var(--card);
   border-top: 1px solid var(--border-light);
   border-bottom: 1px solid var(--border-light);
-  min-height: 420px;
-  display: flex;
-  align-items: center;
 }
-
 .custom-inner {
   display: grid;
   grid-template-columns: 7fr 5fr;
-  gap: 40px;
+  gap: 56px;
   align-items: center;
-  width: 100%;
 }
-
-.custom-left {
-  min-width: 0;
-}
-
+.custom-left { min-width: 0; }
 .custom-left h2 {
   font-family: var(--serif);
-  font-size: 24px;
+  font-size: clamp(24px, 2.4vw, 32px);
   font-weight: 600;
   color: var(--text);
-  margin: 0 0 8px;
+  margin: 0 0 12px;
+  letter-spacing: -0.01em;
 }
-
 .custom-left .desc {
   font-size: 14px;
   color: var(--text2);
   line-height: 1.7;
-  margin: 0 0 32px;
-  max-width: 440px;
+  margin: 0 0 36px;
+  max-width: 480px;
 }
 
 .steps-row {
-  display: flex;
-  gap: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
 }
-
 .step {
-  flex: 1;
   text-align: center;
   position: relative;
   padding: 0 8px;
 }
-
 .step-num {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   background: var(--gold-bg);
   border: 2px solid var(--gold);
@@ -792,37 +655,33 @@ button {
   align-items: center;
   justify-content: center;
   font-family: var(--display);
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--gold);
-  margin: 0 auto 12px;
-  transition: background 200ms ease-out, color 200ms ease-out, transform 200ms ease-out;
+  margin: 0 auto 14px;
+  transition: background 200ms ease, color 200ms ease, transform 200ms ease;
 }
-
 .step:hover .step-num {
   background: var(--gold);
   color: var(--white);
   transform: scale(1.05);
 }
-
 .step-t {
   font-size: 14px;
   font-weight: 600;
   color: var(--text);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
-
 .step-d {
   font-size: 12px;
   color: var(--text2);
-  line-height: 1.5;
+  line-height: 1.6;
 }
-
 .step-line {
   position: absolute;
-  top: 18px;
-  left: calc(50% + 22px);
-  width: calc(100% - 44px);
+  top: 22px;
+  left: calc(50% + 28px);
+  width: calc(100% - 56px);
   height: 1px;
   background: var(--border);
 }
@@ -832,85 +691,72 @@ button {
   justify-content: center;
   min-width: 0;
 }
-
 .custom-img {
+  position: relative;
   width: 100%;
-  max-width: 360px;
-  aspect-ratio: 8 / 9;
+  max-width: 380px;
+  aspect-ratio: 4 / 5;
   border-radius: 16px;
   overflow: hidden;
-  position: relative;
 }
-
 .custom-img .custom-bg {
   object-fit: cover;
   object-position: center;
 }
-
 .custom-card {
   position: absolute;
-  bottom: 20px;
-  left: 20px;
-  right: 20px;
+  bottom: 18px;
+  left: 18px;
+  right: 18px;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-radius: 14px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 18px 20px;
   z-index: 2;
 }
-
 .custom-card h3 {
   font-family: var(--serif);
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 600;
   color: var(--text);
   line-height: 1.4;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
 }
-
 .custom-card .feats {
   display: flex;
-  gap: 12px;
+  gap: 10px 14px;
   flex-wrap: wrap;
   margin-bottom: 12px;
 }
-
 .custom-card .feat {
   font-size: 11px;
   color: var(--text2);
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
 }
-
 .custom-card .feat .ck {
   color: var(--gold);
   font-weight: 700;
 }
-
 .custom-card .price-row {
   display: flex;
   align-items: baseline;
   gap: 6px;
   margin-bottom: 14px;
 }
-
-.custom-card .plabel {
-  font-size: 12px;
-  color: var(--text2);
-}
-
+.custom-card .plabel { font-size: 12px; color: var(--text2); }
 .custom-card .pbig {
   font-family: var(--display);
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--gold);
+  line-height: 1;
 }
-
 .custom-card .cbtn {
   width: 100%;
-  height: 44px;
+  height: 42px;
   background: var(--gold);
   color: var(--white);
   border-radius: 6px;
@@ -919,40 +765,34 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 200ms ease-out, transform 100ms ease-out;
   text-decoration: none;
+  transition: background 200ms ease, transform 100ms ease;
 }
+.custom-card .cbtn:hover { background: var(--gold-hover); }
+.custom-card .cbtn:active { transform: translateY(1px); }
 
-.custom-card .cbtn:hover {
-  background: var(--gold-hover);
-}
-
-.custom-card .cbtn:active {
-  transform: translateY(2px);
-}
-
-/* ══════════════════════════════════════════════
-   06. 品牌信任行
-   ══════════════════════════════════════════════ */
+/* ============================================================
+   06. brand-trust bar — full width
+   ============================================================ */
 .trust-bar {
-  padding: 32px 0;
+  width: 100%;
   background: var(--bg);
+  padding: 32px 0;
+  border-top: 1px solid var(--border-light);
   border-bottom: 1px solid var(--border-light);
 }
-
 .trust-bar-row {
   display: flex;
   justify-content: center;
-  gap: 40px;
+  align-items: center;
+  gap: 48px;
   flex-wrap: wrap;
 }
-
 .trust-item2 {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
-
 .trust-icon {
   width: 28px;
   height: 28px;
@@ -961,63 +801,56 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--gold);
   flex-shrink: 0;
 }
-
 .trust-t {
   font-size: 13px;
   font-weight: 500;
   color: var(--text);
 }
 
-/* ══════════════════════════════════════════════
-   07. CTA 区
-   ══════════════════════════════════════════════ */
+/* ============================================================
+   07. CTA — full-bleed dark
+   ============================================================ */
 .cta {
+  width: 100%;
   background: var(--dark);
-  height: 220px;
-  padding: 0 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  padding: 80px 24px;
   text-align: center;
   position: relative;
   overflow: hidden;
 }
-
 .cta::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 50% 0%, rgba(176, 136, 92, 0.05), transparent 60%);
+  background: radial-gradient(ellipse at 50% 0%, rgba(185, 147, 108, 0.06), transparent 60%);
+  pointer-events: none;
 }
-
 .cta h2 {
   font-family: var(--serif);
-  font-size: 52px;
+  font-size: clamp(28px, 3.2vw, 40px);
   font-weight: 600;
   color: var(--white);
-  margin: 0 0 12px;
+  margin: 0 0 14px;
   position: relative;
+  letter-spacing: -0.01em;
 }
-
 .cta .sub {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.4);
-  margin: 0 0 32px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 36px;
   position: relative;
 }
-
 .cta .btns {
   display: flex;
   gap: 14px;
   justify-content: center;
   position: relative;
+  flex-wrap: wrap;
 }
-
 .cta .btn-g {
   min-width: 170px;
   height: 48px;
@@ -1029,295 +862,199 @@ button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 32px;
-  transition: background 200ms ease-out, transform 100ms ease-out;
+  padding: 0 28px;
+  transition: background 200ms ease, transform 100ms ease;
 }
-
-.cta .btn-g:hover {
-  background: var(--gold-hover);
-}
-
-.cta .btn-g:active {
-  transform: translateY(2px);
-}
-
+.cta .btn-g:hover { background: var(--gold-hover); }
+.cta .btn-g:active { transform: translateY(1px); }
 .cta .btn-ow {
   min-width: 170px;
   height: 48px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.8);
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
   border-radius: 6px;
   font-size: 15px;
   font-weight: 500;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 32px;
-  transition: background 200ms ease-out, border-color 200ms ease-out, transform 100ms ease-out;
+  padding: 0 28px;
+  transition: background 200ms ease, border-color 200ms ease, transform 100ms ease;
 }
-
 .cta .btn-ow:hover {
-  border-color: rgba(255, 255, 255, 0.5);
-  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.05);
 }
+.cta .btn-ow:active { transform: translateY(1px); }
 
-.cta .btn-ow:active {
-  transform: translateY(2px);
-}
-
-/* ══════════════════════════════════════════════
-   08. 页脚
-   ══════════════════════════════════════════════ */
+/* ============================================================
+   08. footer — full-bleed dark, multi-col
+   ============================================================ */
 .footer {
-  background: #151515;
-  padding: 48px 24px 24px;
-  color: rgba(255, 255, 255, 0.3);
+  width: 100%;
+  background: #131313;
+  padding: 56px 0 24px;
+  color: rgba(255, 255, 255, 0.32);
   font-size: 12px;
 }
-
 .footer-top {
-  display: flex;
-  justify-content: space-between;
-  gap: 40px;
-  flex-wrap: wrap;
-  padding-bottom: 28px;
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) 3fr;
+  gap: 56px;
+  padding-bottom: 32px;
 }
-
-.footer-brand {
-  flex: 0 1 260px;
-  min-width: 0;
-}
-
+.footer-brand { min-width: 0; }
 .footer-brand .logo {
   font-family: var(--display);
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 4px;
-  display: flex;
+  font-size: 20px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 10px;
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
-
 .footer-brand .logo .ai {
-  font-size: 8px;
+  font-size: 9px;
   color: var(--gold);
   border: 1px solid var(--gold);
-  padding: 2px 4px;
-  border-radius: 2px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  letter-spacing: 1px;
 }
-
 .footer-brand .info {
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.8;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  color: rgba(255, 255, 255, 0.4);
 }
-
 .footer-brand .slogan {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--gold);
-  opacity: 0.5;
   font-family: var(--display);
   font-style: italic;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
+  opacity: 0.8;
 }
-
 .footer-social {
   display: flex;
   gap: 8px;
 }
-
 .footer-social a {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.25);
-  transition: border-color 200ms ease-out, color 200ms ease-out;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  transition: border-color 200ms ease, color 200ms ease;
 }
-
 .footer-social a:hover {
   border-color: var(--gold);
   color: var(--gold);
 }
 
 .footer-cols {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 24px;
-  flex: 1 1 auto;
-  flex-wrap: wrap;
 }
-
-.footer-col {
-  flex: 1 1 0;
-  min-width: 120px;
-}
-
+.footer-col { min-width: 0; }
 .footer-col .ft {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
   font-weight: 500;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
-
 .footer-col a {
   display: block;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.25);
-  margin-bottom: 7px;
-  transition: color 200ms ease-out;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 8px;
+  transition: color 200ms ease;
 }
-
-.footer-col a:hover {
-  color: rgba(255, 255, 255, 0.55);
-}
+.footer-col a:hover { color: rgba(255, 255, 255, 0.8); }
 
 .footer-bottom {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 14px;
   flex-wrap: wrap;
-  margin-top: 24px;
-  padding-top: 16px;
+  padding-top: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.15);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.25);
 }
 
-/* ══════════════════════════════════════════════
-   响应式: 1024 / 768 / 480
-   ══════════════════════════════════════════════ */
+/* ============================================================
+   responsive — 1024 / 768 / 480
+   ============================================================ */
 @media (max-width: 1024px) {
   .hero {
-    height: auto;
-    min-height: 500px;
+    padding: 56px 0;
   }
   .hero .container {
     grid-template-columns: 1fr;
-    padding-top: 32px;
-    padding-bottom: 0;
+    gap: 32px;
   }
-  .hero-copy {
-    width: 100%;
-    max-width: none;
-    padding: 48px 0 32px;
-    text-align: center;
-  }
-  .hero h1 {
-    font-size: 40px;
-    max-width: none;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .hero .sub {
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .hero .ctas {
-    justify-content: center;
-  }
-  .hero .trust-row {
-    position: static;
-    justify-content: center;
-    margin-top: 24px;
-  }
+  .hero-copy { text-align: center; }
+  .hero h1 { margin-left: auto; margin-right: auto; }
+  .hero .sub { margin-left: auto; margin-right: auto; }
+  .hero .ctas { justify-content: center; }
+  .hero .trust-row { justify-content: center; }
   .hero-visual {
-    width: 100%;
-    height: 340px;
+    max-width: 480px;
+    margin: 0 auto;
+    aspect-ratio: 4 / 5;
   }
-  .hero-visual .fade {
-    display: none;
-  }
-  .hot-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .hot-card .img-wrap {
-    height: 280px;
-  }
-  .gallery-grid {
-    grid-template-columns: repeat(3, 1fr);
-    justify-content: stretch;
-  }
-  .custom {
-    min-height: 0;
-  }
+  .hero-visual .fade { display: none; }
+
+  .section { padding: 64px 0; }
+
+  .hot-grid { grid-template-columns: repeat(2, 1fr); }
+  .gallery-grid { grid-template-columns: repeat(3, 1fr); }
+
   .custom-inner {
     grid-template-columns: 1fr;
+    gap: 32px;
   }
-  .custom-left {
-    width: 100%;
-  }
-  .custom-right {
-    justify-content: center;
-  }
-  .nav-center {
-    display: none;
-  }
+  .custom-right { justify-content: center; }
+
+  .nav-center { display: none; }
+
+  .footer-top { grid-template-columns: 1fr; gap: 32px; }
 }
 
 @media (max-width: 768px) {
-  .hero h1 {
-    font-size: 32px;
-  }
-  .section {
-    padding: 56px 0;
-  }
-  .gallery-grid {
-    grid-template-columns: repeat(2, 1fr);
-    justify-content: stretch;
-  }
-  .footer-top {
-    flex-direction: column;
-  }
+  .hero { padding: 48px 0; }
+  .section { padding: 56px 0; }
+  .gallery-grid { grid-template-columns: repeat(2, 1fr); }
   .footer-cols {
-    flex-wrap: wrap;
-    gap: 24px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px 24px;
   }
-  .trust-bar-row {
-    gap: 20px;
-  }
+  .trust-bar-row { gap: 24px; }
+  .cta { padding: 56px 24px; }
 }
 
 @media (max-width: 480px) {
-  .hero h1 {
-    font-size: 28px;
-  }
-  .hero .ctas {
-    flex-direction: row;
-    gap: 10px;
-  }
+  .hero { padding: 32px 0; }
+  .hero h1 { font-size: 30px; }
+  .hero .ctas { gap: 10px; }
   .hero .btn-primary,
   .hero .btn-secondary {
-    min-width: 0;
     flex: 1;
-    font-size: 14px;
+    min-width: 0;
     padding: 0 16px;
   }
-  .hot-grid {
-    gap: 12px;
-  }
-  .hot-card .img-wrap {
-    height: 240px;
-  }
-  .gallery-grid {
-    gap: 10px;
-  }
-  .cta .btns {
-    flex-direction: column;
-    align-items: center;
-  }
-  .steps-row {
-    flex-direction: column;
-    gap: 20px;
-  }
-  .step-line {
-    display: none;
-  }
-  .nav-right a {
-    display: none;
-  }
+  .hot-grid { grid-template-columns: 1fr; gap: 16px; }
+  .gallery-grid { gap: 12px; }
+  .cta .btns { flex-direction: column; align-items: stretch; }
+  .cta .btn-g, .cta .btn-ow { min-width: 0; }
+  .steps-row { grid-template-columns: 1fr; gap: 24px; }
+  .step-line { display: none; }
+  .nav-right a { display: none; }
 }
