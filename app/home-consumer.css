@@ -23,7 +23,7 @@
   --text3: #A09A93;
   --border: #E5E2DB;
   --border-light: #F0ECE8;
-  --dark: #111111;
+  --dark: #191919;
   --white: #FFFFFF;
   --red: #C45C4A;
   --container: 1200px;
@@ -262,7 +262,7 @@ button {
    02. HERO — 高 660, 左 55% 右 45% 出血
    ══════════════════════════════════════════════ */
 .hero {
-  height: 560px;
+  height: 680px;
   display: flex;
   align-items: center;
   position: relative;
@@ -272,9 +272,9 @@ button {
 
 .hero .container {
   display: grid;
-  grid-template-columns: 5fr 7fr;
-  gap: 40px;
-  align-items: center;
+  grid-template-columns: 420px 520px;
+  justify-content: space-between;
+  align-items: stretch;
   position: relative;
   z-index: 2;
   width: 100%;
@@ -282,10 +282,12 @@ button {
 }
 
 .hero-copy {
-  max-width: 420px;
+  width: 420px;
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  padding-bottom: 80px;
 }
 
 .hero h1 {
@@ -295,7 +297,7 @@ button {
   line-height: 1.18;
   color: var(--text);
   margin: 0 0 24px;
-  max-width: 420px;
+  max-width: 300px;
 }
 
 .hero .sub {
@@ -339,14 +341,14 @@ button {
 }
 
 .hero .btn-secondary {
-  min-width: 144px;
+  min-width: 136px;
   height: 48px;
-  padding: 0 28px;
+  padding: 0 24px;
   font-size: 16px;
   font-weight: 600;
-  background: var(--card-hover);
-  color: var(--text);
-  border: 1.5px solid var(--border);
+  background: var(--white);
+  color: var(--gold);
+  border: 1px solid var(--gold);
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
@@ -355,8 +357,8 @@ button {
 }
 
 .hero .btn-secondary:hover {
-  background: var(--border-light);
-  border-color: var(--text2);
+  background: var(--gold-bg);
+  border-color: var(--gold-hover);
 }
 
 .hero .btn-secondary:active {
@@ -364,6 +366,10 @@ button {
 }
 
 .hero .trust-row {
+  position: absolute;
+  bottom: 28px;
+  left: 0;
+  right: 0;
   display: flex;
   flex-direction: row;
   gap: 24px;
@@ -393,9 +399,11 @@ button {
 
 .hero-visual {
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 520px;
+  height: 680px;
+  align-self: center;
   overflow: hidden;
+  border-radius: 4px;
 }
 
 .hero-visual .hero-img {
@@ -434,7 +442,7 @@ button {
 
 .section-head h2 {
   font-family: var(--serif);
-  font-size: 24px;
+  font-size: 36px;
   font-weight: 600;
   color: var(--text);
   margin: 0;
@@ -462,7 +470,7 @@ button {
 
 .hot-card {
   background: var(--card);
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
   border: 1px solid var(--border-light);
   transition: transform 200ms ease-out, box-shadow 200ms ease-out;
@@ -535,7 +543,7 @@ button {
 
 .hot-card .price {
   font-family: var(--display);
-  font-size: 22px;
+  font-size: 32px;
   font-weight: 700;
   color: var(--gold);
   margin-bottom: 12px;
@@ -694,7 +702,7 @@ button {
 }
 
 .gallery-card .gname {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--text);
   margin-bottom: 4px;
@@ -707,7 +715,7 @@ button {
 }
 
 .gallery-card .gprice {
-  font-size: 16px;
+  font-size: 24px;
   font-weight: 700;
   color: var(--gold);
 }
@@ -778,8 +786,8 @@ button {
 }
 
 .step-num {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: var(--gold-bg);
   border: 2px solid var(--gold);
@@ -787,7 +795,7 @@ button {
   align-items: center;
   justify-content: center;
   font-family: var(--display);
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 700;
   color: var(--gold);
   margin: 0 auto 12px;
@@ -815,9 +823,9 @@ button {
 
 .step-line {
   position: absolute;
-  top: 24px;
-  left: calc(50% + 28px);
-  width: calc(100% - 56px);
+  top: 18px;
+  left: calc(50% + 22px);
+  width: calc(100% - 44px);
   height: 1px;
   background: var(--border);
 }
@@ -844,12 +852,13 @@ button {
 .custom-card {
   position: absolute;
   bottom: 20px;
-  left: 16px;
-  right: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 20px;
   z-index: 2;
 }
@@ -897,7 +906,7 @@ button {
 
 .custom-card .pbig {
   font-family: var(--display);
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
   color: var(--gold);
 }
@@ -991,7 +1000,7 @@ button {
 
 .cta h2 {
   font-family: var(--serif);
-  font-size: 32px;
+  font-size: 52px;
   font-weight: 600;
   color: var(--white);
   margin: 0 0 12px;
@@ -1013,7 +1022,7 @@ button {
 }
 
 .cta .btn-g {
-  min-width: 160px;
+  min-width: 170px;
   height: 48px;
   background: var(--gold);
   color: var(--white);
@@ -1036,7 +1045,7 @@ button {
 }
 
 .cta .btn-ow {
-  min-width: 160px;
+  min-width: 170px;
   height: 48px;
   background: transparent;
   color: rgba(255, 255, 255, 0.8);
@@ -1076,11 +1085,10 @@ button {
   gap: 40px;
   flex-wrap: wrap;
   padding-bottom: 28px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .footer-brand {
-  max-width: 220px;
+  width: 260px;
 }
 
 .footer-brand .logo {
@@ -1141,7 +1149,11 @@ button {
 
 .footer-cols {
   display: flex;
-  gap: 48px;
+  gap: 24px;
+}
+
+.footer-col {
+  width: 140px;
 }
 
 .footer-col .ft {
@@ -1168,7 +1180,9 @@ button {
   justify-content: center;
   gap: 12px;
   flex-wrap: wrap;
+  margin-top: 24px;
   padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   font-size: 10px;
   color: rgba(255, 255, 255, 0.15);
 }
@@ -1206,7 +1220,9 @@ button {
     justify-content: center;
   }
   .hero .trust-row {
+    position: static;
     justify-content: center;
+    margin-top: 24px;
   }
   .hero-visual {
     width: 100%;
