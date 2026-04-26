@@ -3,21 +3,21 @@
    ====================================================== */
 
 :root {
-  --gold: #B0885C;
-  --gold-hover: #A67E52;
-  --gold-pressed: #8F6B45;
-  --gold-light: #C9A87A;
-  --gold-bg: rgba(176, 136, 92, 0.06);
-  --gold-border: rgba(176, 136, 92, 0.3);
-  --gold-dark: #8F6B45;
-  --bg: #FAF6F5;
-  --bg-main: #FAF6F5;
+  --gold: #B9936C;
+  --gold-hover: #A57F58;
+  --gold-pressed: #8F6A45;
+  --gold-light: #D0AF8C;
+  --gold-bg: rgba(185, 147, 108, 0.06);
+  --gold-border: rgba(185, 147, 108, 0.3);
+  --gold-dark: #8F6A45;
+  --bg: #F7F1EA;
+  --bg-main: #F7F1EA;
   --bg-soft: #FBF7F2;
   --bg-deep: #E8D8C7;
-  --card: #FFFFFF;
-  --card-hover: #FFF7F6;
-  --text: #2B241E;
-  --text-main: #2B241E;
+  --card: #FFF9F4;
+  --card-hover: #FFF4EB;
+  --text: #222222;
+  --text-main: #222222;
   --text2: #6F665F;
   --text-sub: #6F665F;
   --text3: #A09A93;
@@ -134,7 +134,7 @@ button {
   height: 72px;
   display: flex;
   align-items: center;
-  background: rgba(250, 246, 245, 0.9);
+  background: rgba(247, 241, 234, 0.9);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid transparent;
@@ -262,7 +262,7 @@ button {
    02. HERO — 高 660, 左 55% 右 45% 出血
    ══════════════════════════════════════════════ */
 .hero {
-  height: 660px;
+  height: 560px;
   display: flex;
   align-items: center;
   position: relative;
@@ -271,7 +271,9 @@ button {
 }
 
 .hero .container {
-  display: flex;
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: 40px;
   align-items: center;
   position: relative;
   z-index: 2;
@@ -280,20 +282,19 @@ button {
 }
 
 .hero-copy {
-  width: 55%;
+  max-width: 420px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-right: 40px;
 }
 
 .hero h1 {
   font-family: var(--serif);
-  font-size: 64px;
+  font-size: 72px;
   font-weight: 700;
   line-height: 1.18;
   color: var(--text);
-  margin: 0 0 20px;
+  margin: 0 0 24px;
   max-width: 420px;
 }
 
@@ -314,7 +315,7 @@ button {
 }
 
 .hero .btn-primary {
-  min-width: 144px;
+  min-width: 160px;
   height: 48px;
   padding: 0 28px;
   font-size: 16px;
@@ -391,11 +392,10 @@ button {
 }
 
 .hero-visual {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 45%;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 .hero-visual .hero-img {
@@ -419,6 +419,10 @@ button {
    ══════════════════════════════════════════════ */
 .section {
   padding: 72px 0;
+}
+
+#hot.section {
+  padding-top: 88px;
 }
 
 .section-head {
@@ -472,7 +476,7 @@ button {
 
 .hot-card .img-wrap {
   width: 100%;
-  height: 320px;
+  height: 280px;
   overflow: hidden;
   position: relative;
 }
@@ -608,8 +612,9 @@ button {
    ══════════════════════════════════════════════ */
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  grid-template-columns: repeat(4, 228px);
+  gap: 24px;
+  justify-content: space-between;
 }
 
 .gallery-card {
@@ -727,16 +732,21 @@ button {
   background: var(--card);
   border-top: 1px solid var(--border-light);
   border-bottom: 1px solid var(--border-light);
-}
-
-.custom-inner {
+  min-height: 420px;
   display: flex;
-  gap: 40px;
   align-items: center;
 }
 
+.custom-inner {
+  display: grid;
+  grid-template-columns: 7fr 5fr;
+  gap: 40px;
+  align-items: center;
+  width: 100%;
+}
+
 .custom-left {
-  flex: 0 0 58%;
+  min-width: 0;
 }
 
 .custom-left h2 {
@@ -813,13 +823,14 @@ button {
 }
 
 .custom-right {
-  flex: 0 0 42%;
-  max-width: 400px;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
 }
 
 .custom-img {
-  width: 100%;
-  aspect-ratio: 3 / 4;
+  width: 320px;
+  height: 360px;
   border-radius: 16px;
   overflow: hidden;
   position: relative;
@@ -960,7 +971,12 @@ button {
    ══════════════════════════════════════════════ */
 .cta {
   background: var(--dark);
-  padding: 72px 24px;
+  height: 220px;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -1164,15 +1180,15 @@ button {
   .hero {
     height: auto;
     min-height: 500px;
-    flex-direction: column;
   }
   .hero .container {
-    flex-direction: column;
+    grid-template-columns: 1fr;
     padding-top: 32px;
     padding-bottom: 0;
   }
   .hero-copy {
     width: 100%;
+    max-width: none;
     padding: 48px 0 32px;
     text-align: center;
   }
@@ -1193,7 +1209,6 @@ button {
     justify-content: center;
   }
   .hero-visual {
-    position: relative;
     width: 100%;
     height: 340px;
   }
@@ -1208,19 +1223,19 @@ button {
   }
   .gallery-grid {
     grid-template-columns: repeat(3, 1fr);
+    justify-content: stretch;
+  }
+  .custom {
+    min-height: 0;
   }
   .custom-inner {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
   .custom-left {
-    flex: none;
     width: 100%;
   }
   .custom-right {
-    flex: none;
-    width: 100%;
-    max-width: 360px;
-    margin: 0 auto;
+    justify-content: center;
   }
   .nav-center {
     display: none;
@@ -1236,6 +1251,7 @@ button {
   }
   .gallery-grid {
     grid-template-columns: repeat(2, 1fr);
+    justify-content: stretch;
   }
   .footer-top {
     flex-direction: column;

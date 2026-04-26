@@ -177,17 +177,17 @@ export default function HomePage() {
               </span>
             </div>
           </div>
-        </div>
-        <div className="hero-visual">
-          <Image
-            src={HERO_IMG}
-            alt="模特 · 针织印花裹身裙"
-            fill
-            priority
-            sizes="(max-width: 1024px) 100vw, 45vw"
-            className="hero-img"
-          />
-          <div className="fade" />
+          <div className="hero-visual">
+            <Image
+              src={HERO_IMG}
+              alt="模特 · 针织印花裹身裙"
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 700px"
+              className="hero-img"
+            />
+            <div className="fade" />
+          </div>
         </div>
       </section>
 
