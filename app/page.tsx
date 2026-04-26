@@ -427,31 +427,29 @@ export default function HomePage() {
                 <a href="#douyin" aria-label="抖音">抖</a>
               </div>
             </div>
-            <div className="footer-cols">
-              <div className="footer-col">
-                <div className="ft">帮助中心</div>
-                <a href="#size">尺码指南</a>
-                <a href="#shipping">物流与退换</a>
-                <a href="#payment">支付说明</a>
-              </div>
-              <div className="footer-col">
-                <div className="ft">关于我们</div>
-                <a href="#story">品牌故事</a>
-                <a href="#designer">设计师招募</a>
-                <a href="#stores">门店查询</a>
-              </div>
-              <div className="footer-col">
-                <div className="ft">服务与支持</div>
-                <a href="#support">联系客服</a>
-                <a href="#privacy">隐私政策</a>
-                <a href="#terms">用户协议</a>
-              </div>
-              <div className="footer-col">
-                <div className="ft">关注我们</div>
-                <a href="#wechat">微信公众号</a>
-                <a href="#weibo3">微博</a>
-                <a href="#redbook2">小红书</a>
-              </div>
+            <div className="footer-col">
+              <div className="ft">帮助中心</div>
+              <a href="#size">尺码指南</a>
+              <a href="#shipping">物流与退换</a>
+              <a href="#payment">支付说明</a>
+            </div>
+            <div className="footer-col">
+              <div className="ft">关于我们</div>
+              <a href="#story">品牌故事</a>
+              <a href="#designer">设计师招募</a>
+              <a href="#stores">门店查询</a>
+            </div>
+            <div className="footer-col">
+              <div className="ft">服务与支持</div>
+              <a href="#support">联系客服</a>
+              <a href="#privacy">隐私政策</a>
+              <a href="#terms">用户协议</a>
+            </div>
+            <div className="footer-col">
+              <div className="ft">关注我们</div>
+              <a href="#wechat">微信公众号</a>
+              <a href="#weibo3">微博</a>
+              <a href="#redbook2">小红书</a>
             </div>
           </div>
           <div className="footer-bottom">
