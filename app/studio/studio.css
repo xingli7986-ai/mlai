@@ -194,15 +194,15 @@
   min-height: calc(100vh - 62px);
 }
 .studio-root .sidebar {
-  --sb-bg: #fbf6ee;
+  --sb-bg: #faf7f3;
   --sb-card: #ffffff;
-  --sb-text: #2b241f;
-  --sb-text2: #6e655d;
-  --sb-text3: #9a9189;
-  --sb-line: #ece2d2;
-  --sb-active-bg: #f6e0e2;
-  --sb-active-text: #8a3a3f;
-  --sb-gold: #b0865c;
+  --sb-text: #2b211a;
+  --sb-text2: #686761;
+  --sb-text3: #b6b1a4;
+  --sb-line: #e6e1da;
+  --sb-active-bg: #7f1f2b;
+  --sb-active-text: #ffffff;
+  --sb-gold: #c9a36a;
   --sb-gold-bg: #f6ecdc;
 
   width: 244px;
@@ -342,11 +342,12 @@
   flex-shrink: 0;
 }
 .studio-root .sidebar .nav-item.is-sub.is-active {
-  color: var(--sb-active-text);
-  background: rgba(246, 224, 226, 0.5);
+  color: #fff;
+  background: var(--sb-active-bg);
+  font-weight: 600;
 }
 .studio-root .sidebar .nav-item.is-sub.is-active .dot {
-  background: var(--sb-active-text);
+  background: #fff;
 }
 
 .studio-root .sidebar .designer-card {

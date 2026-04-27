@@ -1,23 +1,63 @@
 @import "../home-consumer.css";
 
+/* my-center: aligned to global design-system tokens (--ml-*) */
+
 .mcPage {
-  background: var(--bg);
-  color: var(--text);
+  background: var(--ml-ivory);
+  color: var(--ml-text);
   min-height: 100vh;
   padding-bottom: 96px;
+}
+
+/* Top nav buttons (right side) */
+.mcNavSearch,
+.mcNavBell {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--ml-border);
+  background: var(--ml-white);
+  color: var(--ml-text);
+  cursor: pointer;
+  position: relative;
+  font-size: 14px;
+}
+.mcNavBell span {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: var(--ml-primary);
+  color: #fff;
+  font-size: 10px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+.mcNavAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--ml-gold), #b08a4a);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 14px;
 }
 
 .mcCrumbs {
   margin-top: 18px;
   font-size: 13px;
-  color: var(--text2);
+  color: var(--ml-text-2);
   display: flex;
   gap: 8px;
 }
-.mcCrumbs a { color: var(--text2); }
-.mcCrumbs a:hover { color: var(--gold); }
-.mcCrumbs .sep { color: var(--text3); }
-.mcCrumbs .current { color: var(--text); font-weight: 500; }
+.mcCrumbs a { color: var(--ml-text-2); text-decoration: none; }
+.mcCrumbs a:hover { color: var(--ml-primary); }
+.mcCrumbs .sep { color: var(--ml-text-3); }
+.mcCrumbs .current { color: var(--ml-text); font-weight: 500; }
 
 .mcHero {
   margin-top: 22px;
@@ -27,42 +67,73 @@
   align-items: start;
 }
 
+/* ===== Sidebar ===== */
 .mcAside {
   position: sticky;
   top: 90px;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 4px;
-  padding: 18px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--card);
+  padding: 18px 14px;
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-radius-xl);
+  background: var(--ml-white);
 }
-.mcAside b {
-  font-family: var(--display);
-  font-size: 14px;
-  letter-spacing: 0.04em;
-  color: var(--text);
-  margin-bottom: 8px;
+.mcAside > b {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ml-text);
+  padding: 4px 8px 10px;
+  border-bottom: 1px solid var(--ml-border);
+  margin-bottom: 6px;
+  letter-spacing: 0.02em;
 }
-.mcAside a {
-  padding: 10px 12px;
+.mcAsideGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 10px;
+}
+.mcAsideGroup > small {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ml-text-3);
+  padding: 6px 10px 4px;
+  font-weight: 600;
+}
+.mcAsideItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
   border-radius: 10px;
-  font-size: 13px;
-  color: var(--text2);
-  transition: background 160ms;
+  font-size: 13.5px;
+  color: var(--ml-text);
+  text-decoration: none;
+  transition: background var(--ml-motion), color var(--ml-motion);
 }
-.mcAside a:hover { background: var(--bg-soft); color: var(--text); }
-.mcAside a.is-active {
-  background: var(--gold);
+.mcAsideItem .ic {
+  width: 18px;
+  display: inline-flex;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--ml-text-2);
+}
+.mcAsideItem:hover {
+  background: var(--ml-warm-gray);
+}
+.mcAsideItem.is-active {
+  background: var(--ml-primary);
   color: #fff;
   font-weight: 600;
 }
-.mcAsideDivider {
-  margin: 8px 0;
-  height: 1px;
-  background: var(--border);
+.mcAsideItem.is-active .ic {
+  color: #fff;
 }
 
+/* ===== Main column ===== */
 .mcMain {
   display: grid;
   gap: 18px;
@@ -70,9 +141,10 @@
 
 .mcCard {
   padding: 22px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: var(--card);
+  border: 1px solid var(--ml-border);
+  border-radius: var(--ml-radius-xl);
+  background: var(--ml-white);
+  box-shadow: var(--ml-shadow-sm);
 }
 .mcCard__head {
   display: flex;
@@ -83,55 +155,73 @@
 }
 .mcCard__head h2 {
   margin: 0;
-  font-family: var(--serif);
+  font-family: var(--font-display);
   font-size: 18px;
   font-weight: 700;
-  color: var(--text);
+  color: var(--ml-text);
 }
-.mcCard__head a, .mcCard__head .more {
+.mcCard__head a {
   font-size: 12px;
-  color: var(--gold);
+  color: var(--ml-primary);
+  text-decoration: none;
 }
-.mcCard__head .eyebrow {
-  margin: 0;
-  color: var(--gold);
-  font-family: var(--display);
-  font-size: 11px;
-  letter-spacing: 0.18em;
+.mcCard__head a:hover { text-decoration: underline; }
+
+.mcCard--hero {
+  background: linear-gradient(120deg, #fff 0%, var(--ml-warm-gray) 100%);
+  position: relative;
+  overflow: hidden;
+}
+.mcCard--hero::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(201, 163, 106, 0.18), transparent 70%);
+  pointer-events: none;
 }
 
+/* ===== Profile (hero) ===== */
 .mcProfile {
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr) auto;
   gap: 22px;
   align-items: center;
+  position: relative;
 }
 .mcProfile__avatar {
   width: 96px;
   height: 96px;
   border-radius: 50%;
-  background: var(--gold-bg);
-  color: var(--gold);
+  background: linear-gradient(135deg, var(--ml-gold), #b08a4a);
+  color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--display);
+  font-family: var(--font-display);
   font-size: 36px;
   font-weight: 700;
-  border: 2px solid var(--gold-border);
+  border: 3px solid #fff;
+  box-shadow: var(--ml-shadow);
 }
-.mcProfile__body b {
-  display: block;
-  font-family: var(--serif);
-  font-size: 24px;
+.mcProfile__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mcProfile__title b {
+  font-family: var(--font-display);
+  font-size: 28px;
   font-weight: 700;
-  color: var(--text);
+  color: var(--ml-text);
 }
 .mcProfile__body small {
   display: block;
   margin-top: 4px;
   font-size: 12px;
-  color: var(--text3);
+  color: var(--ml-text-3);
 }
 .mcProfile__badges {
   display: flex;
@@ -143,8 +233,9 @@
   height: 24px;
   padding: 0 10px;
   border-radius: 999px;
-  background: var(--gold-bg);
-  color: var(--gold);
+  background: var(--ml-white);
+  border: 1px solid var(--ml-border);
+  color: var(--ml-text-2);
   font-size: 11px;
   display: inline-flex;
   align-items: center;
@@ -153,84 +244,96 @@
 .mcProfile__stats {
   display: grid;
   grid-template-columns: repeat(3, auto);
-  gap: 24px;
+  gap: 28px;
   text-align: right;
+  position: relative;
+  z-index: 1;
 }
 .mcProfile__stat b {
-  font-family: var(--display);
-  font-size: 22px;
-  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 24px;
+  color: var(--ml-text);
   line-height: 1;
+  font-weight: 700;
 }
 .mcProfile__stat small {
   display: block;
-  margin-top: 4px;
+  margin-top: 6px;
   font-size: 11px;
-  color: var(--text2);
+  color: var(--ml-text-2);
 }
 
-.mcQuickActions {
+/* ===== Stat cards row ===== */
+.mcStatRow {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
-.mcQuickAction {
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--bg-soft);
+.mcStatCard {
+  padding: 14px 16px;
+  border-radius: var(--ml-radius-lg);
+  border: 1px solid var(--ml-border);
+  background: var(--ml-white);
   display: grid;
   grid-template-columns: 38px 1fr;
   gap: 10px;
   align-items: center;
-  transition: border-color 180ms, background 180ms;
+  text-decoration: none;
+  transition: border-color var(--ml-motion), transform var(--ml-motion);
+  box-shadow: var(--ml-shadow-sm);
 }
-.mcQuickAction:hover {
-  border-color: var(--gold-border);
-  background: var(--card);
+.mcStatCard:hover {
+  border-color: var(--ml-primary);
+  transform: translateY(-2px);
 }
-.mcQuickAction .ic {
+.mcStatCard .ic {
   width: 38px;
   height: 38px;
-  border-radius: 50%;
-  background: var(--gold-bg);
-  color: var(--gold);
+  border-radius: 10px;
+  background: var(--ml-primary-soft);
+  color: var(--ml-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
 }
-.mcQuickAction b {
+.mcStatCard b {
   display: block;
   font-size: 13px;
-  color: var(--text);
+  color: var(--ml-text);
+  font-weight: 600;
 }
-.mcQuickAction small {
+.mcStatCard small {
   display: block;
   margin-top: 2px;
   font-size: 11px;
-  color: var(--text2);
+  color: var(--ml-text-2);
 }
 
+/* ===== Wardrobe grid ===== */
 .mcWardrobe {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
 .mcWardrobeCard {
-  border-radius: 12px;
+  border-radius: var(--ml-radius-lg);
   overflow: hidden;
-  border: 1px solid var(--border);
-  background: var(--card);
-  transition: transform 180ms, border-color 180ms;
+  border: 1px solid var(--ml-border);
+  background: var(--ml-white);
+  transition: transform var(--ml-motion), border-color var(--ml-motion), box-shadow var(--ml-motion);
+  text-decoration: none;
+  display: block;
 }
 .mcWardrobeCard:hover {
   transform: translateY(-2px);
-  border-color: var(--gold-border);
+  border-color: var(--ml-primary);
+  box-shadow: var(--ml-shadow);
 }
 .mcWardrobeCard__media {
+  position: relative;
   aspect-ratio: 3 / 4;
-  background: var(--bg-deep);
+  background: var(--ml-warm-gray);
 }
 .mcWardrobeCard__media.tone-ink      { background: linear-gradient(135deg, #2b241f 0%, #4a3f36 100%); }
 .mcWardrobeCard__media.tone-camellia { background: linear-gradient(135deg, #b94a3a 0%, #6b2820 100%); }
@@ -245,24 +348,52 @@
   height: 100%;
   object-fit: cover;
 }
+.mcWardrobeCard__heart {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ml-primary);
+  cursor: pointer;
+  font-size: 13px;
+  display: grid;
+  place-items: center;
+}
 .mcWardrobeCard__body {
-  padding: 8px 10px 10px;
+  padding: 10px 12px 12px;
 }
 .mcWardrobeCard__name {
-  font-size: 12px;
-  color: var(--text);
+  font-size: 12.5px;
+  color: var(--ml-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .mcWardrobeCard__price {
   margin-top: 4px;
-  font-family: var(--display);
-  font-size: 13px;
+  font-family: var(--font-display);
+  font-size: 14px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--ml-primary);
 }
 
+/* ===== Split: orders + coupons ===== */
+.mcSplit {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 18px;
+}
+
+/* ===== Orders ===== */
+.mcOrderTabs {
+  margin-bottom: 14px;
+  display: inline-flex !important;
+  flex-wrap: wrap;
+}
 .mcOrders {
   display: grid;
   gap: 10px;
@@ -274,9 +405,12 @@
   align-items: center;
   padding: 12px;
   border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--bg-soft);
+  border: 1px solid var(--ml-border);
+  background: var(--ml-warm-gray);
+  text-decoration: none;
+  transition: border-color var(--ml-motion);
 }
+.mcOrder:hover { border-color: var(--ml-primary); }
 .mcOrder__media {
   width: 60px;
   height: 76px;
@@ -288,99 +422,118 @@
 .mcOrder__media.tone-blue     { background: linear-gradient(135deg, #4a6a88 0%, #2c4258 100%); }
 .mcOrder__media.tone-wine     { background: linear-gradient(135deg, #7a2030 0%, #4a121d 100%); }
 .mcOrder__media.tone-rose     { background: linear-gradient(135deg, #c08a90 0%, #82505a 100%); }
-.mcOrder__img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.mcOrder__img { width: 100%; height: 100%; object-fit: cover; }
 .mcOrder__body b {
   display: block;
   font-size: 13px;
-  color: var(--text);
+  color: var(--ml-text);
   font-weight: 600;
 }
 .mcOrder__body small {
   display: block;
   margin-top: 4px;
   font-size: 11px;
-  color: var(--text3);
+  color: var(--ml-text-3);
 }
 .mcOrder__meta {
   display: flex;
   gap: 8px;
   margin-top: 6px;
   font-size: 11px;
-  color: var(--text2);
+  color: var(--ml-text-2);
 }
-.mcOrder__meta span::after {
-  content: " · ";
-  color: var(--text3);
-}
+.mcOrder__meta span::after { content: " · "; color: var(--ml-text-3); }
 .mcOrder__meta span:last-child::after { content: ""; }
-.mcOrder__price {
-  text-align: right;
-}
+.mcOrder__price { text-align: right; }
 .mcOrder__price b {
   display: block;
-  font-family: var(--display);
+  font-family: var(--font-display);
   font-size: 16px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--ml-text);
 }
 .mcOrder__price em {
   display: inline-flex;
   margin-top: 6px;
   height: 22px;
   padding: 0 10px;
-  border-radius: 999px;
-  background: var(--gold-bg);
-  color: var(--gold);
+  border-radius: 6px;
+  background: var(--ml-warm-gray);
+  color: var(--ml-text-2);
   font-style: normal;
   font-size: 11px;
   align-items: center;
+  font-weight: 600;
 }
-.mcOrder__price em.is-done { background: rgba(91,138,90,0.12); color: #5b8a5a; }
-.mcOrder__price em.is-pending { background: rgba(122,122,111,0.14); color: var(--text2); }
+.mcOrder__price em.is-pending { background: var(--ml-primary-soft); color: var(--ml-primary); }
+.mcOrder__price em.is-warn    { background: rgba(230, 162, 60, 0.15);  color: var(--ml-warn); }
+.mcOrder__price em.is-done    { background: rgba(45, 163, 110, 0.15); color: var(--ml-success); }
 
+/* ===== Coupons (red voucher) ===== */
 .mcCoupons {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 .mcCoupon {
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px dashed var(--gold-border);
-  background: var(--gold-bg);
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 70px 1fr auto;
   gap: 12px;
   align-items: center;
+  padding: 12px 14px;
+  border-radius: var(--ml-radius-lg);
+  background: linear-gradient(120deg, var(--ml-primary) 0%, var(--ml-primary-hover) 100%);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
 }
-.mcCoupon b {
-  font-family: var(--display);
-  font-size: 26px;
-  color: var(--gold);
+.mcCoupon::before {
+  content: "";
+  position: absolute;
+  left: 70px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  border-left: 1px dashed rgba(255, 255, 255, 0.45);
+}
+.mcCoupon__amount {
+  display: grid;
+  place-items: center;
+}
+.mcCoupon__amount b {
+  font-family: var(--font-display);
+  font-size: 30px;
   font-weight: 700;
   line-height: 1;
+  color: #fff;
 }
-.mcCoupon b small {
-  font-size: 12px;
-  margin-right: 2px;
-}
+.mcCoupon__amount b small { font-size: 14px; margin-right: 2px; }
 .mcCoupon__body strong {
   display: block;
-  font-size: 12px;
-  color: var(--text);
-  font-weight: 500;
+  font-size: 13px;
+  color: #fff;
+  font-weight: 600;
 }
 .mcCoupon__body span {
   display: block;
   margin-top: 2px;
   font-size: 11px;
-  color: var(--text2);
+  color: rgba(255, 255, 255, 0.78);
 }
+.mcCoupon__body em {
+  display: block;
+  margin-top: 1px;
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: normal;
+}
+.mcCoupon .ml-btn {
+  background: #fff;
+  color: var(--ml-primary);
+  border-color: #fff;
+}
+.mcCoupon .ml-btn:hover { background: var(--ml-warm-gray); }
 
+/* ===== Designers ===== */
 .mcDesigners {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -388,50 +541,59 @@
 }
 .mcDesigner {
   padding: 14px;
-  text-align: center;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--bg-soft);
-  transition: border-color 180ms;
+  border-radius: var(--ml-radius-lg);
+  border: 1px solid var(--ml-border);
+  background: var(--ml-white);
+  text-decoration: none;
+  transition: border-color var(--ml-motion);
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: 10px;
+  align-items: center;
 }
-.mcDesigner:hover { border-color: var(--gold-border); }
+.mcDesigner:hover { border-color: var(--ml-primary); }
 .mcDesigner__avatar {
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  margin: 0 auto 10px;
-  background: var(--gold-bg);
-  color: var(--gold);
+  background: linear-gradient(135deg, var(--ml-gold), #b08a4a);
+  color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--display);
+  font-family: var(--font-display);
   font-weight: 700;
-  font-size: 22px;
-  border: 1px solid var(--gold-border);
+  font-size: 20px;
 }
 .mcDesigner b {
   display: block;
   font-size: 13px;
-  color: var(--text);
+  color: var(--ml-text);
 }
 .mcDesigner small {
   display: block;
   margin-top: 2px;
   font-size: 11px;
-  color: var(--text2);
+  color: var(--ml-text-2);
 }
 
+/* ===== Responsive ===== */
 @media (max-width: 1199px) {
   .mcHero { grid-template-columns: 1fr; }
   .mcAside { position: relative; top: auto; }
-  .mcWardrobe { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .mcQuickActions { grid-template-columns: repeat(2, 1fr); }
-  .mcCoupons { grid-template-columns: 1fr; }
+  .mcWardrobe { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .mcStatRow { grid-template-columns: repeat(2, 1fr); }
+  .mcSplit { grid-template-columns: 1fr; }
   .mcDesigners { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 760px) {
   .mcWardrobe { grid-template-columns: repeat(2, 1fr); }
   .mcProfile { grid-template-columns: 1fr; text-align: center; }
-  .mcProfile__stats { justify-content: center; text-align: center; }
+  .mcProfile__title { justify-content: center; }
+  .mcProfile__badges { justify-content: center; }
+  .mcProfile__stats { justify-content: center; text-align: center; gap: 18px; }
+  .mcCard { padding: 16px; }
+  .mcOrder { grid-template-columns: 48px 1fr; }
+  .mcOrder__price { grid-column: 1 / -1; text-align: left; display: flex; gap: 10px; align-items: center; }
+  .mcOrderTabs { overflow-x: auto; flex-wrap: nowrap !important; }
 }
