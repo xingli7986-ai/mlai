@@ -1,8 +1,16 @@
 "use client";
 
+import { useRef, useState } from "react";
 import Link from "next/link";
 import AssetImage from "@/components/AssetImage";
 import { products } from "@/lib/home-consumer-data";
+import {
+  generateImages,
+  fileToBase64,
+  downloadImage,
+  type StudioImage,
+  type StudioModel,
+} from "@/lib/studioClient";
 import "../../studio-home.css";
 import "../fashion-tool.css";
 
@@ -13,9 +21,19 @@ const FABRICS = [
   { id: "blend", label: "高定混纺" },
 ];
 
-const MODELS = ["亚洲 · 21 岁", "亚洲 · 28 岁", "欧美 · 24 岁", "亚裔 · 32 岁", "拉丁 · 26 岁"];
-const LIGHTING = ["自然光", "棚拍", "黄金时刻", "夜景", "T 台"];
-const BACKDROPS = ["米色棚布", "巴黎街景", "庭院", "海边", "酒店大堂", "博物馆"];
+const COLORS = [
+  { id: "ink", label: "墨黑" },
+  { id: "rose", label: "玫瑰" },
+  { id: "gold", label: "暖金" },
+  { id: "ivory", label: "象牙" },
+  { id: "wine", label: "酒红" },
+];
+
+const SCENES = [
+  { id: "plain", label: "纯白底" },
+  { id: "studio", label: "棚拍" },
+  { id: "outdoor", label: "户外" },
+];
 
 function TechFlat({ accent = "#1b1b1b" }: { accent?: string }) {
   return (
@@ -34,6 +52,65 @@ function TechFlat({ accent = "#1b1b1b" }: { accent?: string }) {
 }
 
 export default function RenderPage() {
+  const sketchRef = useRef<HTMLInputElement>(null);
+  const printRef = useRef<HTMLInputElement>(null);
+  const [sketchPreview, setSketchPreview] = useState<string | null>(null);
+  const [sketchBase64, setSketchBase64] = useState<string | null>(null);
+  const [printPreview, setPrintPreview] = useState<string | null>(null);
+  const [printBase64, setPrintBase64] = useState<string | null>(null);
+  const [fabric, setFabric] = useState(FABRICS[0]);
+  const [color, setColor] = useState(COLORS[0]);
+  const [scene, setScene] = useState(SCENES[1]);
+  const [model, setModel] = useState<StudioModel>("gpt-image-2");
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<StudioImage[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  async function onSketchChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const dataUrl = await fileToBase64(f);
+    setSketchPreview(dataUrl);
+    setSketchBase64(dataUrl);
+  }
+  async function onPrintChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const dataUrl = await fileToBase64(f);
+    setPrintPreview(dataUrl);
+    setPrintBase64(dataUrl);
+  }
+
+  async function onGenerate() {
+    if (!sketchBase64) {
+      setError("请先上传线稿图");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setResults([]);
+    const images = [sketchBase64];
+    if (printBase64) images.push(printBase64);
+    const res = await generateImages({
+      tool: "sketch-to-design",
+      model,
+      params: {
+        fabricName: fabric.label,
+        color: color.label,
+        scene: scene.id,
+      },
+      images,
+      count: 2,
+      size: "2:3",
+    });
+    setLoading(false);
+    if (res.success && res.images) {
+      setResults(res.images);
+    } else {
+      setError(res.error || "生成失败");
+    }
+  }
+
   return (
     <div className="ft-root">
       <div className="st-tabs">
@@ -56,77 +133,117 @@ export default function RenderPage() {
         </div>
       </div>
 
+      <input ref={sketchRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onSketchChange} />
+      <input ref={printRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onPrintChange} />
+
       <div className="ft-grid">
         <aside className="ft-aside">
           <div className="ft-card">
             <div className="ft-card__head"><h2>① 输入线稿</h2></div>
-            <div className="ft-thumbnail is-uploaded" style={{ background: "#fdfaf4", padding: 10 }}>
-              <TechFlat />
+            <div
+              className="ft-thumbnail is-uploaded"
+              onClick={() => sketchRef.current?.click()}
+              style={{ background: "#fdfaf4", padding: 10, cursor: "pointer" }}
+            >
+              {sketchPreview ? (
+                <img
+                  src={sketchPreview}
+                  alt="线稿"
+                  style={{ width: "100%", height: "100%", objectFit: "contain" }}
+                />
+              ) : (
+                <TechFlat />
+              )}
             </div>
             <small style={{ display: "block", marginTop: 8, fontSize: 11, color: "var(--ft-text2)" }}>
-              TS-2604 · 裹身长袖 · V 领
+              {sketchPreview ? "已上传 · 点击替换" : "点击上传线稿（必须）"}
             </small>
           </div>
 
           <div className="ft-card">
-            <div className="ft-card__head"><h2>② 套印花</h2></div>
-            <div className="ft-pickRow">
-              {products.slice(0, 3).map((p, i) => (
-                <div key={p.id} className={`ft-pick ${i === 0 ? "is-active" : ""}`}>
-                  <AssetImage
-                    src={p.image}
-                    alt={p.name}
-                    tone={p.tone}
-                    label={p.name.slice(0, 2)}
-                    className="ft-thumbnail__img"
-                  />
-                </div>
-              ))}
+            <div className="ft-card__head"><h2>② 套印花（可选）</h2></div>
+            <div
+              className="ft-thumbnail is-uploaded"
+              onClick={() => printRef.current?.click()}
+              style={{ cursor: "pointer" }}
+            >
+              {printPreview ? (
+                <img
+                  src={printPreview}
+                  alt="印花"
+                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                />
+              ) : (
+                <AssetImage
+                  src={products[0].image}
+                  alt="印花占位"
+                  tone={products[0].tone}
+                  label="点击上传"
+                  className="ft-thumbnail__img"
+                />
+              )}
             </div>
             <small style={{ display: "block", marginTop: 8, fontSize: 11, color: "var(--ft-text3)" }}>
-              点击切换印花，或上传新图案
+              {printPreview ? "已上传印花" : "可选；不上传则使用纯色"}
             </small>
           </div>
 
           <div className="ft-card">
             <div className="ft-card__head"><h2>③ 面料</h2></div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {FABRICS.map((f, i) => (
-                <span key={f.id} className={`ft-stage__chip ${i === 0 ? "is-active" : ""}`}>{f.label}</span>
+              {FABRICS.map((f) => (
+                <span
+                  key={f.id}
+                  className={`ft-stage__chip ${fabric.id === f.id ? "is-active" : ""}`}
+                  onClick={() => setFabric(f)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {f.label}
+                </span>
               ))}
             </div>
           </div>
 
           <div className="ft-card">
-            <div className="ft-card__head"><h2>④ 模特 / 灯光 / 场景</h2></div>
+            <div className="ft-card__head"><h2>④ 颜色 / 场景 / 模型</h2></div>
             <div className="ft-field">
-              <label>模特</label>
-              <select defaultValue="0">
-                {MODELS.map((m, i) => <option key={m} value={i}>{m}</option>)}
-              </select>
-            </div>
-            <div className="ft-field">
-              <label>灯光</label>
-              <select defaultValue="0">
-                {LIGHTING.map((m, i) => <option key={m} value={i}>{m}</option>)}
-              </select>
+              <label>主色</label>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {COLORS.map((c) => (
+                  <span
+                    key={c.id}
+                    className={`ft-stage__chip ${color.id === c.id ? "is-active" : ""}`}
+                    onClick={() => setColor(c)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {c.label}
+                  </span>
+                ))}
+              </div>
             </div>
             <div className="ft-field">
               <label>场景</label>
-              <select defaultValue="0">
-                {BACKDROPS.map((m, i) => <option key={m} value={i}>{m}</option>)}
+              <select value={scene.id} onChange={(e) => setScene(SCENES.find((s) => s.id === e.target.value)!)}>
+                {SCENES.map((s) => (
+                  <option key={s.id} value={s.id}>{s.label}</option>
+                ))}
               </select>
             </div>
-            <div className="ft-slider">
-              <label><span>真实度</span><span>92%</span></label>
-              <input type="range" min={50} max={100} defaultValue={92} />
+            <div className="ft-field" style={{ marginBottom: 0 }}>
+              <label>模型</label>
+              <select value={model} onChange={(e) => setModel(e.target.value as StudioModel)}>
+                <option value="gpt-image-2">GPT-Image-2 · 标准</option>
+                <option value="gemini">Gemini · 精细</option>
+              </select>
             </div>
-            <div className="ft-slider" style={{ marginBottom: 0 }}>
-              <label><span>动作幅度</span><span>中</span></label>
-              <input type="range" min={1} max={5} defaultValue={3} />
-            </div>
-            <button type="button" className="ft-btn is-primary" style={{ width: "100%", marginTop: 12 }}>
-              渲染 4 张成品
+            <button
+              type="button"
+              className="ft-btn is-primary"
+              style={{ width: "100%", marginTop: 12 }}
+              disabled={loading}
+              onClick={onGenerate}
+            >
+              {loading ? "渲染中…" : "渲染 2 张成品"}
             </button>
           </div>
         </aside>
@@ -134,7 +251,7 @@ export default function RenderPage() {
         <section>
           <div className="ft-stage">
             <div className="ft-stage__head">
-              <h2>成品渲染（4 / 4）</h2>
+              <h2>成品渲染（{results.length} / 2）</h2>
               <div className="ft-stage__bar">
                 <span className="ft-stage__chip is-active">写实模特</span>
                 <span className="ft-stage__chip">无背景</span>
@@ -143,32 +260,77 @@ export default function RenderPage() {
               </div>
             </div>
 
-            <div className="ft-results" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
-              {products.slice(0, 4).map((p, i) => (
-                <div key={p.id} className={`ft-result tone-${p.tone}`} style={{ aspectRatio: "3 / 4" }}>
-                  <AssetImage
-                    src={p.image}
-                    alt={p.name}
-                    tone={p.tone}
-                    label={`成品 ${i + 1}`}
-                    className="ft-result__img"
-                  />
-                  <div className="ft-result__overlay">
-                    <span className="ft-result__chip">{["正面", "3/4 侧", "侧面", "背面"][i]}</span>
-                    <div className="ft-result__icons">
-                      <button type="button">⤓</button>
-                      <button type="button">♡</button>
+            {error && (
+              <div style={{
+                padding: 12,
+                marginBottom: 12,
+                borderRadius: 8,
+                background: "rgba(176,57,57,0.08)",
+                border: "1px solid rgba(176,57,57,0.2)",
+                color: "#a23030",
+                fontSize: 13,
+              }}>
+                {error}
+              </div>
+            )}
+
+            <div className="ft-results" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+              {loading
+                ? Array.from({ length: 2 }).map((_, i) => (
+                    <div key={i} className="ft-result" style={{ background: "var(--ft-bg)", aspectRatio: "3 / 4" }}>
+                      <div style={{
+                        position: "absolute",
+                        inset: 0,
+                        background: "linear-gradient(110deg, var(--ft-bg) 30%, rgba(176,134,92,0.08) 50%, var(--ft-bg) 70%)",
+                        backgroundSize: "200% 100%",
+                        animation: "ft-shimmer 1.6s linear infinite",
+                      }} />
                     </div>
-                  </div>
-                </div>
-              ))}
+                  ))
+                : results.length > 0
+                ? results.map((img, i) => (
+                    <div key={i} className="ft-result" style={{ aspectRatio: "3 / 4" }}>
+                      <img
+                        src={img.url}
+                        alt={`成品 ${i + 1}`}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "zoom-in" }}
+                        onClick={() => window.open(img.url, "_blank", "noopener,noreferrer")}
+                      />
+                      <div className="ft-result__overlay">
+                        <span className="ft-result__chip">{["正面", "3/4 侧"][i]}</span>
+                        <div className="ft-result__icons">
+                          <button type="button" aria-label="下载" onClick={() => downloadImage(img.url)}>⤓</button>
+                          <button type="button" aria-label="收藏">♡</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                : products.slice(0, 2).map((p, i) => (
+                    <div key={p.id} className={`ft-result tone-${p.tone}`} style={{ aspectRatio: "3 / 4" }}>
+                      <AssetImage
+                        src={p.image}
+                        alt={p.name}
+                        tone={p.tone}
+                        label={`成品 ${i + 1}`}
+                        className="ft-result__img"
+                      />
+                      <div className="ft-result__overlay">
+                        <span className="ft-result__chip">{["正面", "3/4 侧"][i]}</span>
+                      </div>
+                    </div>
+                  ))}
             </div>
 
             <div className="ft-actions">
-              <button type="button" className="ft-actionBtn"><span className="ic">↻</span><span>重新渲染</span></button>
-              <button type="button" className="ft-actionBtn"><span className="ic">⤓</span><span>下载组图</span></button>
+              <button type="button" className="ft-actionBtn" onClick={onGenerate} disabled={loading}>
+                <span className="ic">↻</span><span>重新渲染</span>
+              </button>
+              <button type="button" className="ft-actionBtn" disabled={results.length === 0}
+                onClick={() => results.forEach((r) => downloadImage(r.url))}>
+                <span className="ic">⤓</span><span>下载组图</span>
+              </button>
               <Link href="/studio/fashion/fabric" className="ft-actionBtn"><span className="ic">↗</span><span>面料上身</span></Link>
-              <Link href="/my/orders" className="ft-actionBtn"><span className="ic">▦</span><span>Tech Pack</span></Link>
+              <Link href="/studio/publish/tech-pack" className="ft-actionBtn"><span className="ic">▦</span><span>Tech Pack</span></Link>
               <button type="button" className="ft-actionBtn"><span className="ic">♡</span><span>收藏</span></button>
               <Link href="/studio/publish" className="ft-actionBtn"><span className="ic">✓</span><span>发布</span></Link>
             </div>
@@ -233,6 +395,13 @@ export default function RenderPage() {
           </div>
         </aside>
       </div>
+
+      <style jsx global>{`
+        @keyframes ft-shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
     </div>
   );
 }

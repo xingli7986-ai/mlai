@@ -1,8 +1,16 @@
 "use client";
 
+import { useRef, useState } from "react";
 import Link from "next/link";
 import AssetImage from "@/components/AssetImage";
 import { products } from "@/lib/home-consumer-data";
+import {
+  generateImages,
+  fileToBase64,
+  downloadImage,
+  type StudioImage,
+  type StudioModel,
+} from "@/lib/studioClient";
 import "../../studio-home.css";
 import "../../fashion/fashion-tool.css";
 
@@ -16,6 +24,47 @@ const TILES = [
 const HISTORY = products.slice(0, 5);
 
 export default function PatternSeamlessPage() {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploadName, setUploadName] = useState("MaxLuLu Pattern · 12.png");
+  const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [uploadBase64, setUploadBase64] = useState<string | null>(null);
+  const [model, setModel] = useState<StudioModel>("gpt-image-2");
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<StudioImage[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setUploadName(f.name);
+    const dataUrl = await fileToBase64(f);
+    setUploadPreview(dataUrl);
+    setUploadBase64(dataUrl);
+  }
+
+  async function onGenerate() {
+    if (!uploadBase64) {
+      setError("请先上传需要生成四方连续的原图");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setResults([]);
+    const res = await generateImages({
+      tool: "seamless-tile",
+      model,
+      images: [uploadBase64],
+      count: 1,
+      size: "1:1",
+    });
+    setLoading(false);
+    if (res.success && res.images) {
+      setResults(res.images);
+    } else {
+      setError(res.error || "生成失败");
+    }
+  }
+
   return (
     <div className="ft-root">
       <div className="st-tabs">
@@ -32,27 +81,48 @@ export default function PatternSeamlessPage() {
           <h1>四方连续 · Seamless Tile</h1>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
-          <button type="button" className="ft-btn">导入图案</button>
+          <button type="button" className="ft-btn" onClick={() => fileRef.current?.click()}>导入图案</button>
           <button type="button" className="ft-btn">保存草稿</button>
           <Link href="/studio/publish" className="ft-btn is-primary">发布到画廊</Link>
         </div>
       </div>
 
+      <input
+        ref={fileRef}
+        type="file"
+        accept="image/*"
+        style={{ display: "none" }}
+        onChange={onFileChange}
+      />
+
       <div className="ft-grid">
         <aside className="ft-aside">
           <div className="ft-card">
             <div className="ft-card__head"><h2>① 输入图案</h2></div>
-            <div className="ft-thumbnail is-uploaded">
-              <AssetImage
-                src={products[0].image}
-                alt="输入图案"
-                tone={products[0].tone}
-                label="原图"
-                className="ft-thumbnail__img"
-              />
+            <div
+              className="ft-thumbnail is-uploaded"
+              onClick={() => fileRef.current?.click()}
+              style={{ cursor: "pointer" }}
+            >
+              {uploadPreview ? (
+                <img
+                  src={uploadPreview}
+                  alt="输入图案"
+                  className="ft-thumbnail__img"
+                  style={{ objectFit: "cover", width: "100%", height: "100%" }}
+                />
+              ) : (
+                <AssetImage
+                  src={products[0].image}
+                  alt="输入图案"
+                  tone={products[0].tone}
+                  label="点击上传"
+                  className="ft-thumbnail__img"
+                />
+              )}
             </div>
             <small style={{ display: "block", marginTop: 8, fontSize: 11, color: "var(--ft-text2)" }}>
-              MaxLuLu Pattern · 12.png
+              {uploadName}
             </small>
           </div>
 
@@ -111,8 +181,21 @@ export default function PatternSeamlessPage() {
                 <span style={{ color: "var(--ft-text2)" }}>OFF</span>
               </label>
             </div>
-            <button type="button" className="ft-btn is-primary" style={{ width: "100%", marginTop: 12 }}>
-              生成无缝四方连续
+            <div className="ft-field" style={{ marginTop: 12, marginBottom: 0 }}>
+              <label>模型</label>
+              <select value={model} onChange={(e) => setModel(e.target.value as StudioModel)}>
+                <option value="gpt-image-2">GPT-Image-2 · 标准</option>
+                <option value="gemini">Gemini · 精细</option>
+              </select>
+            </div>
+            <button
+              type="button"
+              className="ft-btn is-primary"
+              style={{ width: "100%", marginTop: 12 }}
+              disabled={loading}
+              onClick={onGenerate}
+            >
+              {loading ? "生成中…" : "生成无缝四方连续"}
             </button>
           </div>
         </aside>
@@ -120,7 +203,7 @@ export default function PatternSeamlessPage() {
         <section>
           <div className="ft-stage">
             <div className="ft-stage__head">
-              <h2>预览（2×2 / 3×3 / 单平铺）</h2>
+              <h2>预览（{results.length > 0 ? "已生成" : "待生成"}）</h2>
               <div className="ft-stage__bar">
                 <span className="ft-stage__chip">1×</span>
                 <span className="ft-stage__chip is-active">2×</span>
@@ -130,21 +213,66 @@ export default function PatternSeamlessPage() {
               </div>
             </div>
 
+            {error && (
+              <div style={{
+                padding: 12,
+                marginBottom: 12,
+                borderRadius: 8,
+                background: "rgba(176,57,57,0.08)",
+                border: "1px solid rgba(176,57,57,0.2)",
+                color: "#a23030",
+                fontSize: 13,
+              }}>
+                {error}
+              </div>
+            )}
+
             <div className="ft-results" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
-              {products.slice(0, 3).map((p, i) => (
-                <div key={p.id} className={`ft-result tone-${p.tone}`} style={{ aspectRatio: "1" }}>
-                  <AssetImage
-                    src={p.image}
-                    alt={p.name}
-                    tone={p.tone}
-                    label={["2×2 拼贴", "3×3 拼贴", "单 Tile"][i]}
-                    className="ft-result__img"
-                  />
-                  <div className="ft-result__overlay">
-                    <span className="ft-result__chip">{["2×2 拼贴", "3×3 拼贴", "单 Tile"][i]}</span>
-                  </div>
-                </div>
-              ))}
+              {loading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="ft-result" style={{ background: "var(--ft-bg)", aspectRatio: "1" }}>
+                      <div style={{
+                        position: "absolute",
+                        inset: 0,
+                        background: "linear-gradient(110deg, var(--ft-bg) 30%, rgba(176,134,92,0.08) 50%, var(--ft-bg) 70%)",
+                        backgroundSize: "200% 100%",
+                        animation: "ft-shimmer 1.6s linear infinite",
+                      }} />
+                    </div>
+                  ))
+                : results.length > 0
+                ? [0, 1, 2].map((i) => (
+                    <div key={i} className="ft-result" style={{ aspectRatio: "1" }}>
+                      <div style={{
+                        width: "100%",
+                        height: "100%",
+                        backgroundImage: `url(${results[0].url})`,
+                        backgroundSize: i === 0 ? "50% 50%" : i === 1 ? "33.333% 33.333%" : "100% 100%",
+                        backgroundRepeat: "repeat",
+                      }} />
+                      <div className="ft-result__overlay">
+                        <span className="ft-result__chip">{["2×2 拼贴", "3×3 拼贴", "单 Tile"][i]}</span>
+                        <div className="ft-result__icons">
+                          <button type="button" aria-label="下载" onClick={() => downloadImage(results[0].url)}>⤓</button>
+                          <button type="button" aria-label="放大" onClick={() => window.open(results[0].url, "_blank", "noopener,noreferrer")}>↗</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                : products.slice(0, 3).map((p, i) => (
+                    <div key={p.id} className={`ft-result tone-${p.tone}`} style={{ aspectRatio: "1" }}>
+                      <AssetImage
+                        src={p.image}
+                        alt={p.name}
+                        tone={p.tone}
+                        label={["2×2 拼贴", "3×3 拼贴", "单 Tile"][i]}
+                        className="ft-result__img"
+                      />
+                      <div className="ft-result__overlay">
+                        <span className="ft-result__chip">{["2×2 拼贴", "3×3 拼贴", "单 Tile"][i]}</span>
+                      </div>
+                    </div>
+                  ))}
             </div>
 
             <div style={{
@@ -175,8 +303,12 @@ export default function PatternSeamlessPage() {
             </div>
 
             <div className="ft-actions">
-              <button type="button" className="ft-actionBtn"><span className="ic">⤓</span><span>导出 PNG</span></button>
-              <button type="button" className="ft-actionBtn"><span className="ic">⤓</span><span>导出 SVG</span></button>
+              <button type="button" className="ft-actionBtn" onClick={() => results[0] && downloadImage(results[0].url)} disabled={results.length === 0}>
+                <span className="ic">⤓</span><span>导出 PNG</span>
+              </button>
+              <button type="button" className="ft-actionBtn" disabled={results.length === 0}>
+                <span className="ic">⤓</span><span>导出 SVG</span>
+              </button>
               <button type="button" className="ft-actionBtn"><span className="ic">▦</span><span>导出工艺单</span></button>
               <Link href="/studio/fashion/pattern" className="ft-actionBtn"><span className="ic">↗</span><span>上身演示</span></Link>
               <button type="button" className="ft-actionBtn"><span className="ic">♡</span><span>收藏</span></button>
@@ -273,6 +405,13 @@ export default function PatternSeamlessPage() {
           </div>
         </aside>
       </div>
+
+      <style jsx global>{`
+        @keyframes ft-shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
     </div>
   );
 }

@@ -1,23 +1,97 @@
 "use client";
 
+import { useRef, useState } from "react";
 import Link from "next/link";
 import AssetImage from "@/components/AssetImage";
 import { products } from "@/lib/home-consumer-data";
+import {
+  generateImages,
+  fileToBase64,
+  downloadImage,
+  type StudioImage,
+  type StudioModel,
+} from "@/lib/studioClient";
 import "../../studio-home.css";
 import "../fashion-tool.css";
 
 const FABRIC_TYPES = [
-  { id: "knit", label: "弹力针织" },
-  { id: "silk", label: "醋酸真丝" },
-  { id: "linen", label: "亚麻棉" },
-  { id: "blend", label: "高定混纺" },
-  { id: "lace", label: "蕾丝" },
-  { id: "satin", label: "缎面" },
+  { id: "knit", label: "弹力针织", desc: "高弹、贴身、回弹好" },
+  { id: "silk", label: "醋酸真丝", desc: "顺滑、垂坠、光泽柔和" },
+  { id: "linen", label: "亚麻棉", desc: "透气、亚光、自然褶皱" },
+  { id: "blend", label: "高定混纺", desc: "挺括、有支撑、立体" },
+  { id: "lace", label: "蕾丝", desc: "镂空、精致、半透明" },
+  { id: "satin", label: "缎面", desc: "高光、丝滑、反射强" },
 ];
 
-const STYLES = ["裹身", "直筒", "A 字", "鱼尾"];
+const AREAS = [
+  { id: "full", label: "整件" },
+  { id: "top", label: "上身" },
+  { id: "skirt", label: "裙摆" },
+  { id: "sleeve", label: "袖" },
+  { id: "panel", label: "拼接" },
+];
 
 export default function FabricApplyPage() {
+  const fabricRef = useRef<HTMLInputElement>(null);
+  const garmentRef = useRef<HTMLInputElement>(null);
+  const [fabricPreview, setFabricPreview] = useState<string | null>(null);
+  const [fabricBase64, setFabricBase64] = useState<string | null>(null);
+  const [garmentPreview, setGarmentPreview] = useState<string | null>(null);
+  const [garmentBase64, setGarmentBase64] = useState<string | null>(null);
+  const [fabricType, setFabricType] = useState(FABRIC_TYPES[0]);
+  const [area, setArea] = useState(AREAS[0]);
+  const [model, setModel] = useState<StudioModel>("gpt-image-2");
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<StudioImage[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  async function onFabricChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const dataUrl = await fileToBase64(f);
+    setFabricPreview(dataUrl);
+    setFabricBase64(dataUrl);
+  }
+  async function onGarmentChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const dataUrl = await fileToBase64(f);
+    setGarmentPreview(dataUrl);
+    setGarmentBase64(dataUrl);
+  }
+
+  async function onGenerate() {
+    if (!fabricBase64) {
+      setError("请先上传面料图");
+      return;
+    }
+    if (!garmentBase64) {
+      setError("请先上传服装图");
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    setResults([]);
+    const res = await generateImages({
+      tool: "fabric-apply",
+      model,
+      params: {
+        fabricName: fabricType.label,
+        fabricDescription: fabricType.desc,
+        area: area.id,
+      },
+      images: [fabricBase64, garmentBase64],
+      count: 2,
+      size: "2:3",
+    });
+    setLoading(false);
+    if (res.success && res.images) {
+      setResults(res.images);
+    } else {
+      setError(res.error || "生成失败");
+    }
+  }
+
   return (
     <div className="ft-root">
       <div className="st-tabs">
@@ -40,80 +114,110 @@ export default function FabricApplyPage() {
         </div>
       </div>
 
+      <input ref={fabricRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onFabricChange} />
+      <input ref={garmentRef} type="file" accept="image/*" style={{ display: "none" }} onChange={onGarmentChange} />
+
       <div className="ft-grid">
         <aside className="ft-aside">
           <div className="ft-card">
-            <div className="ft-card__head"><h2>① 输入面料图</h2></div>
-            <div className="ft-thumbnail is-uploaded">
-              <AssetImage
-                src={products[1].image}
-                alt="面料"
-                tone={products[1].tone}
-                label="面料"
-                className="ft-thumbnail__img"
-              />
+            <div className="ft-card__head"><h2>① 面料图</h2></div>
+            <div
+              className="ft-thumbnail is-uploaded"
+              onClick={() => fabricRef.current?.click()}
+              style={{ cursor: "pointer" }}
+            >
+              {fabricPreview ? (
+                <img src={fabricPreview} alt="面料" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <AssetImage
+                  src={products[1].image}
+                  alt="面料"
+                  tone={products[1].tone}
+                  label="点击上传面料"
+                  className="ft-thumbnail__img"
+                />
+              )}
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6, marginTop: 10 }}>
-              {[
-                "repeating-linear-gradient(45deg, #efe5d5, #efe5d5 4px, #e3d5be 4px, #e3d5be 8px)",
-                "repeating-linear-gradient(0deg, #d8c9b0, #d8c9b0 3px, #c4b39a 3px, #c4b39a 6px)",
-                "linear-gradient(135deg, #d4c5ad 0%, #b8a586 100%)",
-                "repeating-linear-gradient(90deg, #e8e0d2, #e8e0d2 5px, #d6cab4 5px, #d6cab4 10px)",
-              ].map((g, i) => (
-                <button key={i} type="button" style={{
-                  aspectRatio: 1,
-                  borderRadius: 8,
-                  background: g,
-                  border: i === 0 ? "2px solid var(--ft-gold)" : "1px solid var(--ft-border)",
-                  cursor: "pointer",
-                  padding: 0,
-                }} />
-              ))}
-            </div>
+            <small style={{ display: "block", marginTop: 8, fontSize: 11, color: "var(--ft-text2)" }}>
+              {fabricPreview ? "已上传 · 点击替换" : "点击上传面料图（必须）"}
+            </small>
           </div>
 
           <div className="ft-card">
-            <div className="ft-card__head"><h2>② 面料类型</h2></div>
+            <div className="ft-card__head"><h2>② 服装图</h2></div>
+            <div
+              className="ft-thumbnail is-uploaded"
+              onClick={() => garmentRef.current?.click()}
+              style={{ cursor: "pointer" }}
+            >
+              {garmentPreview ? (
+                <img src={garmentPreview} alt="服装" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <AssetImage
+                  src={products[0].image}
+                  alt="服装"
+                  tone={products[0].tone}
+                  label="点击上传服装"
+                  className="ft-thumbnail__img"
+                />
+              )}
+            </div>
+            <small style={{ display: "block", marginTop: 8, fontSize: 11, color: "var(--ft-text2)" }}>
+              {garmentPreview ? "已上传 · 点击替换" : "点击上传服装图（必须）"}
+            </small>
+          </div>
+
+          <div className="ft-card">
+            <div className="ft-card__head"><h2>③ 面料类型</h2></div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {FABRIC_TYPES.map((f, i) => (
-                <span key={f.id} className={`ft-stage__chip ${i === 0 ? "is-active" : ""}`}>{f.label}</span>
+              {FABRIC_TYPES.map((f) => (
+                <span
+                  key={f.id}
+                  className={`ft-stage__chip ${fabricType.id === f.id ? "is-active" : ""}`}
+                  onClick={() => setFabricType(f)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {f.label}
+                </span>
               ))}
             </div>
+            <small style={{ display: "block", marginTop: 8, fontSize: 11, color: "var(--ft-text3)" }}>
+              {fabricType.desc}
+            </small>
           </div>
 
           <div className="ft-card">
-            <div className="ft-card__head"><h2>③ 面料属性</h2></div>
-            <div className="ft-slider">
-              <label><span>厚度 / 克重</span><span>180 g</span></label>
-              <input type="range" min={80} max={420} defaultValue={180} />
+            <div className="ft-card__head"><h2>④ 应用区域 / 模型</h2></div>
+            <div className="ft-field">
+              <label>区域</label>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {AREAS.map((a) => (
+                  <span
+                    key={a.id}
+                    className={`ft-stage__chip ${area.id === a.id ? "is-active" : ""}`}
+                    onClick={() => setArea(a)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {a.label}
+                  </span>
+                ))}
+              </div>
             </div>
-            <div className="ft-slider">
-              <label><span>垂坠感</span><span>72%</span></label>
-              <input type="range" min={0} max={100} defaultValue={72} />
+            <div className="ft-field" style={{ marginBottom: 0 }}>
+              <label>模型</label>
+              <select value={model} onChange={(e) => setModel(e.target.value as StudioModel)}>
+                <option value="gpt-image-2">GPT-Image-2 · 标准</option>
+                <option value="gemini">Gemini · 精细</option>
+              </select>
             </div>
-            <div className="ft-slider">
-              <label><span>透光度</span><span>20%</span></label>
-              <input type="range" min={0} max={100} defaultValue={20} />
-            </div>
-            <div className="ft-slider">
-              <label><span>反光强度</span><span>34%</span></label>
-              <input type="range" min={0} max={100} defaultValue={34} />
-            </div>
-            <div className="ft-slider" style={{ marginBottom: 0 }}>
-              <label><span>褶皱深度</span><span>中</span></label>
-              <input type="range" min={1} max={5} defaultValue={3} />
-            </div>
-          </div>
-
-          <div className="ft-card">
-            <div className="ft-card__head"><h2>④ 套用款式</h2></div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {STYLES.map((s, i) => (
-                <span key={s} className={`ft-stage__chip ${i === 0 ? "is-active" : ""}`}>{s}</span>
-              ))}
-            </div>
-            <button type="button" className="ft-btn is-primary" style={{ width: "100%", marginTop: 12 }}>
-              生成 4 张面料上身图
+            <button
+              type="button"
+              className="ft-btn is-primary"
+              style={{ width: "100%", marginTop: 12 }}
+              disabled={loading}
+              onClick={onGenerate}
+            >
+              {loading ? "生成中…" : "生成 2 张面料上身图"}
             </button>
           </div>
         </aside>
@@ -121,7 +225,7 @@ export default function FabricApplyPage() {
         <section>
           <div className="ft-stage">
             <div className="ft-stage__head">
-              <h2>面料上身效果（4 / 4）</h2>
+              <h2>面料上身效果（{results.length} / 2）</h2>
               <div className="ft-stage__bar">
                 <span className="ft-stage__chip is-active">写实模特</span>
                 <span className="ft-stage__chip">面料特写</span>
@@ -130,58 +234,76 @@ export default function FabricApplyPage() {
               </div>
             </div>
 
-            <div className="ft-results" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
-              {products.slice(0, 4).map((p, i) => (
-                <div key={p.id} className={`ft-result tone-${p.tone}`} style={{ aspectRatio: "3 / 4" }}>
-                  <AssetImage
-                    src={p.image}
-                    alt={p.name}
-                    tone={p.tone}
-                    label={`面料 ${i + 1}`}
-                    className="ft-result__img"
-                  />
-                  <div className="ft-result__overlay">
-                    <span className="ft-result__chip">{["弹力针织", "醋酸真丝", "亚麻棉", "高定混纺"][i]}</span>
-                    <div className="ft-result__icons">
-                      <button type="button">⤓</button>
-                      <button type="button">♡</button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            {error && (
+              <div style={{
+                padding: 12,
+                marginBottom: 12,
+                borderRadius: 8,
+                background: "rgba(176,57,57,0.08)",
+                border: "1px solid rgba(176,57,57,0.2)",
+                color: "#a23030",
+                fontSize: 13,
+              }}>
+                {error}
+              </div>
+            )}
 
-            <div style={{
-              marginTop: 14,
-              padding: 14,
-              borderRadius: 12,
-              background: "var(--ft-bg)",
-              border: "1px solid var(--ft-border)",
-              display: "grid",
-              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-              gap: 10,
-              fontSize: 11,
-              color: "var(--ft-text2)",
-            }}>
-              {[
-                { name: "弹力针织", thick: "180g", drape: "中", lustre: "低" },
-                { name: "醋酸真丝", thick: "120g", drape: "高", lustre: "高" },
-                { name: "亚麻棉", thick: "220g", drape: "低", lustre: "无" },
-                { name: "高定混纺", thick: "260g", drape: "中高", lustre: "中" },
-              ].map((d) => (
-                <div key={d.name} style={{ display: "grid", gap: 2 }}>
-                  <b style={{ fontSize: 12, color: "var(--ft-text)" }}>{d.name}</b>
-                  <span>克重 {d.thick}</span>
-                  <span>垂坠 {d.drape}</span>
-                  <span>反光 {d.lustre}</span>
-                </div>
-              ))}
+            <div className="ft-results" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+              {loading
+                ? Array.from({ length: 2 }).map((_, i) => (
+                    <div key={i} className="ft-result" style={{ background: "var(--ft-bg)", aspectRatio: "3 / 4" }}>
+                      <div style={{
+                        position: "absolute",
+                        inset: 0,
+                        background: "linear-gradient(110deg, var(--ft-bg) 30%, rgba(176,134,92,0.08) 50%, var(--ft-bg) 70%)",
+                        backgroundSize: "200% 100%",
+                        animation: "ft-shimmer 1.6s linear infinite",
+                      }} />
+                    </div>
+                  ))
+                : results.length > 0
+                ? results.map((img, i) => (
+                    <div key={i} className="ft-result" style={{ aspectRatio: "3 / 4" }}>
+                      <img
+                        src={img.url}
+                        alt={`面料上身 ${i + 1}`}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "zoom-in" }}
+                        onClick={() => window.open(img.url, "_blank", "noopener,noreferrer")}
+                      />
+                      <div className="ft-result__overlay">
+                        <span className="ft-result__chip">{fabricType.label} · 方案 {String.fromCharCode(65 + i)}</span>
+                        <div className="ft-result__icons">
+                          <button type="button" aria-label="下载" onClick={() => downloadImage(img.url)}>⤓</button>
+                          <button type="button" aria-label="收藏">♡</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                : products.slice(0, 2).map((p, i) => (
+                    <div key={p.id} className={`ft-result tone-${p.tone}`} style={{ aspectRatio: "3 / 4" }}>
+                      <AssetImage
+                        src={p.image}
+                        alt={p.name}
+                        tone={p.tone}
+                        label={`示例 ${i + 1}`}
+                        className="ft-result__img"
+                      />
+                      <div className="ft-result__overlay">
+                        <span className="ft-result__chip">{["弹力针织", "醋酸真丝"][i]}</span>
+                      </div>
+                    </div>
+                  ))}
             </div>
 
             <div className="ft-actions">
-              <button type="button" className="ft-actionBtn"><span className="ic">↻</span><span>重新生成</span></button>
-              <button type="button" className="ft-actionBtn"><span className="ic">⤓</span><span>下载组图</span></button>
-              <Link href="/my/orders" className="ft-actionBtn"><span className="ic">▦</span><span>Tech Pack</span></Link>
+              <button type="button" className="ft-actionBtn" onClick={onGenerate} disabled={loading}>
+                <span className="ic">↻</span><span>重新生成</span>
+              </button>
+              <button type="button" className="ft-actionBtn" disabled={results.length === 0}
+                onClick={() => results.forEach((r) => downloadImage(r.url))}>
+                <span className="ic">⤓</span><span>下载组图</span>
+              </button>
+              <Link href="/studio/publish/tech-pack" className="ft-actionBtn"><span className="ic">▦</span><span>Tech Pack</span></Link>
               <button type="button" className="ft-actionBtn"><span className="ic">↗</span><span>对比模式</span></button>
               <button type="button" className="ft-actionBtn"><span className="ic">♡</span><span>收藏</span></button>
               <Link href="/studio/publish" className="ft-actionBtn"><span className="ic">✓</span><span>发布</span></Link>
@@ -195,7 +317,7 @@ export default function FabricApplyPage() {
             </article>
             <article className="ft-helpCard">
               <b>效果对比说明</b>
-              <p>4 张图同时展示不同面料；点击切换到"对比模式"可以两两并排查看褶皱与光泽差异。</p>
+              <p>2 张图同时展示同面料不同视角；点击切换到"对比模式"可以两两并排查看褶皱与光泽差异。</p>
             </article>
             <article className="ft-helpCard">
               <b>实物对照</b>
@@ -236,12 +358,19 @@ export default function FabricApplyPage() {
             <p style={{ margin: 0, fontSize: 12, color: "var(--ft-text2)", lineHeight: 1.7, marginBottom: 10 }}>
               满意上身效果后，可一键导出包含面料属性 + 工艺单 + 用料表的 Tech Pack。
             </p>
-            <Link href="/my/orders" className="ft-btn is-primary" style={{ width: "100%", justifyContent: "center" }}>
+            <Link href="/studio/publish/tech-pack" className="ft-btn is-primary" style={{ width: "100%", justifyContent: "center" }}>
               导出 Tech Pack →
             </Link>
           </div>
         </aside>
       </div>
+
+      <style jsx global>{`
+        @keyframes ft-shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
     </div>
   );
 }

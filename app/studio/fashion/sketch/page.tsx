@@ -1,8 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import AssetImage from "@/components/AssetImage";
 import { products } from "@/lib/home-consumer-data";
+import {
+  generateImages,
+  downloadImage,
+  type StudioImage,
+  type StudioModel,
+} from "@/lib/studioClient";
 import "../../studio-home.css";
 import "../fashion-tool.css";
 
@@ -18,15 +25,18 @@ const SILHOUETTES = [
 const NECKLINES = ["V 领", "翻领", "立领", "圆领", "方领", "一字肩"];
 const SLEEVES = ["长袖", "九分", "灯笼袖", "泡泡袖", "无袖", "公主袖"];
 const HEMS = ["及膝", "中长", "长款", "拖地", "前短后长"];
+const VIEWS = [
+  { id: "both", label: "前 + 后" },
+  { id: "front", label: "仅正面" },
+  { id: "back", label: "仅背面" },
+];
 
 function TechFlat({ accent = "#1b1b1b", side = "front" }: { accent?: string; side?: "front" | "back" }) {
   return (
     <svg viewBox="0 0 240 320" aria-hidden style={{ width: "100%", height: "100%" }}>
       <rect x="0" y="0" width="240" height="320" fill="#fdfaf4" rx="8" />
       <g stroke={accent} strokeWidth="2.5" fill="none" strokeLinejoin="round" strokeLinecap="round">
-        {/* Body silhouette */}
         <path d="M86 38 L62 60 L52 110 L66 116 L74 90 L80 270 L160 270 L166 90 L174 116 L188 110 L178 60 L154 38 L140 60 L120 86 L100 60 Z" />
-        {/* V neckline / wrap */}
         {side === "front" ? (
           <>
             <path d="M88 40 C108 80 118 108 140 138" />
@@ -39,14 +49,10 @@ function TechFlat({ accent = "#1b1b1b", side = "front" }: { accent?: string; sid
             <path d="M86 78 L154 78" strokeDasharray="3 3" />
           </>
         )}
-        {/* Waist seam */}
         <path d="M82 168 L158 168" strokeDasharray="3 3" opacity="0.5" />
-        {/* Hem */}
         <path d="M80 270 C100 286 140 286 160 270" />
-        {/* Sleeve cuff */}
         <path d="M52 110 L46 178 L66 184" strokeWidth="2" />
         <path d="M188 110 L194 178 L174 184" strokeWidth="2" />
-        {/* Side seams */}
         <path d="M74 90 L74 268" strokeWidth="1.4" opacity="0.3" />
         <path d="M166 90 L166 268" strokeWidth="1.4" opacity="0.3" />
       </g>
@@ -58,6 +64,46 @@ function TechFlat({ accent = "#1b1b1b", side = "front" }: { accent?: string; sid
 }
 
 export default function SketchPage() {
+  const [silhouette, setSilhouette] = useState(SILHOUETTES[0].label);
+  const [neckline, setNeckline] = useState(NECKLINES[0]);
+  const [sleeve, setSleeve] = useState(SLEEVES[0]);
+  const [hem, setHem] = useState(HEMS[0]);
+  const [view, setView] = useState<"both" | "front" | "back">("both");
+  const [userPrompt, setUserPrompt] = useState("");
+  const [model, setModel] = useState<StudioModel>("gpt-image-2");
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<StudioImage[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  async function onGenerate() {
+    setLoading(true);
+    setError(null);
+    setResults([]);
+    const res = await generateImages({
+      tool: "sketch-generate",
+      model,
+      prompt: userPrompt,
+      params: {
+        garmentType: "dress",
+        skirtType: silhouette,
+        neckline,
+        sleeveType: sleeve,
+        skirtLength: hem,
+        view,
+        userPrompt,
+      },
+      images: [],
+      count: 2,
+      size: "2:3",
+    });
+    setLoading(false);
+    if (res.success && res.images) {
+      setResults(res.images);
+    } else {
+      setError(res.error || "生成失败");
+    }
+  }
+
   return (
     <div className="ft-root">
       <div className="st-tabs">
@@ -93,16 +139,28 @@ export default function SketchPage() {
                 className="ft-thumbnail__img"
               />
             </div>
-            <small style={{ display: "block", marginTop: 8, fontSize: 11, color: "var(--ft-text2)" }}>
-              wrap-dress-reference.png · 前视图
-            </small>
+            <div className="ft-field" style={{ marginTop: 10, marginBottom: 0 }}>
+              <label>设计补充</label>
+              <textarea
+                placeholder="例：领口加捏褶、腰部 X 形拼接"
+                value={userPrompt}
+                onChange={(e) => setUserPrompt(e.target.value)}
+              />
+            </div>
           </div>
 
           <div className="ft-card">
             <div className="ft-card__head"><h2>② 廓形</h2></div>
             <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {SILHOUETTES.map((s, i) => (
-                <span key={s.id} className={`ft-stage__chip ${i === 0 ? "is-active" : ""}`}>{s.label}</span>
+              {SILHOUETTES.map((s) => (
+                <span
+                  key={s.id}
+                  className={`ft-stage__chip ${silhouette === s.label ? "is-active" : ""}`}
+                  onClick={() => setSilhouette(s.label)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {s.label}
+                </span>
               ))}
             </div>
           </div>
@@ -112,49 +170,82 @@ export default function SketchPage() {
             <div className="ft-field">
               <label>领型</label>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {NECKLINES.map((n, i) => (
-                  <span key={n} className={`ft-stage__chip ${i === 0 ? "is-active" : ""}`}>{n}</span>
+                {NECKLINES.map((n) => (
+                  <span
+                    key={n}
+                    className={`ft-stage__chip ${neckline === n ? "is-active" : ""}`}
+                    onClick={() => setNeckline(n)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {n}
+                  </span>
                 ))}
               </div>
             </div>
             <div className="ft-field">
               <label>袖型</label>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {SLEEVES.map((s, i) => (
-                  <span key={s} className={`ft-stage__chip ${i === 0 ? "is-active" : ""}`}>{s}</span>
+                {SLEEVES.map((s) => (
+                  <span
+                    key={s}
+                    className={`ft-stage__chip ${sleeve === s ? "is-active" : ""}`}
+                    onClick={() => setSleeve(s)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {s}
+                  </span>
                 ))}
               </div>
             </div>
             <div className="ft-field" style={{ marginBottom: 0 }}>
               <label>下摆</label>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {HEMS.map((h, i) => (
-                  <span key={h} className={`ft-stage__chip ${i === 0 ? "is-active" : ""}`}>{h}</span>
+                {HEMS.map((h) => (
+                  <span
+                    key={h}
+                    className={`ft-stage__chip ${hem === h ? "is-active" : ""}`}
+                    onClick={() => setHem(h)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {h}
+                  </span>
                 ))}
               </div>
             </div>
           </div>
 
           <div className="ft-card">
-            <div className="ft-card__head"><h2>④ 衣身参数</h2></div>
-            <div className="ft-slider">
-              <label><span>胸围调整</span><span>0 cm</span></label>
-              <input type="range" min={-5} max={5} defaultValue={0} />
+            <div className="ft-card__head"><h2>④ 视图 / 模型</h2></div>
+            <div className="ft-field">
+              <label>视图</label>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {VIEWS.map((v) => (
+                  <span
+                    key={v.id}
+                    className={`ft-stage__chip ${view === v.id ? "is-active" : ""}`}
+                    onClick={() => setView(v.id as "both" | "front" | "back")}
+                    style={{ cursor: "pointer" }}
+                  >
+                    {v.label}
+                  </span>
+                ))}
+              </div>
             </div>
-            <div className="ft-slider">
-              <label><span>腰围调整</span><span>-1 cm</span></label>
-              <input type="range" min={-5} max={5} defaultValue={-1} />
+            <div className="ft-field" style={{ marginBottom: 0 }}>
+              <label>模型</label>
+              <select value={model} onChange={(e) => setModel(e.target.value as StudioModel)}>
+                <option value="gpt-image-2">GPT-Image-2 · 标准</option>
+                <option value="gemini">Gemini · 精细</option>
+              </select>
             </div>
-            <div className="ft-slider">
-              <label><span>下摆围</span><span>+2 cm</span></label>
-              <input type="range" min={-5} max={5} defaultValue={2} />
-            </div>
-            <div className="ft-slider" style={{ marginBottom: 0 }}>
-              <label><span>衣长</span><span>112 cm</span></label>
-              <input type="range" min={90} max={140} defaultValue={112} />
-            </div>
-            <button type="button" className="ft-btn is-primary" style={{ width: "100%", marginTop: 12 }}>
-              生成 4 张线稿
+            <button
+              type="button"
+              className="ft-btn is-primary"
+              style={{ width: "100%", marginTop: 12 }}
+              disabled={loading}
+              onClick={onGenerate}
+            >
+              {loading ? "生成中…" : "生成 2 张线稿"}
             </button>
           </div>
         </aside>
@@ -162,7 +253,7 @@ export default function SketchPage() {
         <section>
           <div className="ft-stage">
             <div className="ft-stage__head">
-              <h2>线稿结果（前 / 后视图）</h2>
+              <h2>线稿结果（{results.length} / 2）</h2>
               <div className="ft-stage__bar">
                 <span className="ft-stage__chip is-active">FRONT + BACK</span>
                 <span className="ft-stage__chip">侧视</span>
@@ -170,43 +261,121 @@ export default function SketchPage() {
                 <span className="ft-stage__chip">三视图</span>
               </div>
             </div>
-            <div className="ft-results" style={{ gridTemplateColumns: "repeat(4, 1fr)" }}>
-              {[0, 1, 2, 3].map((i) => (
-                <div key={i} style={{
-                  position: "relative",
-                  aspectRatio: "3 / 4",
-                  borderRadius: 12,
-                  overflow: "hidden",
-                  border: "1px solid var(--ft-border)",
-                  background: "#fdfaf4",
-                  padding: 8,
-                }}>
-                  <TechFlat side={i % 2 === 0 ? "front" : "back"} />
-                  <span style={{
-                    position: "absolute",
-                    top: 8,
-                    left: 8,
-                    height: 22,
-                    padding: "0 9px",
-                    borderRadius: 999,
-                    background: "var(--ft-gold-bg)",
-                    color: "var(--ft-gold)",
-                    fontSize: 11,
-                    display: "inline-flex",
-                    alignItems: "center",
-                  }}>
-                    方案 {String.fromCharCode(65 + Math.floor(i / 2))} · {i % 2 === 0 ? "前" : "后"}
-                  </span>
-                </div>
-              ))}
+
+            {error && (
+              <div style={{
+                padding: 12,
+                marginBottom: 12,
+                borderRadius: 8,
+                background: "rgba(176,57,57,0.08)",
+                border: "1px solid rgba(176,57,57,0.2)",
+                color: "#a23030",
+                fontSize: 13,
+              }}>
+                {error}
+              </div>
+            )}
+
+            <div className="ft-results" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
+              {loading
+                ? Array.from({ length: 2 }).map((_, i) => (
+                    <div key={i} style={{
+                      position: "relative",
+                      aspectRatio: "3 / 4",
+                      borderRadius: 12,
+                      overflow: "hidden",
+                      border: "1px solid var(--ft-border)",
+                      background: "#fdfaf4",
+                      padding: 8,
+                    }}>
+                      <div style={{
+                        position: "absolute",
+                        inset: 0,
+                        background: "linear-gradient(110deg, #fdfaf4 30%, rgba(176,134,92,0.08) 50%, #fdfaf4 70%)",
+                        backgroundSize: "200% 100%",
+                        animation: "ft-shimmer 1.6s linear infinite",
+                      }} />
+                    </div>
+                  ))
+                : results.length > 0
+                ? results.map((img, i) => (
+                    <div key={i} style={{
+                      position: "relative",
+                      aspectRatio: "3 / 4",
+                      borderRadius: 12,
+                      overflow: "hidden",
+                      border: "1px solid var(--ft-border)",
+                      background: "#fdfaf4",
+                    }}>
+                      <img
+                        src={img.url}
+                        alt={`线稿方案 ${String.fromCharCode(65 + i)}`}
+                        style={{ width: "100%", height: "100%", objectFit: "contain", cursor: "zoom-in" }}
+                        onClick={() => window.open(img.url, "_blank", "noopener,noreferrer")}
+                      />
+                      <span style={{
+                        position: "absolute",
+                        top: 8,
+                        left: 8,
+                        height: 22,
+                        padding: "0 9px",
+                        borderRadius: 999,
+                        background: "var(--ft-gold-bg)",
+                        color: "var(--ft-gold)",
+                        fontSize: 11,
+                        display: "inline-flex",
+                        alignItems: "center",
+                      }}>
+                        方案 {String.fromCharCode(65 + i)}
+                      </span>
+                      <div className="ft-result__icons" style={{ position: "absolute", bottom: 8, right: 8 }}>
+                        <button type="button" aria-label="下载" onClick={() => downloadImage(img.url)}>⤓</button>
+                      </div>
+                    </div>
+                  ))
+                : [0, 1, 2, 3].map((i) => (
+                    <div key={i} style={{
+                      position: "relative",
+                      aspectRatio: "3 / 4",
+                      borderRadius: 12,
+                      overflow: "hidden",
+                      border: "1px solid var(--ft-border)",
+                      background: "#fdfaf4",
+                      padding: 8,
+                    }}>
+                      <TechFlat side={i % 2 === 0 ? "front" : "back"} />
+                      <span style={{
+                        position: "absolute",
+                        top: 8,
+                        left: 8,
+                        height: 22,
+                        padding: "0 9px",
+                        borderRadius: 999,
+                        background: "var(--ft-gold-bg)",
+                        color: "var(--ft-gold)",
+                        fontSize: 11,
+                        display: "inline-flex",
+                        alignItems: "center",
+                      }}>
+                        示例 {String.fromCharCode(65 + Math.floor(i / 2))} · {i % 2 === 0 ? "前" : "后"}
+                      </span>
+                    </div>
+                  ))}
             </div>
 
             <div className="ft-actions">
-              <button type="button" className="ft-actionBtn"><span className="ic">⤓</span><span>导出 SVG</span></button>
-              <button type="button" className="ft-actionBtn"><span className="ic">⤓</span><span>导出 DXF</span></button>
+              <button type="button" className="ft-actionBtn" disabled={results.length === 0}>
+                <span className="ic">⤓</span><span>导出 SVG</span>
+              </button>
+              <button type="button" className="ft-actionBtn" disabled={results.length === 0}
+                onClick={() => results.forEach((r) => downloadImage(r.url))}>
+                <span className="ic">⤓</span><span>下载 PNG</span>
+              </button>
               <button type="button" className="ft-actionBtn"><span className="ic">▦</span><span>工艺单</span></button>
               <Link href="/studio/fashion/render" className="ft-actionBtn"><span className="ic">↗</span><span>线稿成款</span></Link>
-              <button type="button" className="ft-actionBtn"><span className="ic">↻</span><span>重新生成</span></button>
+              <button type="button" className="ft-actionBtn" onClick={onGenerate} disabled={loading}>
+                <span className="ic">↻</span><span>重新生成</span>
+              </button>
               <Link href="/studio/publish" className="ft-actionBtn"><span className="ic">✓</span><span>发布</span></Link>
             </div>
           </div>
@@ -259,6 +428,13 @@ export default function SketchPage() {
           </div>
         </aside>
       </div>
+
+      <style jsx global>{`
+        @keyframes ft-shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
     </div>
   );
 }
