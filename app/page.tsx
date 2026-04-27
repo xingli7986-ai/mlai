@@ -124,15 +124,15 @@ export default function HomePage() {
             MaxLuLu <span className="ai">AI</span>
           </Link>
           <div className="nav-center">
-            <a href="#gallery">灵感画廊</a>
+            <Link href="/products">灵感画廊</Link>
             <a href="#custom">个性定制</a>
             <a href="#hot">热拼专区</a>
           </div>
           <div className="nav-right">
-            <a href="#member">会员</a>
-            <a href="#wardrobe">我的衣橱</a>
+            <Link href="/my">会员</Link>
+            <Link href="/my">我的衣橱</Link>
             <span className="nav-divider" />
-            <Link href="/studio" className="designer-btn">
+            <Link href="/studio/join" className="designer-btn">
               设计师入驻
             </Link>
           </div>
@@ -140,7 +140,19 @@ export default function HomePage() {
       </nav>
 
       <section className="hero">
-        <div className="container">
+        <div className="hero-bg">
+          <Image
+            src={HERO_IMG}
+            alt="MaxLuLu AI · 春夏品牌大片"
+            fill
+            priority
+            unoptimized
+            sizes="100vw"
+            className="hero-img"
+          />
+          <div className="hero-overlay" />
+        </div>
+        <div className="container hero-content">
           <div className="hero-copy">
             <h1>
               让你的灵感，
@@ -176,17 +188,6 @@ export default function HomePage() {
                 <span className="ic">✦</span>7天退换无忧
               </span>
             </div>
-          </div>
-          <div className="hero-visual">
-            <Image
-              src={HERO_IMG}
-              alt="模特 · 针织印花裹身裙"
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 700px"
-              className="hero-img"
-            />
-            <div className="fade" />
           </div>
         </div>
       </section>
@@ -388,7 +389,7 @@ export default function HomePage() {
                     <span className="pbig">¥1599</span>
                     <span className="plabel">起</span>
                   </div>
-                  <Link href="/studio" className="cbtn">
+                  <Link href="/products" className="cbtn">
                     立即定制
                   </Link>
                 </div>
@@ -429,7 +430,7 @@ export default function HomePage() {
             <Link href="/products" className="btn-g">
               探索灵感画廊
             </Link>
-            <Link href="/studio" className="btn-ow">
+            <Link href="/products" className="btn-ow">
               开始定制
             </Link>
           </div>
@@ -478,21 +479,21 @@ export default function HomePage() {
             </div>
             <div className="footer-col">
               <div className="ft">帮助中心</div>
-              <a href="#size">尺码指南</a>
+              <Link href="/size-guide">尺码指南</Link>
               <a href="#shipping">物流与退换</a>
               <a href="#payment">支付说明</a>
             </div>
             <div className="footer-col">
               <div className="ft">关于我们</div>
               <a href="#story">品牌故事</a>
-              <a href="#designer">设计师招募</a>
+              <Link href="/studio/join">设计师招募</Link>
               <a href="#stores">门店查询</a>
             </div>
             <div className="footer-col">
               <div className="ft">服务与支持</div>
               <a href="#support">联系客服</a>
-              <a href="#privacy">隐私政策</a>
-              <a href="#terms">用户协议</a>
+              <Link href="/privacy">隐私政策</Link>
+              <Link href="/terms">用户协议</Link>
             </div>
             <div className="footer-col">
               <div className="ft">关注我们</div>
