@@ -1,10 +1,31 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import AssetImage from "@/components/AssetImage";
 import { products } from "@/lib/home-consumer-data";
 import "../designer-center.css";
 import "../studio-home.css";
+
+interface DesignerDashboard {
+  designer: { id: string; displayName: string; bio: string | null; avatarUrl: string | null };
+  designs: Array<{ id: string; title: string; coverImages: string[]; status: string; likeCount: number; orderCount: number; revenue: number }>;
+  stats: {
+    totalDesigns: number;
+    approvedDesigns: number;
+    totalLikes: number;
+    totalOrders: number;
+    totalRevenue: number;
+    grossEarnings: number;
+    last30dEarnings: number;
+    withdrawable: number;
+    totalWithdrawn: number;
+  };
+}
+
+function fmtMoney(cents: number): string {
+  return (cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
 const STATS = [
   { label: "总收益", value: "28,765.30", unit: "元", delta: "+18.3% 同比", trend: "up" as const, badge: "累计" },
@@ -89,6 +110,39 @@ function RevenueChart() {
 }
 
 export default function DesignerCenterPage() {
+  const [data, setData] = useState<DesignerDashboard | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/designer/dashboard", { cache: "no-store" });
+        const json = await res.json();
+        if (!alive) return;
+        if (!res.ok) {
+          setError(json.error || "无法加载设计师数据");
+          return;
+        }
+        setData(json);
+      } catch {
+        if (alive) setError("网络错误");
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const liveStats = data
+    ? [
+        { label: "总收益", value: fmtMoney(data.stats.grossEarnings), unit: "元", delta: "30% 分润累计", trend: "up" as const, badge: "累计" },
+        { label: "近 30 天", value: fmtMoney(data.stats.last30dEarnings), unit: "元", delta: `${data.stats.totalOrders} 单`, trend: "up" as const, badge: "30D" },
+        { label: "可提现", value: fmtMoney(data.stats.withdrawable), unit: "元", delta: `已提 ¥${fmtMoney(data.stats.totalWithdrawn)}`, trend: "up" as const, badge: "T+1" },
+        { label: "作品", value: String(data.stats.totalDesigns), unit: `已审核 ${data.stats.approvedDesigns}`, delta: `${data.stats.totalLikes} 点赞`, trend: "up" as const, badge: "实时" },
+      ]
+    : STATS;
+
   return (
     <div className="dc-root">
       <div className="st-tabs" style={{ marginBottom: 20 }}>
@@ -101,7 +155,8 @@ export default function DesignerCenterPage() {
       <header className="dc-greet">
         <div>
           <p className="eyebrow">DESIGNER CENTER · 设计师中心</p>
-          <h1>欢迎回来，Luna <small>· 你今天有 3 件作品成团 · 4 条新评价</small></h1>
+          <h1>欢迎回来，{data?.designer.displayName ?? "Luna"} <small>· 共 {data?.stats.totalDesigns ?? "—"} 件作品 · {data?.stats.totalOrders ?? "—"} 订单</small></h1>
+          {error && <p className="ml-toast ml-toast--error" style={{ marginTop: 8 }}>{error}</p>}
         </div>
         <div className="dc-greet__actions">
           <button type="button" className="dc-btn">本月 ▾</button>
@@ -111,7 +166,7 @@ export default function DesignerCenterPage() {
       </header>
 
       <section className="dc-stats">
-        {STATS.map((s) => (
+        {liveStats.map((s) => (
           <article key={s.label} className="dc-stat">
             <div className="dc-stat__head">
               <span>{s.label}</span>

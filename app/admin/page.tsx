@@ -231,6 +231,12 @@ export default function AdminOrdersPage() {
               {loading ? "加载中..." : `共 ${orders.length} 笔订单`}
             </p>
           </div>
+          <Link
+            href="/admin/manage"
+            className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
+          >
+            审核 / 拼团 / 提现 →
+          </Link>
         </div>
 
         <div className="sticky top-14 z-[5] -mx-4 mb-4 overflow-x-auto border-b border-gray-100 bg-white/80 px-4 backdrop-blur sm:top-[72px] sm:-mx-6 sm:px-6">

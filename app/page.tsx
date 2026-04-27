@@ -96,8 +96,31 @@ function formatCountdown(total: number) {
   return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
+interface HomeApiHotBuy {
+  id: string;
+  publishedDesignId: string;
+  title: string;
+  coverImage: string | null;
+  groupPrice: number;
+  currentCount: number;
+  targetCount: number;
+  progressPct: number;
+  secondsRemaining: number;
+}
+interface HomeApiPopular {
+  id: string;
+  title: string;
+  images: string[];
+  groupPrice: number;
+  likeCount: number;
+}
+
 export default function HomePage() {
   const [scrolled, setScrolled] = useState(false);
+  const [hotCards, setHotCards] = useState<HotCard[]>(HOT_CARDS);
+  const [hotLinks, setHotLinks] = useState<string[]>(HOT_CARDS.map(() => "#hot"));
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(GALLERY_ITEMS);
+  const [galleryLinks, setGalleryLinks] = useState<string[]>(GALLERY_ITEMS.map(() => "/products"));
   const [countdowns, setCountdowns] = useState<number[]>(() =>
     HOT_CARDS.map((c) => c.countdown)
   );
@@ -107,6 +130,62 @@ export default function HomePage() {
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/home", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          hotGroupBuys: HomeApiHotBuy[];
+          popularDesigns: HomeApiPopular[];
+        };
+        if (!alive) return;
+        if (data.hotGroupBuys?.length) {
+          const cards: HotCard[] = data.hotGroupBuys.slice(0, 4).map((g) => ({
+            name: g.title,
+            series: `众定 ${g.currentCount} / ${g.targetCount} 人`,
+            price: `¥${(g.groupPrice / 100).toLocaleString()}`,
+            progress: g.progressPct,
+            joined: g.currentCount,
+            countdown: g.secondsRemaining,
+            state:
+              g.progressPct >= 90
+                ? ("almost" as HotState)
+                : g.progressPct < 30
+                ? ("new" as HotState)
+                : ("hot" as HotState),
+            tagText:
+              g.progressPct >= 90 ? "即将成团" : g.progressPct < 30 ? "新品团" : "热拼中",
+            image:
+              g.coverImage ||
+              "/assets/images/home/02-hot-group/ChatGPT Image Apr 26, 2026, 02_13_25 PM.png",
+          }));
+          setHotCards(cards);
+          setHotLinks(data.hotGroupBuys.slice(0, 4).map((g) => `/products/${g.publishedDesignId}`));
+          setCountdowns(cards.map((c) => c.countdown));
+        }
+        if (data.popularDesigns?.length) {
+          const items: GalleryItem[] = data.popularDesigns.slice(0, 8).map((p) => ({
+            name: p.title,
+            price: `¥${(p.groupPrice / 100).toLocaleString()}`,
+            favs: p.likeCount,
+            image:
+              p.images?.[0] ||
+              "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_22_48 PM.png",
+          }));
+          setGalleryItems(items);
+          setGalleryLinks(data.popularDesigns.slice(0, 8).map((p) => `/products/${p.id}`));
+        }
+      } catch {
+        /* keep mock fallback */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -201,7 +280,7 @@ export default function HomePage() {
             </a>
           </div>
           <div className="hot-grid">
-            {HOT_CARDS.map((card, idx) => {
+            {hotCards.map((card, idx) => {
               const tagClass =
                 card.state === "hot"
                   ? "tag-hot"
@@ -237,9 +316,9 @@ export default function HomePage() {
                         {formatCountdown(countdowns[idx] ?? 0)}
                       </span>
                     </div>
-                    <button type="button" className="card-btn">
+                    <Link href={hotLinks[idx] || "/products"} className="card-btn">
                       去拼团
-                    </button>
+                    </Link>
                   </div>
                 </article>
               );
@@ -257,8 +336,8 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="gallery-grid">
-            {GALLERY_ITEMS.map((item) => (
-              <article key={item.name} className="gallery-card">
+            {galleryItems.map((item, idx) => (
+              <Link href={galleryLinks[idx] || "/products"} key={`${item.name}-${idx}`} className="gallery-card">
                 <div className="img-wrap">
                   <Image
                     src={item.image}
@@ -268,7 +347,7 @@ export default function HomePage() {
                     className="gallery-img"
                   />
                   <div className="overlay">
-                    <button type="button">查看详情</button>
+                    <span>查看详情</span>
                   </div>
                 </div>
                 <div className="info">
@@ -278,7 +357,7 @@ export default function HomePage() {
                     <span className="gfav">♡ {item.favs}</span>
                   </div>
                 </div>
-              </article>
+              </Link>
             ))}
           </div>
         </div>

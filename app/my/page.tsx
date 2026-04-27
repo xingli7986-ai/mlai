@@ -1,7 +1,28 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import AssetImage from "@/components/AssetImage";
 import { products } from "@/lib/home-consumer-data";
 import "./my-center.css";
+
+interface ApiFavorite {
+  id: string;
+  title: string;
+  images: string[];
+  groupPrice: number;
+  designer: { name: string | null };
+}
+interface ApiOrder {
+  kind: "custom" | "group-buy";
+  id: string;
+  title: string;
+  image: string | null;
+  size: string;
+  totalAmount: number;
+  status: string;
+  createdAt: string;
+}
 
 const FAVORITES = products.slice(0, 8);
 
@@ -69,6 +90,34 @@ const SIDEBAR_GROUPS = [
 ];
 
 export default function MyCenterPage() {
+  const [apiFavorites, setApiFavorites] = useState<ApiFavorite[] | null>(null);
+  const [apiOrders, setApiOrders] = useState<ApiOrder[] | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const [favRes, ordRes] = await Promise.all([
+          fetch("/api/my/favorites?limit=8", { cache: "no-store" }),
+          fetch("/api/my/orders", { cache: "no-store" }),
+        ]);
+        if (favRes.ok) {
+          const j = await favRes.json();
+          if (alive) setApiFavorites(j.designs as ApiFavorite[]);
+        }
+        if (ordRes.ok) {
+          const j = await ordRes.json();
+          if (alive) setApiOrders(j.orders as ApiOrder[]);
+        }
+      } catch {
+        /* keep mock fallback */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   return (
     <main className="page-wrap mcPage">
       <nav className="nav">
@@ -154,28 +203,39 @@ export default function MyCenterPage() {
 
             <article className="mcCard" id="wardrobe">
               <div className="mcCard__head">
-                <h2>我的衣橱 · 已收藏 (12)</h2>
+                <h2>我的衣橱 · 已收藏 ({apiFavorites?.length ?? 12})</h2>
                 <Link href="#favorites">查看全部 →</Link>
               </div>
               <div className="mcWardrobe">
-                {FAVORITES.map((p) => (
-                  <Link href={`/products/${p.id}`} key={p.id} className="mcWardrobeCard">
-                    <div className={`mcWardrobeCard__media tone-${p.tone}`}>
-                      <AssetImage
-                        src={p.image}
-                        alt={p.name}
-                        tone={p.tone}
-                        label={p.name.slice(0, 4)}
-                        className="mcWardrobeCard__img"
-                      />
-                      <button type="button" className="mcWardrobeCard__heart" aria-label="取消收藏">♥</button>
-                    </div>
-                    <div className="mcWardrobeCard__body">
-                      <div className="mcWardrobeCard__name">{p.name}</div>
-                      <div className="mcWardrobeCard__price">{p.price.split("–")[0]}</div>
-                    </div>
-                  </Link>
-                ))}
+                {apiFavorites && apiFavorites.length > 0
+                  ? apiFavorites.map((p) => (
+                      <Link href={`/products/${p.id}`} key={p.id} className="mcWardrobeCard">
+                        <div className="mcWardrobeCard__media">
+                          {p.images[0] ? (
+                            <img src={p.images[0]} alt={p.title} className="mcWardrobeCard__img" />
+                          ) : (
+                            <div className="mcWardrobeCard__img" />
+                          )}
+                          <button type="button" className="mcWardrobeCard__heart" aria-label="取消收藏">♥</button>
+                        </div>
+                        <div className="mcWardrobeCard__body">
+                          <div className="mcWardrobeCard__name">{p.title}</div>
+                          <div className="mcWardrobeCard__price">¥{(p.groupPrice / 100).toLocaleString()}</div>
+                        </div>
+                      </Link>
+                    ))
+                  : FAVORITES.map((p) => (
+                      <Link href={`/products/${p.id}`} key={p.id} className="mcWardrobeCard">
+                        <div className={`mcWardrobeCard__media tone-${p.tone}`}>
+                          <AssetImage src={p.image} alt={p.name} tone={p.tone} label={p.name.slice(0, 4)} className="mcWardrobeCard__img" />
+                          <button type="button" className="mcWardrobeCard__heart" aria-label="取消收藏">♥</button>
+                        </div>
+                        <div className="mcWardrobeCard__body">
+                          <div className="mcWardrobeCard__name">{p.name}</div>
+                          <div className="mcWardrobeCard__price">{p.price.split("–")[0]}</div>
+                        </div>
+                      </Link>
+                    ))}
               </div>
             </article>
 
@@ -193,32 +253,51 @@ export default function MyCenterPage() {
                   ))}
                 </div>
                 <div className="mcOrders">
-                  {ORDERS.slice(0, 3).map((o) => (
-                    <Link key={o.id} href={`/group-buy/${o.product.id}/progress`} className="mcOrder">
-                      <div className={`mcOrder__media tone-${o.product.tone}`}>
-                        <AssetImage
-                          src={o.product.image}
-                          alt={o.product.name}
-                          tone={o.product.tone}
-                          label={o.product.name.slice(0, 4)}
-                          className="mcOrder__img"
-                        />
-                      </div>
-                      <div className="mcOrder__body">
-                        <b>{o.product.name}</b>
-                        <small>编号 {o.id}</small>
-                        <div className="mcOrder__meta">
-                          <span>尺码 {o.size}</span>
-                          <span>{o.channel}</span>
-                          <span>{o.date}</span>
-                        </div>
-                      </div>
-                      <div className="mcOrder__price">
-                        <b>{o.price}</b>
-                        <em className={o.statusClass}>{o.status}</em>
-                      </div>
-                    </Link>
-                  ))}
+                  {(apiOrders && apiOrders.length > 0
+                    ? apiOrders.slice(0, 3).map((o) => (
+                        <Link key={o.id} href={`/my/orders`} className="mcOrder">
+                          <div className="mcOrder__media">
+                            {o.image ? (
+                              <img src={o.image} alt={o.title} className="mcOrder__img" />
+                            ) : (
+                              <div className="mcOrder__img" />
+                            )}
+                          </div>
+                          <div className="mcOrder__body">
+                            <b>{o.title}</b>
+                            <small>编号 {o.id.slice(0, 12).toUpperCase()}</small>
+                            <div className="mcOrder__meta">
+                              <span>尺码 {o.size}</span>
+                              <span>{o.kind === "group-buy" ? "众定" : "个人定制"}</span>
+                              <span>{new Date(o.createdAt).toLocaleDateString("zh-CN")}</span>
+                            </div>
+                          </div>
+                          <div className="mcOrder__price">
+                            <b>¥{(o.totalAmount / 100).toFixed(0)}</b>
+                            <em className={o.status === "paid" || o.status === "completed" ? "is-done" : "is-pending"}>{o.status}</em>
+                          </div>
+                        </Link>
+                      ))
+                    : ORDERS.slice(0, 3).map((o) => (
+                        <Link key={o.id} href={`/group-buy/${o.product.id}/progress`} className="mcOrder">
+                          <div className={`mcOrder__media tone-${o.product.tone}`}>
+                            <AssetImage src={o.product.image} alt={o.product.name} tone={o.product.tone} label={o.product.name.slice(0, 4)} className="mcOrder__img" />
+                          </div>
+                          <div className="mcOrder__body">
+                            <b>{o.product.name}</b>
+                            <small>编号 {o.id}</small>
+                            <div className="mcOrder__meta">
+                              <span>尺码 {o.size}</span>
+                              <span>{o.channel}</span>
+                              <span>{o.date}</span>
+                            </div>
+                          </div>
+                          <div className="mcOrder__price">
+                            <b>{o.price}</b>
+                            <em className={o.statusClass}>{o.status}</em>
+                          </div>
+                        </Link>
+                      )))}
                 </div>
               </article>
 
