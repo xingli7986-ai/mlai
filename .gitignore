@@ -56,6 +56,13 @@ instruction*.md
 MaxLuLu_AI_*.md
 指令*.txt
 
+# Local playwright screenshots and dev artifacts — do not commit
+/*.png
+.playwright-mcp/
+
+# Claude Code local config and artifacts — keep local
+.claude/
+
 # vercel
 .vercel
 

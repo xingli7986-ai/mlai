@@ -7,27 +7,27 @@
    ============================================================ */
 
 :root {
-  --gold: #B9936C;
-  --gold-hover: #A67E52;
-  --gold-pressed: #8F6A45;
-  --gold-light: #D0AF8C;
-  --gold-bg: rgba(185, 147, 108, 0.06);
-  --gold-border: rgba(185, 147, 108, 0.3);
-  --gold-dark: #8F6A45;
-  --bg: #F7F1EA;
-  --bg-main: #F7F1EA;
-  --bg-soft: #FBF7F2;
-  --bg-deep: #E8DCCF;
-  --card: #FFF9F4;
-  --card-hover: #FFF4EB;
-  --text: #222222;
-  --text-main: #222222;
-  --text2: #6F665F;
-  --text-sub: #6F665F;
-  --text3: #9A9088;
-  --border: #E8DCCF;
-  --border-light: #F0ECE8;
-  --dark: #191919;
+  --gold: #B0865C;
+  --gold-hover: #9A7448;
+  --gold-pressed: #82603A;
+  --gold-light: #C8A57F;
+  --gold-bg: rgba(176, 134, 92, 0.06);
+  --gold-border: rgba(176, 134, 92, 0.3);
+  --gold-dark: #82603A;
+  --bg: #F5EFE5;
+  --bg-main: #F5EFE5;
+  --bg-soft: #FAF6F5;
+  --bg-deep: #E5E2DB;
+  --card: #FAF6F5;
+  --card-hover: #F5EFE5;
+  --text: #2B241F;
+  --text-main: #2B241F;
+  --text2: #7A7A6F;
+  --text-sub: #7A7A6F;
+  --text3: #A09A92;
+  --border: #E5E2DB;
+  --border-light: #EFEBE5;
+  --dark: #111111;
   --white: #FFFFFF;
   --red: #D95D4F;
   --container: 1200px;
@@ -235,18 +235,19 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 }
 
 .hero-copy {
-  width: 420px;
+  width: 500px;
   display: flex;
   flex-direction: column;
 }
 .hero h1 {
   font-family: var(--serif);
-  font-size: 64px;
-  line-height: 1.18;
+  font-size: 56px;
+  line-height: 1.22;
   font-weight: 700;
   letter-spacing: 0;
   color: var(--text);
   margin: 0 0 24px;
+  white-space: nowrap;
 }
 .hero .sub {
   font-family: var(--sans);
@@ -625,10 +626,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 .custom-left h2 {
   font-family: var(--serif);
-  font-size: 40px;
+  font-size: 34px;
   font-weight: 700;
   color: var(--text);
   margin: 0 0 12px;
+  white-space: nowrap;
 }
 .custom-left .desc {
   font-size: 16px;
@@ -647,27 +649,18 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   text-align: center;
   position: relative;
 }
-.step-num {
-  width: 36px;
-  height: 36px;
-  border-radius: 999px;
-  border: 1px solid var(--gold);
+.step-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
   color: var(--gold);
-  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--display);
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0 auto 12px;
-  transition: background 200ms ease-out, color 200ms ease-out, transform 200ms ease-out;
+  transition: transform 200ms ease-out, color 200ms ease-out;
 }
-.step:hover .step-num {
-  background: var(--gold);
-  color: var(--white);
-  transform: scale(1.05);
-}
+.step-icon svg { width: 100%; height: 100%; display: block; }
+.step:hover .step-icon { transform: translateY(-2px); color: var(--gold-hover); }
 .step-t {
   font-size: 15px;
   font-weight: 600;
@@ -797,7 +790,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   margin-top: 72px;
   width: 100%;
   background: var(--dark);
-  height: 220px;
+  padding: 56px 0 44px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -805,6 +798,35 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   text-align: center;
   position: relative;
 }
+
+.cta-chips {
+  margin-top: 36px;
+  display: flex;
+  gap: 48px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.cta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+}
+.cta-chip-ic {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(176, 134, 92, 0.18);
+  color: var(--gold);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  flex-shrink: 0;
+}
+.cta-chip-t { color: rgba(255, 255, 255, 0.78); }
 .cta::before { display: none; }
 .cta > .container {
   max-width: 1200px;
@@ -986,10 +1008,11 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   }
   .hero-copy {
     width: 100%;
-    max-width: 480px;
+    max-width: 520px;
   }
-  .hero h1 { font-size: 56px; }
+  .hero h1 { font-size: 52px; white-space: normal; }
   .hero .sub { width: 100%; max-width: 420px; }
+  .custom-left h2 { white-space: normal; }
   .hero-visual {
     width: 100%;
     height: auto;
@@ -1045,7 +1068,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   #custom.custom.section { margin-top: 72px; }
   .cta { margin-top: 56px; }
 
-  .section-head h2 { font-size: 26px; }
+  .section-head h2 { font-size: 22px; text-wrap: balance; }
 
   /* hot — horizontal scroll */
   .hot-grid {
@@ -1067,7 +1090,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
   .gallery-grid { grid-template-columns: repeat(2, 1fr); gap: 16px 12px; }
 
   .custom-inner { padding: 36px 20px; }
-  .custom-left h2 { font-size: 28px; }
+  .custom-left h2 { font-size: 24px; text-wrap: balance; }
   .custom-left .desc { width: 100%; }
   .steps-row { flex-direction: column; gap: 24px; }
   .step { width: 100%; }
@@ -1075,10 +1098,12 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
   .trust-bar-row { gap: 16px 28px; font-size: 13px; }
 
-  .cta { height: auto; padding: 56px 16px; }
-  .cta h2 { font-size: 32px; }
+  .cta { padding: 48px 16px 36px; }
+  .cta h2 { font-size: 26px; text-wrap: balance; }
   .cta .btns { flex-direction: row; }
   .cta .btn-g, .cta .btn-ow { flex: 1; width: auto; min-width: 0; }
+  .cta-chips { margin-top: 28px; gap: 14px 22px; font-size: 12px; }
+  .cta-chip { font-size: 12px; }
 
   .footer-top {
     grid-template-columns: 1fr;

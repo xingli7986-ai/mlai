@@ -293,7 +293,19 @@ export default function HomePage() {
               </p>
               <div className="steps-row">
                 <div className="step">
-                  <div className="step-num">1</div>
+                  <div className="step-icon" aria-hidden>
+                    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="32" cy="32" r="5" />
+                      <ellipse cx="32" cy="17" rx="6" ry="10" />
+                      <ellipse cx="32" cy="47" rx="6" ry="10" />
+                      <ellipse cx="17" cy="32" rx="10" ry="6" />
+                      <ellipse cx="47" cy="32" rx="10" ry="6" />
+                      <ellipse cx="22" cy="22" rx="7" ry="5" transform="rotate(-45 22 22)" />
+                      <ellipse cx="42" cy="22" rx="7" ry="5" transform="rotate(45 42 22)" />
+                      <ellipse cx="22" cy="42" rx="7" ry="5" transform="rotate(45 22 42)" />
+                      <ellipse cx="42" cy="42" rx="7" ry="5" transform="rotate(-45 42 42)" />
+                    </svg>
+                  </div>
                   <div className="step-t">选择印花图案</div>
                   <div className="step-d">
                     描述灵感或
@@ -303,7 +315,14 @@ export default function HomePage() {
                   <div className="step-line" />
                 </div>
                 <div className="step">
-                  <div className="step-num">2</div>
+                  <div className="step-icon" aria-hidden>
+                    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M24 12 L28 14 L32 11 L36 14 L40 12 L42 22 L50 56 L14 56 L22 22 Z" />
+                      <path d="M28 14 Q32 9 36 14" />
+                      <path d="M22 22 L18 30" />
+                      <path d="M42 22 L46 30" />
+                    </svg>
+                  </div>
                   <div className="step-t">选择裙型版型</div>
                   <div className="step-d">
                     裹身裙 · A字裙
@@ -313,7 +332,19 @@ export default function HomePage() {
                   <div className="step-line" />
                 </div>
                 <div className="step">
-                  <div className="step-num">3</div>
+                  <div className="step-icon" aria-hidden>
+                    <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="10" y="22" width="44" height="20" rx="2" />
+                      <rect x="6" y="42" width="52" height="8" rx="1" />
+                      <path d="M14 22 L14 18 Q14 14 18 14 L26 14" />
+                      <line x1="46" y1="22" x2="46" y2="38" />
+                      <line x1="46" y1="38" x2="42" y2="38" />
+                      <line x1="42" y1="38" x2="42" y2="46" />
+                      <circle cx="42" cy="48" r="1.6" fill="currentColor" />
+                      <circle cx="20" cy="32" r="3" />
+                      <line x1="32" y1="28" x2="42" y2="28" />
+                    </svg>
+                  </div>
                   <div className="step-t">下单定制生产</div>
                   <div className="step-d">
                     选面料尺码
@@ -401,6 +432,24 @@ export default function HomePage() {
             <Link href="/studio" className="btn-ow">
               开始定制
             </Link>
+          </div>
+          <div className="cta-chips">
+            <div className="cta-chip">
+              <span className="cta-chip-ic" aria-hidden>✦</span>
+              <span className="cta-chip-t">原创印花设计</span>
+            </div>
+            <div className="cta-chip">
+              <span className="cta-chip-ic" aria-hidden>✦</span>
+              <span className="cta-chip-t">大牌剪裁工艺</span>
+            </div>
+            <div className="cta-chip">
+              <span className="cta-chip-ic" aria-hidden>✦</span>
+              <span className="cta-chip-t">贴合身形定制</span>
+            </div>
+            <div className="cta-chip">
+              <span className="cta-chip-ic" aria-hidden>✦</span>
+              <span className="cta-chip-t">天然面料严选</span>
+            </div>
           </div>
         </div>
       </section>
