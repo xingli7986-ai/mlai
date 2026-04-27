@@ -2,57 +2,135 @@
 
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Suspense, useMemo } from "react";
-import AssetImage from "@/components/AssetImage";
-import {
-  getProductsBySeries,
-  productFilters,
-  type ProductFilter,
-} from "@/lib/product-detail-data";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import "../product-pages.css";
 
-function resolveFilter(raw: string | null): ProductFilter["id"] {
-  return productFilters.some((f) => f.id === raw)
-    ? (raw as ProductFilter["id"])
-    : "all";
+interface DesignerLite {
+  name: string | null;
+  avatar: string | null;
+}
+interface DesignListItem {
+  id: string;
+  title: string;
+  images: string[];
+  skirtType: string;
+  fabric: string;
+  styleTags: string[];
+  groupPrice: number;
+  customPrice: number;
+  likeCount: number;
+  favoriteCount: number;
+  orderCount: number;
+  status: string;
+  publishedAt: string | null;
+  designer: DesignerLite;
+}
+interface DesignListResponse {
+  designs: DesignListItem[];
+  total: number;
+  page: number;
+  totalPages: number;
+  error?: string;
 }
 
-const CHIP_LABELS: Record<ProductFilter["id"], string> = {
-  all: "全部",
-  classic: "经典裹身",
-  commute: "通勤知性",
-  vacation: "夏日度假",
-  evening: "晚宴聚会",
-};
+const CATEGORY_CHIPS: { id: string; label: string }[] = [
+  { id: "", label: "全部" },
+  { id: "wrap", label: "裹身" },
+  { id: "shift", label: "直筒" },
+  { id: "aline", label: "A 字" },
+  { id: "fishtail", label: "鱼尾" },
+  { id: "pencil", label: "铅笔" },
+];
 
-const DESIGNER_BY_TONE: Record<string, string> = {
-  ink: "MaxLuLu Studio",
-  camellia: "Design by Luna",
-  blue: "Design by Yuki",
-  wine: "Atelier Reine",
-  coffee: "MaxLuLu Studio",
-  green: "Design by Mei",
-  rose: "Design by Luna",
-  gold: "Atelier Reine",
-};
+const FABRIC_CHIPS: { id: string; label: string }[] = [
+  { id: "", label: "全部面料" },
+  { id: "silk", label: "真丝" },
+  { id: "knit", label: "针织" },
+  { id: "blend", label: "高级混纺" },
+  { id: "linen", label: "亚麻" },
+];
+
+const SORT_OPTIONS: { id: "hot" | "new" | "price"; label: string }[] = [
+  { id: "hot", label: "热门" },
+  { id: "new", label: "最新" },
+  { id: "price", label: "价格" },
+];
+
+function fmtPrice(cents: number): string {
+  if (!cents || cents <= 0) return "¥—";
+  return `¥${cents.toLocaleString()}`;
+}
+
+const SAMPLE_TONES = ["ink", "blue", "rose", "wine", "coffee", "green", "gold", "camellia"];
 
 function CollectionBody() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const active = resolveFilter(searchParams.get("filter"));
-  const items = useMemo(() => getProductsBySeries(active), [active]);
 
-  // Hot Group Buys = top 5 by joined progress across all series
-  const hotItems = useMemo(() => {
-    const all = getProductsBySeries("all");
-    return [...all]
-      .sort((a, b) => b.product.joined / b.product.target - a.product.joined / a.product.target)
-      .slice(0, 5);
-  }, []);
+  const category = searchParams.get("category") || "";
+  const fabric = searchParams.get("fabric") || "";
+  const sort = (searchParams.get("sort") as "hot" | "new" | "price") || "hot";
+  const search = searchParams.get("search") || "";
 
-  function setFilter(id: ProductFilter["id"]) {
-    const query = id === "all" ? "" : `?filter=${id}`;
-    router.replace(`/products${query}`, { scroll: false });
+  const [data, setData] = useState<DesignListResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchInput, setSearchInput] = useState(search);
+
+  useEffect(() => {
+    setSearchInput(search);
+  }, [search]);
+
+  useEffect(() => {
+    let alive = true;
+    async function run() {
+      setLoading(true);
+      setError(null);
+      const params = new URLSearchParams();
+      params.set("limit", "24");
+      if (category) params.set("category", category);
+      if (fabric) params.set("fabric", fabric);
+      if (sort) params.set("sort", sort);
+      if (search) params.set("search", search);
+      try {
+        const res = await fetch(`/api/designs?${params.toString()}`, { cache: "no-store" });
+        const json = (await res.json()) as DesignListResponse;
+        if (!alive) return;
+        if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+        setData(json);
+      } catch (err) {
+        if (!alive) return;
+        setError(err instanceof Error ? err.message : "加载失败");
+        setData({ designs: [], total: 0, page: 1, totalPages: 1 });
+      } finally {
+        if (alive) setLoading(false);
+      }
+    }
+    run();
+    return () => {
+      alive = false;
+    };
+  }, [category, fabric, sort, search]);
+
+  const updateQuery = useCallback(
+    (patch: Record<string, string>) => {
+      const params = new URLSearchParams(searchParams.toString());
+      for (const [k, v] of Object.entries(patch)) {
+        if (v) params.set(k, v);
+        else params.delete(k);
+      }
+      const qs = params.toString();
+      router.replace(`/products${qs ? `?${qs}` : ""}`, { scroll: false });
+    },
+    [router, searchParams]
+  );
+
+  const items = data?.designs ?? [];
+  const hotItems = useMemo(() => items.slice(0, 5), [items]);
+
+  function onSearchSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    updateQuery({ search: searchInput.trim() });
   }
 
   return (
@@ -68,10 +146,15 @@ function CollectionBody() {
             <a href="/#hot">热拼专区</a>
           </div>
           <div className="nav-right">
-            <div className="gallerySearch">
+            <form className="gallerySearch" onSubmit={onSearchSubmit}>
               <span aria-hidden>⌕</span>
-              <input type="search" placeholder="搜索设计、风格、设计师" />
-            </div>
+              <input
+                type="search"
+                placeholder="搜索设计、风格、设计师"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+            </form>
             <Link href="/my">我的衣橱</Link>
             <Link href="/studio/join" className="designer-btn">设计师入驻</Link>
           </div>
@@ -86,7 +169,7 @@ function CollectionBody() {
             <p className="lead">水墨、几何、花卉、扎染……每一件都来自真人设计师，参与众定即可锁定排产。</p>
           </div>
           <div className="galleryHero__stats">
-            <div><b>1,238</b><small>原创印花</small></div>
+            <div><b>{data?.total ?? 0}</b><small>原创印花</small></div>
             <div><b>128</b><small>签约设计师</small></div>
             <div><b>56</b><small>正在众定</small></div>
           </div>
@@ -96,109 +179,126 @@ function CollectionBody() {
       <section className="galleryFilters">
         <div className="container">
           <div className="chipRow">
-            {productFilters.map((filter) => (
+            {CATEGORY_CHIPS.map((c) => (
               <button
-                key={filter.id}
+                key={c.id || "all"}
                 type="button"
-                className={`chip ${active === filter.id ? "is-active" : ""}`}
-                onClick={() => setFilter(filter.id)}
+                className={`chip ${category === c.id ? "is-active" : ""}`}
+                onClick={() => updateQuery({ category: c.id })}
               >
-                {CHIP_LABELS[filter.id]}
+                {c.label}
               </button>
             ))}
             <span className="chipDivider" />
-            <button type="button" className="chip">真丝</button>
-            <button type="button" className="chip">针织</button>
-            <button type="button" className="chip">高级混纺</button>
-            <button type="button" className="chip chip--dropdown">价格区间 ▾</button>
+            {FABRIC_CHIPS.slice(1).map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                className={`chip ${fabric === f.id ? "is-active" : ""}`}
+                onClick={() => updateQuery({ fabric: fabric === f.id ? "" : f.id })}
+              >
+                {f.label}
+              </button>
+            ))}
             <span className="chipSpacer" />
-            <button type="button" className="chip chip--sort">排序：热门 ▾</button>
+            {SORT_OPTIONS.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                className={`chip chip--sort ${sort === s.id ? "is-active" : ""}`}
+                onClick={() => updateQuery({ sort: s.id })}
+              >
+                排序：{s.label}
+              </button>
+            ))}
           </div>
         </div>
       </section>
 
-      <section className="hotGroupStrip">
-        <div className="container">
-          <div className="hotGroupHead">
-            <h2>
-              <span className="en">Hot Group Buys</span>
-              <span className="cn">热销榜单</span>
-            </h2>
-            <a href="/#hot" className="more">查看全部 →</a>
-          </div>
-          <div className="hotGroupRow">
-            {hotItems.map((it) => {
-              const progress = Math.min(
-                100,
-                Math.round((it.product.joined / it.product.target) * 100)
-              );
-              return (
-                <Link
-                  key={it.product.id}
-                  href={`/products/${it.product.id}`}
-                  className="hotMiniCard"
-                >
-                  <div className={`hotMiniMedia tone-${it.product.tone}`}>
-                    <AssetImage
-                      src={it.product.image}
-                      alt={it.product.name}
-                      tone={it.product.tone}
-                      label={it.product.name.slice(0, 4)}
-                      className="hotMiniImg"
-                    />
+      {hotItems.length > 0 && (
+        <section className="hotGroupStrip">
+          <div className="container">
+            <div className="hotGroupHead">
+              <h2>
+                <span className="en">Hot Group Buys</span>
+                <span className="cn">热销榜单</span>
+              </h2>
+              <a href="/#hot" className="more">查看全部 →</a>
+            </div>
+            <div className="hotGroupRow">
+              {hotItems.map((it, i) => (
+                <Link key={it.id} href={`/products/${it.id}`} className="hotMiniCard">
+                  <div className={`hotMiniMedia tone-${SAMPLE_TONES[i % SAMPLE_TONES.length]}`}>
+                    {it.images[0] ? (
+                      <img src={it.images[0]} alt={it.title} className="hotMiniImg" />
+                    ) : (
+                      <div className="hotMiniImg" style={{ display: "grid", placeItems: "center", color: "rgba(255,255,255,0.6)" }}>
+                        {it.title.slice(0, 2)}
+                      </div>
+                    )}
                   </div>
                   <div className="hotMiniBody">
-                    <div className="hotMiniName">{it.product.name}</div>
+                    <div className="hotMiniName">{it.title}</div>
                     <div className="hotMiniMeta">
-                      <span className="hotMiniPrice">{it.product.price.split("–")[0]}</span>
-                      <span className="hotMiniProgress">已拼 {progress}%</span>
+                      <span className="hotMiniPrice">{fmtPrice(it.groupPrice)}</span>
+                      <span className="hotMiniProgress">♡ {it.likeCount}</span>
                     </div>
                   </div>
                 </Link>
-              );
-            })}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="galleryGridSection">
         <div className="container galleryWithSide">
           <div className="galleryGrid">
-            {items.map(({ product }) => {
-              const designer = DESIGNER_BY_TONE[product.tone] ?? "MaxLuLu Studio";
-              return (
-                <Link
-                  className="galleryCard"
-                  href={`/products/${product.id}`}
-                  key={product.id}
-                >
-                  <div className={`galleryCard__media tone-${product.tone}`}>
-                    <AssetImage
-                      src={product.image}
-                      alt={product.name}
-                      tone={product.tone}
-                      label={product.name.slice(0, 4)}
-                      className="galleryCard__image"
-                    />
-                    <div className="galleryCard__icons" onClick={(e) => e.preventDefault()}>
-                      <button type="button" className="iconBtn" aria-label="收藏">
-                        ♡
-                      </button>
-                      <button type="button" className="iconBtn" aria-label="加入衣橱">
-                        ❑
-                      </button>
-                    </div>
-                  </div>
+            {loading ? (
+              Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="galleryCard" aria-hidden>
+                  <div className="galleryCard__media ml-skeleton" style={{ aspectRatio: "3 / 4" }} />
                   <div className="galleryCard__body">
-                    <div className="galleryCard__name">{product.name}</div>
-                    <div className="galleryCard__price">
-                      {product.price.split("–")[0]}
-                    </div>
-                    <div className="galleryCard__designer">{designer}</div>
+                    <div className="ml-skeleton" style={{ height: 14, marginBottom: 6 }} />
+                    <div className="ml-skeleton" style={{ height: 12, width: "60%" }} />
                   </div>
-                </Link>
-              );
-            })}
+                </div>
+              ))
+            ) : error ? (
+              <div className="ml-toast ml-toast--error" style={{ gridColumn: "1 / -1" }}>
+                {error}
+              </div>
+            ) : items.length === 0 ? (
+              <div className="ml-toast" style={{ gridColumn: "1 / -1" }}>
+                暂无符合条件的设计。试试其他筛选条件。
+              </div>
+            ) : (
+              items.map((p, i) => {
+                const tone = SAMPLE_TONES[i % SAMPLE_TONES.length];
+                return (
+                  <Link className="galleryCard" href={`/products/${p.id}`} key={p.id}>
+                    <div className={`galleryCard__media tone-${tone}`}>
+                      {p.images[0] ? (
+                        <img src={p.images[0]} alt={p.title} className="galleryCard__image" />
+                      ) : (
+                        <div className="galleryCard__image" style={{ display: "grid", placeItems: "center", color: "rgba(255,255,255,0.6)" }}>
+                          {p.title.slice(0, 2)}
+                        </div>
+                      )}
+                      <div className="galleryCard__icons" onClick={(e) => e.preventDefault()}>
+                        <button type="button" className="iconBtn" aria-label="收藏">♡</button>
+                        <button type="button" className="iconBtn" aria-label="加入衣橱">❑</button>
+                      </div>
+                    </div>
+                    <div className="galleryCard__body">
+                      <div className="galleryCard__name">{p.title}</div>
+                      <div className="galleryCard__price">{fmtPrice(p.groupPrice)}</div>
+                      <div className="galleryCard__designer">{p.designer.name ?? "MaxLuLu Studio"}</div>
+                    </div>
+                  </Link>
+                );
+              })
+            )}
           </div>
 
           <aside className="gallerySide">
@@ -230,24 +330,7 @@ function CollectionBody() {
               <div className="gallerySideCard__head"><b>印花风格</b></div>
               <div className="gallerySideTags">
                 {["水墨晕染", "几何拼接", "热带花卉", "扎染", "工笔花鸟", "复古条纹"].map((t) => (
-                  <span key={t}>{t}</span>
-                ))}
-              </div>
-            </div>
-
-            <div className="gallerySideCard">
-              <div className="gallerySideCard__head"><b>价格区间</b></div>
-              <div className="gallerySideRanges">
-                {[
-                  { label: "¥299 以下", count: 24 },
-                  { label: "¥300 — ¥599", count: 86 },
-                  { label: "¥600 — ¥899", count: 62 },
-                  { label: "¥900 以上", count: 38 },
-                ].map((r) => (
-                  <button key={r.label} type="button" className="gallerySideRange">
-                    <span>{r.label}</span>
-                    <em>{r.count}</em>
-                  </button>
+                  <span key={t} onClick={() => updateQuery({ search: t })} style={{ cursor: "pointer" }}>{t}</span>
                 ))}
               </div>
             </div>

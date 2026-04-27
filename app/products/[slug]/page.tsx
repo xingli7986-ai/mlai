@@ -1,14 +1,64 @@
 import Link from "next/link";
-import AssetImage from "@/components/AssetImage";
-import {
-  getProductDetail,
-  getProductsBySeries,
-} from "@/lib/product-detail-data";
+import { headers } from "next/headers";
+import { notFound } from "next/navigation";
+import DetailActions from "./DetailActions";
 import "../../product-pages.css";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
+
+interface DesignerInfo {
+  id: string;
+  name: string | null;
+  avatar: string | null;
+  bio: string | null;
+}
+
+interface DesignDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  images: string[];
+  patternImage: string | null;
+  skirtType: string;
+  neckline: string | null;
+  sleeveType: string | null;
+  skirtLength: string | null;
+  fabric: string;
+  styleTags: string[];
+  groupPrice: number;
+  customPrice: number;
+  costBreakdown: string | null;
+  status: string;
+  viewCount: number;
+  likeCount: number;
+  favoriteCount: number;
+  orderCount: number;
+  commentCount: number;
+  publishedAt: string | null;
+  designer: DesignerInfo;
+  isLiked: boolean;
+  isFavorited: boolean;
+}
+
+async function fetchDetail(slug: string): Promise<DesignDetail | null> {
+  const h = await headers();
+  const host = h.get("host") || "localhost:3000";
+  const proto = h.get("x-forwarded-proto") || "http";
+  const cookie = h.get("cookie") || "";
+  try {
+    const res = await fetch(`${proto}://${host}/api/designs/${slug}`, {
+      headers: cookie ? { cookie } : undefined,
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.design as DesignDetail;
+  } catch {
+    return null;
+  }
+}
 
 const SIZES = ["S", "M", "L", "XL", "XXL"];
 const COLORS: Array<{ name: string; hex: string }> = [
@@ -19,23 +69,9 @@ const COLORS: Array<{ name: string; hex: string }> = [
   { name: "酒红", hex: "#7a2030" },
 ];
 
-function DetailProgress({ joined, target }: { joined: number; target: number }) {
-  const progress = Math.min(100, Math.round((joined / target) * 100));
-  return (
-    <div className="pdpProgress">
-      <div className="pdpProgress__head">
-        <span>众定进度</span>
-        <b>{progress}%</b>
-      </div>
-      <div className="pdpProgress__bar">
-        <em style={{ width: `${progress}%` }} />
-      </div>
-      <div className="pdpProgress__meta">
-        <span>已拼 {joined} / {target} 人</span>
-        <span>剩余 18 小时 26 分</span>
-      </div>
-    </div>
-  );
+function fmtPrice(cents: number): string {
+  if (!cents || cents <= 0) return "¥—";
+  return `¥${cents.toLocaleString()}`;
 }
 
 function GalleryNav({ slug }: { slug: string }) {
@@ -62,79 +98,56 @@ function GalleryNav({ slug }: { slug: string }) {
 
 export default async function ProductDetailPage({ params }: Props) {
   const { slug } = await params;
-  const detail = getProductDetail(slug);
+  const detail = await fetchDetail(slug);
 
   if (!detail) {
-    return (
-      <main className="productPage productNotFound">
-        <GalleryNav slug={slug} />
-        <Link className="productBack" href="/products">
-          ← 返回灵感画廊
-        </Link>
-        <h1>没有找到这条连衣裙</h1>
-        <p>可以先回到灵感画廊，查看正在众定的针织印花裙。</p>
-      </main>
-    );
+    notFound();
   }
 
-  const { product } = detail;
-
-  // Designer's other works (up to 4 from same series, excluding current)
-  const otherWorks = getProductsBySeries(detail.series)
-    .filter((p) => p.product.id !== product.id)
-    .slice(0, 4);
-
-  // "You may also like" — 5 from other series
-  const recommend = getProductsBySeries("all")
-    .filter((p) => p.product.id !== product.id && p.series !== detail.series)
-    .slice(0, 5);
-
-  const basePrice = product.price.split("–")[0]?.trim() ?? product.price;
-  const premiumPrice = product.price.split("–")[1]?.trim()
-    ? `¥${product.price.split("–")[1].trim().replace(/^¥/, "")}`
-    : "¥1,999";
+  const heroImage = detail.images[0] || "";
+  const initials = detail.title.slice(0, 4);
 
   return (
     <main className="page-wrap pdpPage">
-      <GalleryNav slug={product.id} />
+      <GalleryNav slug={detail.id} />
 
       <div className="pdpCrumbs container">
         <Link href="/products">灵感画廊</Link>
         <span className="sep">›</span>
-        <Link href={`/products?filter=${detail.series}`}>{detail.seriesLabel}</Link>
+        <Link href={`/products?category=${detail.skirtType}`}>{detail.skirtType}</Link>
         <span className="sep">›</span>
-        <span className="current">{product.name}</span>
+        <span className="current">{detail.title}</span>
       </div>
 
       <section className="pdpHero container">
         <aside className="pdpThumbCol">
-          {detail.gallery.map((src, i) => (
+          {detail.images.slice(0, 4).map((src, i) => (
             <button
-              key={src}
+              key={src + i}
               type="button"
               className={`pdpThumb ${i === 0 ? "is-active" : ""}`}
               aria-label={`图 ${i + 1}`}
             >
-              <AssetImage
-                src={src}
-                alt={`${product.name} 图${i + 1}`}
-                tone={product.tone}
-                label={["主图", "版型", "印花", "细节"][i] ?? "细节"}
-                className="pdpThumb__img"
-              />
+              {src ? (
+                <img src={src} alt={`${detail.title} 图${i + 1}`} className="pdpThumb__img" />
+              ) : (
+                <div className="pdpThumb__img" style={{ display: "grid", placeItems: "center", color: "rgba(255,255,255,0.6)", fontSize: 12 }}>
+                  {["主图", "版型", "印花", "细节"][i] ?? "细节"}
+                </div>
+              )}
             </button>
           ))}
         </aside>
 
         <div className="pdpMainMedia">
-          <div className={`pdpMainMedia__frame tone-${product.tone}`}>
-            <AssetImage
-              src={detail.gallery[0]}
-              alt={product.name}
-              tone={product.tone}
-              label={product.name.slice(0, 4)}
-              className="pdpMainMedia__img"
-            />
+          <div className="pdpMainMedia__frame tone-ink">
+            {heroImage ? (
+              <img src={heroImage} alt={detail.title} className="pdpMainMedia__img" />
+            ) : (
+              <div className="pdpMainMedia__img" style={{ display: "grid", placeItems: "center", color: "rgba(255,255,255,0.55)", fontFamily: "var(--font-display)", fontSize: 28 }}>
+                {initials}
+              </div>
+            )}
             <span className="pdpBadge">众定中</span>
             <button type="button" className="pdpZoom" aria-label="放大">⤢</button>
           </div>
@@ -143,48 +156,65 @@ export default async function ProductDetailPage({ params }: Props) {
         <div className="pdpInfo">
           <div className="pdpInfo__topRow">
             <div className="pdpTags">
-              <span className="pdpTag pdpTag--gold">{detail.seriesLabel}</span>
-              <span className="pdpTag">新款上线</span>
+              <span className="pdpTag pdpTag--gold">{detail.skirtType}</span>
+              {detail.styleTags.slice(0, 1).map((t) => (
+                <span key={t} className="pdpTag">{t}</span>
+              ))}
             </div>
-            <div className="pdpIcons">
-              <button type="button" aria-label="收藏">♡</button>
-              <button type="button" aria-label="分享">↗</button>
-            </div>
+            <DetailActions
+              designId={detail.id}
+              initialLiked={detail.isLiked}
+              initialFavorited={detail.isFavorited}
+              initialLikeCount={detail.likeCount}
+              initialCommentCount={detail.commentCount}
+            />
           </div>
 
-          <h1 className="pdpTitle">{product.name}</h1>
-          <p className="pdpCode">编号 MU-{product.id.slice(0, 4).toUpperCase()}-{String(product.joined).padStart(4, "0")}</p>
-          <p className="pdpLead">{detail.heroNote}</p>
+          <h1 className="pdpTitle">{detail.title}</h1>
+          <p className="pdpCode">编号 MU-{detail.id.slice(0, 8).toUpperCase()}</p>
+          {detail.description && <p className="pdpLead">{detail.description}</p>}
 
           <div className="pdpPriceTabs">
             <div className="pdpPriceCard is-active">
               <small>起拼价 · 众定 30 人成团</small>
-              <strong>{basePrice}</strong>
-              <span>原价 ¥999 · 立省 ¥{Math.max(0, 999 - parseInt(basePrice.replace(/[^0-9]/g, ""), 10))}</span>
+              <strong>{fmtPrice(detail.groupPrice)}</strong>
+              <span>原价 {fmtPrice(detail.customPrice)} · 立省 {fmtPrice(Math.max(0, detail.customPrice - detail.groupPrice))}</span>
             </div>
             <div className="pdpPriceCard">
               <small>个人定制价 · 7 天交付</small>
-              <strong>{premiumPrice}</strong>
-              <span>面料/工艺可调，限量 50 件</span>
+              <strong>{fmtPrice(detail.customPrice)}</strong>
+              <span>面料/工艺可调</span>
             </div>
           </div>
 
-          <DetailProgress joined={product.joined} target={product.target} />
+          <div className="pdpProgress">
+            <div className="pdpProgress__head">
+              <span>已下单</span>
+              <b>{detail.orderCount} 件</b>
+            </div>
+            <div className="pdpProgress__bar">
+              <em style={{ width: `${Math.min(100, Math.round((detail.orderCount / 30) * 100))}%` }} />
+            </div>
+            <div className="pdpProgress__meta">
+              <span>♡ {detail.likeCount} 点赞 · ★ {detail.favoriteCount} 收藏</span>
+              <span>👁 {detail.viewCount} 浏览</span>
+            </div>
+          </div>
 
           <div className="pdpDesigner">
             <div className="pdpDesigner__avatar" aria-hidden>
-              <AssetImage
-                src={detail.gallery[1] ?? detail.gallery[0]}
-                alt="设计师"
-                tone={product.tone}
-                label="LU"
-                className="pdpDesigner__img"
-              />
+              {detail.designer.avatar ? (
+                <img src={detail.designer.avatar} alt={detail.designer.name ?? ""} className="pdpDesigner__img" />
+              ) : (
+                <div className="pdpDesigner__img" style={{ display: "grid", placeItems: "center", color: "rgba(255,255,255,0.7)", fontFamily: "var(--font-display)" }}>
+                  {(detail.designer.name ?? "L").slice(0, 1)}
+                </div>
+              )}
             </div>
             <div className="pdpDesigner__body">
               <small>设计师</small>
-              <b>Luna · MaxLuLu Studio</b>
-              <span>巴黎 · 23 件作品 · 4.9 分</span>
+              <b>{detail.designer.name ?? "MaxLuLu Studio"}</b>
+              {detail.designer.bio && <span>{detail.designer.bio}</span>}
             </div>
             <button type="button" className="pdpDesigner__follow">+ 关注</button>
           </div>
@@ -227,10 +257,10 @@ export default async function ProductDetailPage({ params }: Props) {
           </div>
 
           <div className="pdpCtaRow pdpCtaRow--3">
-            <Link className="pdpCtaPrimary" href={`/group-buy/${product.id}`}>
+            <Link className="pdpCtaPrimary" href={`/group-buy/${detail.id}`}>
               立即参团
             </Link>
-            <Link className="pdpCtaSecondary" href={`/products/${product.id}/custom`}>
+            <Link className="pdpCtaSecondary" href={`/products/${detail.id}/custom`}>
               个人定制
             </Link>
             <button type="button" className="pdpCtaIcon" aria-label="加入衣橱">♡</button>
@@ -248,7 +278,7 @@ export default async function ProductDetailPage({ params }: Props) {
         <div className="pdpTabs__bar">
           <button type="button" className="pdpTabBtn is-active">商品详情</button>
           <button type="button" className="pdpTabBtn">设计说明</button>
-          <button type="button" className="pdpTabBtn">评价 (128)</button>
+          <button type="button" className="pdpTabBtn">评价 ({detail.commentCount})</button>
           <button type="button" className="pdpTabBtn">尺码与生产</button>
         </div>
 
@@ -256,132 +286,27 @@ export default async function ProductDetailPage({ params }: Props) {
           <div className="pdpTwoCol">
             <article className="pdpStory">
               <p className="eyebrow">PRINT STORY · 印花故事</p>
-              <h3>{detail.seriesLabel}</h3>
-              <p>{detail.printStory}</p>
-              <ul>
-                {detail.bodyBenefits.slice(0, 3).map((b) => (
-                  <li key={b}>· {b}</li>
-                ))}
-              </ul>
+              <h3>{detail.title}</h3>
+              <p>{detail.description ?? "本款由签约设计师独立创作，灵感与配色均来自原创。"}</p>
+              {detail.styleTags.length > 0 && (
+                <ul>
+                  {detail.styleTags.slice(0, 4).map((t) => (
+                    <li key={t}>· {t}</li>
+                  ))}
+                </ul>
+              )}
             </article>
             <article className="pdpStory">
-              <p className="eyebrow">FABRIC · 面料说明</p>
-              <h3>针织印花面料</h3>
-              <p>{detail.fabricStory}</p>
+              <p className="eyebrow">FABRIC · 面料</p>
+              <h3>{detail.fabric}</h3>
+              <p>{detail.costBreakdown ?? "面料按设计师指定规格采购，工艺细节按工艺单严格执行。"}</p>
               <ul>
-                {detail.fitNotes.slice(0, 3).map((b) => (
-                  <li key={b}>· {b}</li>
-                ))}
+                {detail.neckline && <li>· 领型：{detail.neckline}</li>}
+                {detail.sleeveType && <li>· 袖型：{detail.sleeveType}</li>}
+                {detail.skirtLength && <li>· 长度：{detail.skirtLength}</li>}
               </ul>
             </article>
           </div>
-
-          <div className="pdpSpecGrid">
-            {detail.specs.slice(0, 6).map((s) => (
-              <div key={s.label} className="pdpSpecBox">
-                <span>{s.label}</span>
-                <strong>{s.value}</strong>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="pdpRelated container">
-        <div className="pdpRelated__head">
-          <div>
-            <p className="eyebrow">DESIGNER WORKS</p>
-            <h2>设计师 Luna 的其他作品</h2>
-          </div>
-          <Link href="/products">查看全部 →</Link>
-        </div>
-        <div className="pdpRelatedGrid">
-          {otherWorks.map(({ product: p }) => (
-            <Link key={p.id} href={`/products/${p.id}`} className="pdpRelatedCard">
-              <div className={`pdpRelatedCard__media tone-${p.tone}`}>
-                <AssetImage
-                  src={p.image}
-                  alt={p.name}
-                  tone={p.tone}
-                  label={p.name.slice(0, 4)}
-                  className="pdpRelatedCard__img"
-                />
-              </div>
-              <div className="pdpRelatedCard__body">
-                <span>{p.name}</span>
-                <b>{p.price.split("–")[0]}</b>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="pdpReviews container">
-        <div className="pdpReviews__head">
-          <div>
-            <p className="eyebrow">REVIEWS · 用户评价</p>
-            <h2>评价 4.9 / 5.0 · 128 条</h2>
-          </div>
-          <div className="pdpRatings">
-            {[5, 4, 3, 2, 1].map((stars) => {
-              const pct = stars === 5 ? 78 : stars === 4 ? 16 : stars === 3 ? 4 : stars === 2 ? 1 : 1;
-              return (
-                <div key={stars} className="pdpRating">
-                  <span>{stars}★</span>
-                  <i><em style={{ width: `${pct}%` }} /></i>
-                  <b>{pct}%</b>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="pdpReviewList">
-          {[
-            { name: "L. 小满", body: "面料垂感很好，腰线收得自然，通勤晚宴都能 hold。", rating: 5 },
-            { name: "Yuki", body: "印花配色低调有质感，比预期更合身，建议常码。", rating: 5 },
-            { name: "Chloe", body: "众定流程透明，提前两周收到，包装也很用心。", rating: 4 },
-          ].map((r) => (
-            <article key={r.name} className="pdpReview">
-              <div className="pdpReview__head">
-                <span className="pdpReview__avatar">{r.name.slice(0, 1)}</span>
-                <div>
-                  <b>{r.name}</b>
-                  <small>{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</small>
-                </div>
-              </div>
-              <p>{r.body}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="pdpRelated container">
-        <div className="pdpRelated__head">
-          <div>
-            <p className="eyebrow">YOU MAY ALSO LIKE</p>
-            <h2>你可能也喜欢</h2>
-          </div>
-          <Link href="/products">看更多 →</Link>
-        </div>
-        <div className="pdpRelatedGrid pdpRelatedGrid--5">
-          {recommend.map(({ product: p }) => (
-            <Link key={p.id} href={`/products/${p.id}`} className="pdpRelatedCard">
-              <div className={`pdpRelatedCard__media tone-${p.tone}`}>
-                <AssetImage
-                  src={p.image}
-                  alt={p.name}
-                  tone={p.tone}
-                  label={p.name.slice(0, 4)}
-                  className="pdpRelatedCard__img"
-                />
-              </div>
-              <div className="pdpRelatedCard__body">
-                <span>{p.name}</span>
-                <b>{p.price.split("–")[0]}</b>
-              </div>
-            </Link>
-          ))}
         </div>
       </section>
     </main>

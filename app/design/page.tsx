@@ -257,7 +257,7 @@ function DesignPageInner() {
     (async () => {
       try {
         const res = await fetch(
-          `/api/designs/${encodeURIComponent(designIdParam)}`,
+          `/api/my-designs/${encodeURIComponent(designIdParam)}`,
           { cache: "no-store" }
         );
         const data = await res.json().catch(() => ({}));
