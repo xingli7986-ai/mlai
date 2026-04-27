@@ -208,7 +208,7 @@ export default function PatternApplyPage() {
           </div>
 
           <div className="ft-card" style={{ background: "linear-gradient(135deg, var(--ft-gold-bg), rgba(176,134,92,0.02))" }}>
-            <b style={{ display: "block", fontSize: 13, color: "var(--ft-text)", marginBottom: 6 }}>下一步：发布到灵感画廊</b>
+            <b style={{ display: "block", fontSize: 13, color: "var(--ft-text)", marginBottom: 6 }}>下一步：发布到印花衣橱</b>
             <p style={{ margin: 0, fontSize: 12, color: "var(--ft-text2)", lineHeight: 1.7, marginBottom: 10 }}>
               选定满意方案后，可一键带入发布表单，直接进入审核流。
             </p>

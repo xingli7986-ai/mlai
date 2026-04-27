@@ -32,8 +32,19 @@ export async function GET(req: Request) {
     ];
   }
 
+  const now = new Date();
+  const isHotGroup = sortKey === "hot-group";
+  if (isHotGroup) {
+    // Restrict to designs with at least one currently-open group buy.
+    where.groupBuys = {
+      some: { status: "open", expiresAt: { gt: now } },
+    };
+  }
+
   const orderBy: Prisma.PublishedDesignOrderByWithRelationInput =
-    SORT_MAP[sortKey] || SORT_MAP.hot;
+    isHotGroup
+      ? { publishedAt: "desc" } // initial order; final sort by progress is JS-side
+      : SORT_MAP[sortKey] || SORT_MAP.hot;
 
   try {
     const [total, rows] = await Promise.all([
@@ -41,8 +52,9 @@ export async function GET(req: Request) {
       prisma.publishedDesign.findMany({
         where,
         orderBy,
-        skip: (page - 1) * limit,
-        take: limit,
+        // For hot-group, fetch a wider window (we'll re-sort by progress in JS).
+        skip: isHotGroup ? 0 : (page - 1) * limit,
+        take: isHotGroup ? Math.min(80, limit * 4) : limit,
         select: {
           id: true,
           title: true,
@@ -64,29 +76,63 @@ export async function GET(req: Request) {
               avatarUrl: true,
             },
           },
+          groupBuys: isHotGroup
+            ? {
+                where: { status: "open", expiresAt: { gt: now } },
+                orderBy: { createdAt: "desc" },
+                take: 1,
+                select: {
+                  id: true,
+                  currentCount: true,
+                  targetCount: true,
+                  expiresAt: true,
+                },
+              }
+            : false,
         },
       }),
     ]);
 
-    const designs = rows.map((d) => ({
-      id: d.id,
-      title: d.title,
-      images: d.coverImages,
-      skirtType: d.skirtType,
-      fabric: d.fabric,
-      styleTags: d.styleTags,
-      groupPrice: d.groupPrice,
-      customPrice: d.customPrice,
-      likeCount: d.likeCount,
-      favoriteCount: d.favoriteCount,
-      orderCount: d.orderCount,
-      status: d.status,
-      publishedAt: d.publishedAt,
-      designer: {
-        name: d.designer.displayName,
-        avatar: d.designer.avatarUrl,
-      },
-    }));
+    let designs = rows.map((d) => {
+      const gb = (d as { groupBuys?: Array<{ id: string; currentCount: number; targetCount: number; expiresAt: Date }> }).groupBuys?.[0];
+      const progressPct = gb
+        ? Math.min(100, Math.round((gb.currentCount / Math.max(1, gb.targetCount)) * 100))
+        : null;
+      return {
+        id: d.id,
+        title: d.title,
+        images: d.coverImages,
+        skirtType: d.skirtType,
+        fabric: d.fabric,
+        styleTags: d.styleTags,
+        groupPrice: d.groupPrice,
+        customPrice: d.customPrice,
+        likeCount: d.likeCount,
+        favoriteCount: d.favoriteCount,
+        orderCount: d.orderCount,
+        status: d.status,
+        publishedAt: d.publishedAt,
+        designer: {
+          name: d.designer.displayName,
+          avatar: d.designer.avatarUrl,
+        },
+        groupBuy: gb
+          ? {
+              id: gb.id,
+              currentCount: gb.currentCount,
+              targetCount: gb.targetCount,
+              progressPct,
+              secondsRemaining: Math.max(0, Math.floor((gb.expiresAt.getTime() - now.getTime()) / 1000)),
+            }
+          : null,
+      };
+    });
+
+    if (isHotGroup) {
+      designs.sort((a, b) => (b.groupBuy?.progressPct ?? 0) - (a.groupBuy?.progressPct ?? 0));
+      // Apply page/limit after sorting.
+      designs = designs.slice((page - 1) * limit, (page - 1) * limit + limit);
+    }
 
     return NextResponse.json({
       designs,

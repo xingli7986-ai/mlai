@@ -38,7 +38,7 @@ export default async function GroupBuyProgressPage({ params }: Props) {
       <main className="page-wrap gbPage">
         <div className="container" style={{ marginTop: 40 }}>
           <h1>未找到该团</h1>
-          <p><Link href="/products">返回灵感画廊</Link></p>
+          <p><Link href="/products">返回印花衣橱</Link></p>
         </div>
       </main>
     );
@@ -54,21 +54,21 @@ export default async function GroupBuyProgressPage({ params }: Props) {
         <div className="container inner">
           <Link href="/" className="nav-logo">MaxLuLu <span className="ai">AI</span></Link>
           <div className="nav-center">
-            <Link href="/products">灵感画廊</Link>
+            <Link href="/products">印花衣橱</Link>
             <Link href="/products">个性定制</Link>
+            <Link href="/products?sort=hot-group">热拼专区</Link>
             <Link href="/my">我的衣橱</Link>
-            <Link href="/studio/join">加入设计</Link>
           </div>
           <div className="nav-right">
             <a href="#share">分享</a>
-            <Link href="/studio/join" className="designer-btn">设计师入驻</Link>
+            <Link href="/my">会员</Link>
           </div>
         </div>
       </nav>
 
       <div className="container">
         <div className="gbCrumbs">
-          <Link href="/products">灵感画廊</Link>
+          <Link href="/products">印花衣橱</Link>
           <span className="sep">›</span>
           <Link href={`/products/${product.id}`}>{product.name}</Link>
           <span className="sep">›</span>

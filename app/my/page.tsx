@@ -124,9 +124,9 @@ export default function MyCenterPage() {
         <div className="container inner">
           <Link href="/" className="nav-logo">MaxLuLu <span className="ai">AI</span></Link>
           <div className="nav-center">
-            <Link href="/products">灵感画廊</Link>
+            <Link href="/products">印花衣橱</Link>
             <Link href="/products">个性定制</Link>
-            <Link href="/#hot">热拼专区</Link>
+            <Link href="/products?sort=hot-group">热拼专区</Link>
             <Link href="/my">我的衣橱</Link>
           </div>
           <div className="nav-right">

@@ -181,7 +181,7 @@ export default function GroupBuyCheckoutPage({ params }: Props) {
         <div className="container" style={{ paddingTop: 60 }}>
           <h1>未找到该拼团</h1>
           <p>{loadError || "请稍后重试"}</p>
-          <p><Link href="/products">返回灵感画廊</Link></p>
+          <p><Link href="/products">返回印花衣橱</Link></p>
         </div>
       </main>
     );
@@ -198,7 +198,7 @@ export default function GroupBuyCheckoutPage({ params }: Props) {
         <div className="container inner">
           <Link href="/" className="nav-logo">MaxLuLu <span className="ai">AI</span></Link>
           <div className="nav-center">
-            <Link href="/products">灵感画廊</Link>
+            <Link href="/products">印花衣橱</Link>
             <Link href="/my">我的衣橱</Link>
           </div>
           <div className="nav-right">

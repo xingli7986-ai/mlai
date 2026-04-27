@@ -50,10 +50,11 @@ const FABRIC_CHIPS: { id: string; label: string }[] = [
   { id: "linen", label: "亚麻" },
 ];
 
-const SORT_OPTIONS: { id: "hot" | "new" | "price"; label: string }[] = [
+const SORT_OPTIONS: { id: "hot" | "new" | "price" | "hot-group"; label: string }[] = [
   { id: "hot", label: "热门" },
   { id: "new", label: "最新" },
   { id: "price", label: "价格" },
+  { id: "hot-group", label: "热拼" },
 ];
 
 function fmtPrice(cents: number): string {
@@ -69,7 +70,8 @@ function CollectionBody() {
 
   const category = searchParams.get("category") || "";
   const fabric = searchParams.get("fabric") || "";
-  const sort = (searchParams.get("sort") as "hot" | "new" | "price") || "hot";
+  const sort =
+    (searchParams.get("sort") as "hot" | "new" | "price" | "hot-group") || "hot";
   const search = searchParams.get("search") || "";
 
   const [data, setData] = useState<DesignListResponse | null>(null);
@@ -141,22 +143,22 @@ function CollectionBody() {
             MaxLuLu <span className="ai">AI</span>
           </Link>
           <div className="nav-center">
-            <Link href="/products" className="is-active">灵感画廊</Link>
-            <Link href="/products">个性定制</Link>
-            <a href="/#hot">热拼专区</a>
+            <Link href="/products" className={sort === "hot-group" ? "" : "is-active"}>印花衣橱</Link>
+            <Link href="/products" className={sort === "hot-group" ? "" : ""}>个性定制</Link>
+            <Link href="/products?sort=hot-group" className={sort === "hot-group" ? "is-active" : ""}>热拼专区</Link>
           </div>
           <div className="nav-right">
             <form className="gallerySearch" onSubmit={onSearchSubmit}>
               <span aria-hidden>⌕</span>
               <input
                 type="search"
-                placeholder="搜索设计、风格、设计师"
+                placeholder="搜索设计、风格"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
               />
             </form>
+            <Link href="/my">会员</Link>
             <Link href="/my">我的衣橱</Link>
-            <Link href="/studio/join" className="designer-btn">设计师入驻</Link>
           </div>
         </div>
       </nav>
@@ -164,7 +166,7 @@ function CollectionBody() {
       <section className="galleryHero">
         <div className="container galleryHero__inner">
           <div>
-            <p className="eyebrow">INSPIRATION GALLERY · 灵感画廊</p>
+            <p className="eyebrow">PRINT WARDROBE · 印花衣橱</p>
             <h1>从 1000+ 设计师原创印花裙中，挑出你的下一件</h1>
             <p className="lead">水墨、几何、花卉、扎染……每一件都来自真人设计师，参与众定即可锁定排产。</p>
           </div>
@@ -223,7 +225,7 @@ function CollectionBody() {
                 <span className="en">Hot Group Buys</span>
                 <span className="cn">热销榜单</span>
               </h2>
-              <a href="/#hot" className="more">查看全部 →</a>
+              <Link href="/products?sort=hot-group" className="more">查看全部 →</Link>
             </div>
             <div className="hotGroupRow">
               {hotItems.map((it, i) => (
@@ -303,30 +305,6 @@ function CollectionBody() {
 
           <aside className="gallerySide">
             <div className="gallerySideCard">
-              <div className="gallerySideCard__head">
-                <b>推荐设计师</b>
-                <Link href="/studio/join">入驻 →</Link>
-              </div>
-              <div className="gallerySideDesigners">
-                {[
-                  { name: "Luna", studio: "MaxLuLu Studio", works: 23, fans: "4.2K", tone: "ink" },
-                  { name: "Yuki", studio: "Yuki Atelier", works: 18, fans: "2.8K", tone: "blue" },
-                  { name: "Reine", studio: "Atelier Reine", works: 31, fans: "5.6K", tone: "wine" },
-                  { name: "Mei", studio: "Mei Botanical", works: 14, fans: "1.9K", tone: "green" },
-                ].map((d) => (
-                  <div key={d.name} className="gallerySideDesigner">
-                    <span className={`gallerySideAvatar tone-${d.tone}`}>{d.name.slice(0, 1)}</span>
-                    <div>
-                      <b>{d.name}</b>
-                      <small>{d.studio} · {d.works} 件作品</small>
-                    </div>
-                    <em>+ 关注</em>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="gallerySideCard">
               <div className="gallerySideCard__head"><b>印花风格</b></div>
               <div className="gallerySideTags">
                 {["水墨晕染", "几何拼接", "热带花卉", "扎染", "工笔花鸟", "复古条纹"].map((t) => (
@@ -335,10 +313,21 @@ function CollectionBody() {
               </div>
             </div>
 
-            <div className="gallerySideCard galleryJoinCta">
-              <b>成为设计师</b>
-              <p>分享你的印花，获得每单 30% 分润。</p>
-              <Link href="/studio/join">了解入驻 →</Link>
+            <div className="gallerySideCard">
+              <div className="gallerySideCard__head"><b>价格区间</b></div>
+              <div className="gallerySideRanges">
+                {[
+                  { label: "¥299 以下", count: 24 },
+                  { label: "¥300 — ¥599", count: 86 },
+                  { label: "¥600 — ¥899", count: 62 },
+                  { label: "¥900 以上", count: 38 },
+                ].map((r) => (
+                  <button key={r.label} type="button" className="gallerySideRange">
+                    <span>{r.label}</span>
+                    <em>{r.count}</em>
+                  </button>
+                ))}
+              </div>
             </div>
           </aside>
         </div>

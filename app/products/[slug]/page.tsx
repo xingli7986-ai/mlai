@@ -82,14 +82,14 @@ function GalleryNav({ slug }: { slug: string }) {
           MaxLuLu <span className="ai">AI</span>
         </Link>
         <div className="nav-center">
-          <Link href="/products">灵感画廊</Link>
+          <Link href="/products">印花衣橱</Link>
           <Link href="/products">个性定制</Link>
+          <Link href="/products?sort=hot-group">热拼专区</Link>
           <Link href="/my">我的衣橱</Link>
-          <Link href={`/group-buy/${slug}`}>加入团购</Link>
         </div>
         <div className="nav-right">
           <a href="#share">分享</a>
-          <Link href="/studio/join" className="designer-btn">设计师入驻</Link>
+          <Link href="/my">会员</Link>
         </div>
       </div>
     </nav>
@@ -112,7 +112,7 @@ export default async function ProductDetailPage({ params }: Props) {
       <GalleryNav slug={detail.id} />
 
       <div className="pdpCrumbs container">
-        <Link href="/products">灵感画廊</Link>
+        <Link href="/products">印花衣橱</Link>
         <span className="sep">›</span>
         <Link href={`/products?category=${detail.skirtType}`}>{detail.skirtType}</Link>
         <span className="sep">›</span>

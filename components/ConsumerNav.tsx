@@ -7,9 +7,9 @@ import { useEffect, useState } from "react";
 type NavLink = { href: string; label: string };
 
 const NAV_LINKS: NavLink[] = [
-  { href: "/products", label: "灵感画廊" },
-  { href: "/products?filter=custom", label: "个性定制" },
-  { href: "/#hot", label: "热拼专区" },
+  { href: "/products", label: "印花衣橱" },
+  { href: "/products", label: "个性定制" },
+  { href: "/products?sort=hot-group", label: "热拼专区" },
 ];
 
 export default function ConsumerNav({
@@ -55,10 +55,6 @@ export default function ConsumerNav({
         <div className="nav-right">
           <Link href="/my">会员</Link>
           <Link href="/my">我的衣橱</Link>
-          <span className="nav-divider" />
-          <Link href="/studio/join" className="designer-btn">
-            设计师入驻
-          </Link>
         </div>
       </div>
     </nav>

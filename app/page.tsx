@@ -203,7 +203,7 @@ export default function HomePage() {
             MaxLuLu <span className="ai">AI</span>
           </Link>
           <div className="nav-center">
-            <Link href="/products">灵感画廊</Link>
+            <Link href="/products">印花衣橱</Link>
             <a href="#custom">个性定制</a>
             <a href="#hot">热拼专区</a>
           </div>
@@ -247,7 +247,7 @@ export default function HomePage() {
             </p>
             <div className="ctas">
               <Link href="/products" className="btn-primary">
-                去灵感画廊
+                去印花衣橱
               </Link>
               <Link href="/studio" className="btn-secondary">
                 定制专区
@@ -330,7 +330,7 @@ export default function HomePage() {
       <section className="section" id="gallery">
         <div className="container">
           <div className="section-head">
-            <h2>灵感画廊 · 千款设计等你挑</h2>
+            <h2>印花衣橱 · 千款设计等你挑</h2>
             <Link href="/products" className="more">
               看更多 →
             </Link>
@@ -507,7 +507,7 @@ export default function HomePage() {
           <p className="sub">Fashion For You — 每一朵印花，都由你绽放</p>
           <div className="btns">
             <Link href="/products" className="btn-g">
-              探索灵感画廊
+              探索印花衣橱
             </Link>
             <Link href="/products" className="btn-ow">
               开始定制

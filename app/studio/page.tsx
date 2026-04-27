@@ -97,7 +97,7 @@ export default function StudioHomePage() {
         <div className="st-hero__body">
           <p className="eyebrow">AI DESIGN STUDIO · 工具首页</p>
           <h1>下午好，Lulu <span style={{ fontSize: 22 }}>👋</span></h1>
-          <p>欢迎来到 MaxLuLu AI Studio，从 16 个 AI 工具开始你的下一个设计：印花生成 → 上身预览 → 一键发布到灵感画廊。</p>
+          <p>欢迎来到 MaxLuLu AI Studio，从 16 个 AI 工具开始你的下一个设计：印花生成 → 上身预览 → 一键发布到印花衣橱。</p>
           <div className="st-hero__cta">
             <Link href="/studio/pattern/generate" className="st-btn is-primary">+ 新建项目</Link>
             <Link href="/studio/dashboard" className="st-btn">从草稿开始</Link>
@@ -162,7 +162,7 @@ export default function StudioHomePage() {
         <article className="st-card">
           <div className="st-card__head">
             <h2>灵感库 / 模板推荐</h2>
-            <Link href="/products" className="more">浏览灵感画廊 →</Link>
+            <Link href="/products" className="more">浏览印花衣橱 →</Link>
           </div>
           <div className="st-inspire-grid">
             {INSPIRES.map((p, i) => (

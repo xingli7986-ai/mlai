@@ -31,7 +31,7 @@ export default function PublishPage() {
       <div className="pb-header">
         <div>
           <p className="eyebrow">PUBLISH DESIGN · 发布作品</p>
-          <h1>把作品上架到灵感画廊</h1>
+          <h1>把作品上架到印花衣橱</h1>
         </div>
         <div className="pb-actions">
           <button type="button" className="pb-btn">保存草稿</button>

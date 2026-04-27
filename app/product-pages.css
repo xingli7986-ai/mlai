@@ -709,7 +709,7 @@
 }
 
 /* ============================================================
-   Gallery overview (灵感画廊) — design/gallery-overview.png
+   Gallery overview (印花衣橱) — design/gallery-overview.png
    Pulled in via products/page.tsx; uses homepage nav so no
    .productTopbar wrapper is involved here.
    ============================================================ */
@@ -1791,7 +1791,7 @@
   }
 }
 
-/* Gallery Hero (灵感画廊UI设计.png) */
+/* Gallery Hero (印花衣橱UI设计.png) */
 .galleryHero {
   width: 100%;
   margin-top: 24px;
