@@ -34,6 +34,65 @@ export async function POST(req: NextRequest) {
       outTradeNo &&
       (tradeStatus === "TRADE_SUCCESS" || tradeStatus === "TRADE_FINISHED")
     ) {
+      // Try GroupBuyOrder first — if it matches, mark paid and activate
+      // any pending invitation reward.
+      const gbOrder = await prisma.groupBuyOrder.findUnique({
+        where: { id: outTradeNo },
+        select: {
+          id: true,
+          userId: true,
+          totalAmount: true,
+          recipientPhone: true,
+          groupBuyId: true,
+          invitedByUserId: true,
+        },
+      });
+      if (gbOrder) {
+        await prisma.groupBuyOrder.update({
+          where: { id: outTradeNo },
+          data: {
+            status: "paid",
+            paidAmount: gbOrder.totalAmount,
+            paymentId: tradeNo,
+          },
+        });
+
+        if (gbOrder.invitedByUserId) {
+          await prisma.invitation.updateMany({
+            where: {
+              groupBuyId: gbOrder.groupBuyId,
+              inviterUserId: gbOrder.invitedByUserId,
+              inviteeUserId: gbOrder.userId,
+              status: "pending",
+            },
+            data: { status: "fulfilled" },
+          });
+        }
+
+        console.log(`GroupBuyOrder ${outTradeNo} paid, alipay trade: ${tradeNo}`);
+
+        const recipientPhone = gbOrder.recipientPhone;
+        const totalAmount = gbOrder.totalAmount;
+        const notifyTemplateCode = process.env.SMS_ORDER_PAID_TEMPLATE || "";
+        after(async () => {
+          if (notifyTemplateCode && recipientPhone) {
+            const amountYuan = (totalAmount / 100).toFixed(0);
+            try {
+              await sendSmsNotification(recipientPhone, notifyTemplateCode, {
+                amount: amountYuan,
+              });
+            } catch (err) {
+              console.error("GroupBuyOrder paid SMS failed:", err);
+            }
+          }
+        });
+
+        return new NextResponse("success", {
+          status: 200,
+          headers: { "Content-Type": "text/plain" },
+        });
+      }
+
       const updated = await prisma.order.update({
         where: { id: outTradeNo },
         data: {
