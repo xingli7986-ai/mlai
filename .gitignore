@@ -63,6 +63,10 @@ MaxLuLu_AI_*.md
 # Claude Code local config and artifacts — keep local
 .claude/
 
+# Design source PNGs — keep local for Claude reference, do not commit
+design/*.png
+design/screenshots/
+
 # vercel
 .vercel
 
