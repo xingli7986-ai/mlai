@@ -44,7 +44,7 @@ export default function ConsumerNav({
         <div className="nav-center">
           {NAV_LINKS.map((l) => (
             <Link
-              key={l.href}
+              key={l.label}
               href={l.href}
               className={isActive(l.href) ? "is-active" : ""}
             >

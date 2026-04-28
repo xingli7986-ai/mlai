@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 interface CommentItem {
   id: string;
@@ -16,29 +18,78 @@ interface Props {
   initialFavorited: boolean;
   initialLikeCount: number;
   initialCommentCount: number;
+  groupPrice: number;
+  customPrice: number;
+  slot: "top" | "body";
 }
 
-export default function DetailActions({
-  designId,
-  initialLiked,
-  initialFavorited,
-  initialLikeCount,
-  initialCommentCount,
-}: Props) {
+function fmtPrice(cents: number): string {
+  if (!cents || cents <= 0) return "¥—";
+  return `¥${cents.toLocaleString()}`;
+}
+
+const STATE_EVENT = "pdp-actions-state";
+
+type SharedState = {
+  liked: boolean;
+  favorited: boolean;
+  likeCount: number;
+  commentTotal: number;
+};
+
+export default function DetailActions(props: Props) {
+  const {
+    designId,
+    initialLiked,
+    initialFavorited,
+    initialLikeCount,
+    initialCommentCount,
+    groupPrice,
+    customPrice,
+    slot,
+  } = props;
+
   const [liked, setLiked] = useState(initialLiked);
   const [favorited, setFavorited] = useState(initialFavorited);
   const [likeCount, setLikeCount] = useState(initialLikeCount);
+  const [commentTotal, setCommentTotal] = useState(initialCommentCount);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
   const [comments, setComments] = useState<CommentItem[]>([]);
-  const [commentTotal, setCommentTotal] = useState(initialCommentCount);
   const [commentLoading, setCommentLoading] = useState(true);
   const [composer, setComposer] = useState("");
   const [posting, setPosting] = useState(false);
   const composerRef = useRef<HTMLTextAreaElement>(null);
 
+  // Cross-instance sync: top + body slots both run as separate React trees,
+  // so broadcast state changes through a CustomEvent on `window`.
   useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<SharedState & { from: number }>).detail;
+      if (!detail) return;
+      setLiked(detail.liked);
+      setFavorited(detail.favorited);
+      setLikeCount(detail.likeCount);
+      setCommentTotal(detail.commentTotal);
+    };
+    window.addEventListener(STATE_EVENT, handler as EventListener);
+    return () => window.removeEventListener(STATE_EVENT, handler as EventListener);
+  }, []);
+
+  function broadcast(next: Partial<SharedState>) {
+    const detail: SharedState = {
+      liked: next.liked ?? liked,
+      favorited: next.favorited ?? favorited,
+      likeCount: next.likeCount ?? likeCount,
+      commentTotal: next.commentTotal ?? commentTotal,
+    };
+    window.dispatchEvent(new CustomEvent(STATE_EVENT, { detail }));
+  }
+
+  // Body slot owns the comments fetch.
+  useEffect(() => {
+    if (slot !== "body") return;
     let alive = true;
     (async () => {
       try {
@@ -48,6 +99,7 @@ export default function DetailActions({
         if (res.ok) {
           setComments(data.comments || []);
           setCommentTotal(data.total ?? 0);
+          broadcast({ commentTotal: data.total ?? 0 });
         }
       } finally {
         if (alive) setCommentLoading(false);
@@ -56,7 +108,8 @@ export default function DetailActions({
     return () => {
       alive = false;
     };
-  }, [designId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [designId, slot]);
 
   function flash(kind: "success" | "error", text: string) {
     setToast({ kind, text });
@@ -67,23 +120,27 @@ export default function DetailActions({
     if (busy) return;
     setBusy(true);
     const optimistic = !liked;
+    const nextCount = Math.max(0, likeCount + (optimistic ? 1 : -1));
     setLiked(optimistic);
-    setLikeCount((c) => Math.max(0, c + (optimistic ? 1 : -1)));
+    setLikeCount(nextCount);
+    broadcast({ liked: optimistic, likeCount: nextCount });
     try {
       const res = await fetch(`/api/designs/${designId}/like`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) {
-        // revert
         setLiked(!optimistic);
-        setLikeCount((c) => Math.max(0, c + (optimistic ? -1 : 1)));
+        setLikeCount(likeCount);
+        broadcast({ liked: !optimistic, likeCount });
         flash("error", data.error || "请先登录");
         return;
       }
       setLiked(data.liked);
       setLikeCount(data.likeCount);
+      broadcast({ liked: data.liked, likeCount: data.likeCount });
     } catch {
       setLiked(!optimistic);
-      setLikeCount((c) => Math.max(0, c + (optimistic ? -1 : 1)));
+      setLikeCount(likeCount);
+      broadcast({ liked: !optimistic, likeCount });
       flash("error", "网络错误");
     } finally {
       setBusy(false);
@@ -95,18 +152,22 @@ export default function DetailActions({
     setBusy(true);
     const optimistic = !favorited;
     setFavorited(optimistic);
+    broadcast({ favorited: optimistic });
     try {
       const res = await fetch(`/api/designs/${designId}/favorite`, { method: "POST" });
       const data = await res.json();
       if (!res.ok) {
         setFavorited(!optimistic);
+        broadcast({ favorited: !optimistic });
         flash("error", data.error || "请先登录");
         return;
       }
       setFavorited(data.favorited);
+      broadcast({ favorited: data.favorited });
       flash("success", data.favorited ? "已加入衣橱" : "已取消收藏");
     } catch {
       setFavorited(!optimistic);
+      broadcast({ favorited: !optimistic });
       flash("error", "网络错误");
     } finally {
       setBusy(false);
@@ -130,7 +191,9 @@ export default function DetailActions({
         return;
       }
       setComments((cs) => [data.comment, ...cs]);
-      setCommentTotal((c) => c + 1);
+      const nextTotal = commentTotal + 1;
+      setCommentTotal(nextTotal);
+      broadcast({ commentTotal: nextTotal });
       setComposer("");
       composerRef.current?.blur();
       flash("success", "评论已发布");
@@ -141,15 +204,15 @@ export default function DetailActions({
     }
   }
 
-  return (
-    <>
+  if (slot === "top") {
+    return (
       <div className="pdpIcons">
         <button
           type="button"
           aria-label="点赞"
           onClick={toggleLike}
           disabled={busy}
-          style={{ color: liked ? "#7f1f2b" : undefined }}
+          className={liked ? "is-on is-on--like" : ""}
         >
           {liked ? "♥" : "♡"} {likeCount}
         </button>
@@ -158,48 +221,38 @@ export default function DetailActions({
           aria-label="收藏"
           onClick={toggleFavorite}
           disabled={busy}
-          style={{ color: favorited ? "#c9a36a" : undefined }}
+          className={favorited ? "is-on is-on--fav" : ""}
         >
           {favorited ? "★" : "☆"}
         </button>
         <button type="button" aria-label="分享">↗</button>
       </div>
+    );
+  }
 
-      {toast && (
-        <div className={`ml-toast ml-toast--${toast.kind}`} style={{
-          position: "fixed",
-          bottom: 24,
-          left: "50%",
-          transform: "translateX(-50%)",
-          zIndex: 100,
-        }}>
-          {toast.text}
-        </div>
-      )}
-
-      <section className="pdpReviews container" id="comments" style={{ marginTop: 32 }}>
+  return (
+    <>
+      <section className="container pdpReviews" id="comments">
         <div className="pdpReviews__head">
-          <div>
-            <p className="eyebrow">COMMENTS · 评论</p>
-            <h2>评论 ({commentTotal})</h2>
-          </div>
+          <p className="eyebrow">COMMENTS · 用户评论</p>
+          <h2>评论 ({commentTotal})</h2>
         </div>
 
-        <form onSubmit={postComment} style={{ marginBottom: 18, display: "grid", gap: 8 }}>
+        <form onSubmit={postComment} className="pdpComposer">
           <textarea
             ref={composerRef}
-            className="ml-textarea"
+            className="pdpComposer__input"
             placeholder="说说你对这件作品的看法…"
             value={composer}
             onChange={(e) => setComposer(e.target.value)}
             rows={3}
             maxLength={1000}
           />
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span className="ml-caption">{composer.length}/1000</span>
+          <div className="pdpComposer__foot">
+            <span className="pdpComposer__count">{composer.length}/1000</span>
             <button
               type="submit"
-              className="ml-btn ml-btn--primary"
+              className="pdpCtaPrimary pdpCtaPrimary--sm"
               disabled={!composer.trim() || posting}
             >
               {posting ? "发布中…" : "发布评论"}
@@ -209,9 +262,9 @@ export default function DetailActions({
 
         <div className="pdpReviewList">
           {commentLoading ? (
-            <div className="ml-toast">加载评论中…</div>
+            <div className="pdpReviewEmpty">加载评论中…</div>
           ) : comments.length === 0 ? (
-            <div className="ml-toast">还没有评论，来抢沙发吧。</div>
+            <div className="pdpReviewEmpty">还没有评论，来抢沙发吧。</div>
           ) : (
             comments.map((c) => (
               <article key={c.id} className="pdpReview">
@@ -228,6 +281,71 @@ export default function DetailActions({
           )}
         </div>
       </section>
+
+      <StickyBar
+        designId={designId}
+        groupPrice={groupPrice}
+        customPrice={customPrice}
+        favorited={favorited}
+        onToggleFavorite={toggleFavorite}
+        busy={busy}
+      />
+
+      {toast && (
+        <div className={`pdpToast pdpToast--${toast.kind}`}>{toast.text}</div>
+      )}
     </>
   );
+}
+
+function StickyBar({
+  designId,
+  groupPrice,
+  customPrice,
+  favorited,
+  onToggleFavorite,
+  busy,
+}: {
+  designId: string;
+  groupPrice: number;
+  customPrice: number;
+  favorited: boolean;
+  onToggleFavorite: () => void;
+  busy: boolean;
+}) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted || typeof document === "undefined") return null;
+
+  const node = (
+    <div className="pdpSticky">
+      <div className="pdpSticky__inner">
+        <div className="pdpSticky__price">
+          <small>起拼价</small>
+          <b>{fmtPrice(groupPrice)}</b>
+          <span>定制价 {fmtPrice(customPrice)}</span>
+        </div>
+        <div className="pdpSticky__cta">
+          <button
+            type="button"
+            className={`pdpSticky__fav ${favorited ? "is-on" : ""}`}
+            onClick={onToggleFavorite}
+            disabled={busy}
+            aria-label={favorited ? "已加入心愿单" : "加入心愿单"}
+          >
+            {favorited ? "★" : "☆"}
+            <span>{favorited ? "已收藏" : "心愿单"}</span>
+          </button>
+          <Link href={`/products/${designId}/custom`} className="pdpSticky__btn pdpSticky__btn--ghost">
+            个人定制
+          </Link>
+          <Link href={`/group-buy/${designId}`} className="pdpSticky__btn pdpSticky__btn--primary">
+            立即参团
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+
+  return createPortal(node, document.body);
 }

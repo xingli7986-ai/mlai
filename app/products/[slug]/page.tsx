@@ -1,7 +1,17 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import ConsumerNav from "@/components/ConsumerNav";
 import DetailActions from "./DetailActions";
+import {
+  zhSkirtType,
+  zhFabric,
+  zhNeckline,
+  zhSleeve,
+  zhLength,
+  toneFromId,
+  type Tone,
+} from "@/lib/design-i18n";
 import "../../product-pages.css";
 
 type Props = {
@@ -69,31 +79,11 @@ const COLORS: Array<{ name: string; hex: string }> = [
   { name: "酒红", hex: "#7a2030" },
 ];
 
+const THUMB_LABELS = ["主图", "版型", "印花", "细节"];
+
 function fmtPrice(cents: number): string {
   if (!cents || cents <= 0) return "¥—";
   return `¥${cents.toLocaleString()}`;
-}
-
-function GalleryNav({ slug }: { slug: string }) {
-  return (
-    <nav className="nav">
-      <div className="container inner">
-        <Link href="/" className="nav-logo">
-          MaxLuLu <span className="ai">AI</span>
-        </Link>
-        <div className="nav-center">
-          <Link href="/products">印花衣橱</Link>
-          <Link href="/products">个性定制</Link>
-          <Link href="/products?sort=hot-group">热拼专区</Link>
-          <Link href="/my">我的衣橱</Link>
-        </div>
-        <div className="nav-right">
-          <a href="#share">分享</a>
-          <Link href="/my">会员</Link>
-        </div>
-      </div>
-    </nav>
-  );
 }
 
 export default async function ProductDetailPage({ params }: Props) {
@@ -104,49 +94,58 @@ export default async function ProductDetailPage({ params }: Props) {
     notFound();
   }
 
+  const tone: Tone = toneFromId(detail.id);
   const heroImage = detail.images[0] || "";
   const initials = detail.title.slice(0, 4);
+  const code = `MU-${detail.id.slice(0, 8).toUpperCase()}`;
+  const skirtZh = zhSkirtType(detail.skirtType) ?? detail.skirtType;
+  const fabricZh = zhFabric(detail.fabric) ?? detail.fabric;
+  const necklineZh = zhNeckline(detail.neckline);
+  const sleeveZh = zhSleeve(detail.sleeveType);
+  const lengthZh = zhLength(detail.skirtLength);
+  const savings = Math.max(0, detail.customPrice - detail.groupPrice);
+  const groupProgress = Math.min(100, Math.round((detail.orderCount / 30) * 100));
 
   return (
     <main className="page-wrap pdpPage">
-      <GalleryNav slug={detail.id} />
+      <ConsumerNav variant="solid" />
 
-      <div className="pdpCrumbs container">
+      <div className="container pdpCrumbs">
         <Link href="/products">印花衣橱</Link>
         <span className="sep">›</span>
-        <Link href={`/products?category=${detail.skirtType}`}>{detail.skirtType}</Link>
+        <Link href={`/products?category=${detail.skirtType}`}>{skirtZh}</Link>
         <span className="sep">›</span>
         <span className="current">{detail.title}</span>
       </div>
 
-      <section className="pdpHero container">
+      <section className="container pdpHero">
         <aside className="pdpThumbCol">
-          {detail.images.slice(0, 4).map((src, i) => (
-            <button
-              key={src + i}
-              type="button"
-              className={`pdpThumb ${i === 0 ? "is-active" : ""}`}
-              aria-label={`图 ${i + 1}`}
-            >
-              {src ? (
-                <img src={src} alt={`${detail.title} 图${i + 1}`} className="pdpThumb__img" />
-              ) : (
-                <div className="pdpThumb__img" style={{ display: "grid", placeItems: "center", color: "rgba(255,255,255,0.6)", fontSize: 12 }}>
-                  {["主图", "版型", "印花", "细节"][i] ?? "细节"}
-                </div>
-              )}
-            </button>
-          ))}
+          {Array.from({ length: 4 }).map((_, i) => {
+            const src = detail.images[i];
+            const active = i === 0;
+            return (
+              <button
+                key={i}
+                type="button"
+                className={`pdpThumb tone-${tone} ${active ? "is-active" : ""}`}
+                aria-label={`图 ${i + 1}`}
+              >
+                {src ? (
+                  <img src={src} alt={`${detail.title} 图${i + 1}`} className="pdpThumb__img" />
+                ) : (
+                  <span className="pdpThumb__ph">{THUMB_LABELS[i] ?? "细节"}</span>
+                )}
+              </button>
+            );
+          })}
         </aside>
 
         <div className="pdpMainMedia">
-          <div className="pdpMainMedia__frame tone-ink">
+          <div className={`pdpMainMedia__frame tone-${tone}`}>
             {heroImage ? (
               <img src={heroImage} alt={detail.title} className="pdpMainMedia__img" />
             ) : (
-              <div className="pdpMainMedia__img" style={{ display: "grid", placeItems: "center", color: "rgba(255,255,255,0.55)", fontFamily: "var(--font-display)", fontSize: 28 }}>
-                {initials}
-              </div>
+              <span className="pdpMainMedia__ph">{initials}</span>
             )}
             <span className="pdpBadge">众定中</span>
             <button type="button" className="pdpZoom" aria-label="放大">⤢</button>
@@ -156,7 +155,7 @@ export default async function ProductDetailPage({ params }: Props) {
         <div className="pdpInfo">
           <div className="pdpInfo__topRow">
             <div className="pdpTags">
-              <span className="pdpTag pdpTag--gold">{detail.skirtType}</span>
+              <span className="pdpTag pdpTag--gold">{skirtZh}</span>
               {detail.styleTags.slice(0, 1).map((t) => (
                 <span key={t} className="pdpTag">{t}</span>
               ))}
@@ -167,23 +166,28 @@ export default async function ProductDetailPage({ params }: Props) {
               initialFavorited={detail.isFavorited}
               initialLikeCount={detail.likeCount}
               initialCommentCount={detail.commentCount}
+              groupPrice={detail.groupPrice}
+              customPrice={detail.customPrice}
+              slot="top"
             />
           </div>
 
-          <h1 className="pdpTitle">{detail.title}</h1>
-          <p className="pdpCode">编号 MU-{detail.id.slice(0, 8).toUpperCase()}</p>
+          <div>
+            <h1 className="pdpTitle">{detail.title}</h1>
+            <p className="pdpCode">编号 {code}</p>
+          </div>
           {detail.description && <p className="pdpLead">{detail.description}</p>}
 
           <div className="pdpPriceTabs">
             <div className="pdpPriceCard is-active">
-              <small>起拼价 · 众定 30 人成团</small>
+              <small>起拼价 · 30 人成团</small>
               <strong>{fmtPrice(detail.groupPrice)}</strong>
-              <span>原价 {fmtPrice(detail.customPrice)} · 立省 {fmtPrice(Math.max(0, detail.customPrice - detail.groupPrice))}</span>
+              <span>原价 {fmtPrice(detail.customPrice)} · 立省 {fmtPrice(savings)}</span>
             </div>
             <div className="pdpPriceCard">
               <small>个人定制价 · 7 天交付</small>
               <strong>{fmtPrice(detail.customPrice)}</strong>
-              <span>面料/工艺可调</span>
+              <span>面料 / 工艺可调</span>
             </div>
           </div>
 
@@ -193,22 +197,20 @@ export default async function ProductDetailPage({ params }: Props) {
               <b>{detail.orderCount} 件</b>
             </div>
             <div className="pdpProgress__bar">
-              <em style={{ width: `${Math.min(100, Math.round((detail.orderCount / 30) * 100))}%` }} />
+              <em style={{ width: `${groupProgress}%` }} />
             </div>
             <div className="pdpProgress__meta">
-              <span>♡ {detail.likeCount} 点赞 · ★ {detail.favoriteCount} 收藏</span>
-              <span>👁 {detail.viewCount} 浏览</span>
+              <span>♡ {detail.likeCount} · ★ {detail.favoriteCount}</span>
+              <span>👁 {detail.viewCount}</span>
             </div>
           </div>
 
           <div className="pdpDesigner">
-            <div className="pdpDesigner__avatar" aria-hidden>
+            <div className={`pdpDesigner__avatar tone-${tone}`} aria-hidden>
               {detail.designer.avatar ? (
                 <img src={detail.designer.avatar} alt={detail.designer.name ?? ""} className="pdpDesigner__img" />
               ) : (
-                <div className="pdpDesigner__img" style={{ display: "grid", placeItems: "center", color: "rgba(255,255,255,0.7)", fontFamily: "var(--font-display)" }}>
-                  {(detail.designer.name ?? "L").slice(0, 1)}
-                </div>
+                <span className="pdpDesigner__ph">{(detail.designer.name ?? "L").slice(0, 1)}</span>
               )}
             </div>
             <div className="pdpDesigner__body">
@@ -240,7 +242,7 @@ export default async function ProductDetailPage({ params }: Props) {
           <div className="pdpPicker">
             <div className="pdpPicker__head">
               <b>配色</b>
-              <span>5 种可选</span>
+              <span>{COLORS.length} 种可选</span>
             </div>
             <div className="pdpPicker__swatches">
               {COLORS.map((c, i) => (
@@ -263,7 +265,6 @@ export default async function ProductDetailPage({ params }: Props) {
             <Link className="pdpCtaSecondary" href={`/products/${detail.id}/custom`}>
               个人定制
             </Link>
-            <button type="button" className="pdpCtaIcon" aria-label="加入衣橱">♡</button>
           </div>
 
           <ul className="pdpTrust">
@@ -274,41 +275,94 @@ export default async function ProductDetailPage({ params }: Props) {
         </div>
       </section>
 
-      <section className="pdpTabs container">
-        <div className="pdpTabs__bar">
-          <button type="button" className="pdpTabBtn is-active">商品详情</button>
-          <button type="button" className="pdpTabBtn">设计说明</button>
-          <button type="button" className="pdpTabBtn">评价 ({detail.commentCount})</button>
-          <button type="button" className="pdpTabBtn">尺码与生产</button>
+      <section className="container pdpStorySection">
+        <div className="pdpStorySection__head">
+          <p className="eyebrow">PRINT STORY · 印花故事</p>
+          <h2>{detail.title}</h2>
         </div>
-
-        <div className="pdpTabPanel">
-          <div className="pdpTwoCol">
-            <article className="pdpStory">
-              <p className="eyebrow">PRINT STORY · 印花故事</p>
-              <h3>{detail.title}</h3>
-              <p>{detail.description ?? "本款由签约设计师独立创作，灵感与配色均来自原创。"}</p>
-              {detail.styleTags.length > 0 && (
-                <ul>
-                  {detail.styleTags.slice(0, 4).map((t) => (
-                    <li key={t}>· {t}</li>
-                  ))}
-                </ul>
-              )}
-            </article>
-            <article className="pdpStory">
-              <p className="eyebrow">FABRIC · 面料</p>
-              <h3>{detail.fabric}</h3>
-              <p>{detail.costBreakdown ?? "面料按设计师指定规格采购，工艺细节按工艺单严格执行。"}</p>
+        <div className="pdpStoryGrid">
+          <article className="pdpStoryCard">
+            <p>
+              {detail.description ??
+                "本款由签约设计师独立创作，灵感与配色均来自原创印花。每一件成衣均按工艺单严格执行，从面料到裁剪，都为你保留可追溯的故事。"}
+            </p>
+            {detail.styleTags.length > 0 && (
               <ul>
-                {detail.neckline && <li>· 领型：{detail.neckline}</li>}
-                {detail.sleeveType && <li>· 袖型：{detail.sleeveType}</li>}
-                {detail.skirtLength && <li>· 长度：{detail.skirtLength}</li>}
+                {detail.styleTags.slice(0, 4).map((t) => (
+                  <li key={t}>· {t}</li>
+                ))}
               </ul>
-            </article>
+            )}
+          </article>
+          <div className="pdpStoryShots">
+            {Array.from({ length: 4 }).map((_, i) => {
+              const src = detail.images[i + 1] ?? detail.patternImage ?? null;
+              return (
+                <div key={i} className={`pdpStoryShot tone-${tone}`}>
+                  {src ? (
+                    <img src={src} alt={`${detail.title} 细节 ${i + 1}`} className="pdpStoryShot__img" />
+                  ) : (
+                    <span className="pdpStoryShot__ph">{THUMB_LABELS[i] ?? "细节"}</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
+
+      <section className="container pdpSpecSection">
+        <div className="pdpSpecSection__head">
+          <p className="eyebrow">FABRIC & CRAFT · 面料与工艺</p>
+          <h2>{fabricZh} · {skirtZh}</h2>
+        </div>
+        <div className="pdpSpecGrid">
+          <div className="pdpSpecBox">
+            <span>面料</span>
+            <strong>{fabricZh}</strong>
+          </div>
+          <div className="pdpSpecBox">
+            <span>裙型</span>
+            <strong>{skirtZh}</strong>
+          </div>
+          {necklineZh && (
+            <div className="pdpSpecBox">
+              <span>领型</span>
+              <strong>{necklineZh}</strong>
+            </div>
+          )}
+          {sleeveZh && (
+            <div className="pdpSpecBox">
+              <span>袖型</span>
+              <strong>{sleeveZh}</strong>
+            </div>
+          )}
+          {lengthZh && (
+            <div className="pdpSpecBox">
+              <span>长度</span>
+              <strong>{lengthZh}</strong>
+            </div>
+          )}
+          <div className="pdpSpecBox">
+            <span>工艺</span>
+            <strong>原创印花 · 工艺单签名</strong>
+          </div>
+        </div>
+        {detail.costBreakdown && (
+          <p className="pdpSpecNote">{detail.costBreakdown}</p>
+        )}
+      </section>
+
+      <DetailActions
+        designId={detail.id}
+        initialLiked={detail.isLiked}
+        initialFavorited={detail.isFavorited}
+        initialLikeCount={detail.likeCount}
+        initialCommentCount={detail.commentCount}
+        groupPrice={detail.groupPrice}
+        customPrice={detail.customPrice}
+        slot="body"
+      />
     </main>
   );
 }
