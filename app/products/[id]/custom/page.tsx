@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import { Button, EmptyState, Input, Skeleton, Textarea } from "@/components/ui";
+import { Button, EmptyState, Input, Skeleton, Textarea, useToast } from "@/components/ui";
 import "./custom.css";
 
 type Props = {
@@ -32,6 +32,7 @@ function fmtPrice(cents: number): string {
 export default function CustomOrderPage({ params }: Props) {
   const { id } = use(params);
   const router = useRouter();
+  const toast = useToast();
 
   const [detail, setDetail] = useState<DesignDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -89,6 +90,7 @@ export default function CustomOrderPage({ params }: Props) {
       const orderData = await orderRes.json();
       if (!orderRes.ok) {
         if (orderRes.status === 401) {
+          toast.show("请先登录后再下单", { tone: "warning" });
           router.push(`/login?redirect=/products/${id}/custom`);
           return;
         }
@@ -110,7 +112,9 @@ export default function CustomOrderPage({ params }: Props) {
       if (form) form.submit();
       else window.location.href = "/my/orders";
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "下单失败");
+      const message = err instanceof Error ? err.message : "下单失败";
+      setSubmitError(message);
+      toast.show(message, { tone: "error" });
     } finally {
       setSubmitting(false);
     }
@@ -215,7 +219,9 @@ export default function CustomOrderPage({ params }: Props) {
               placeholder="如：领口加捏褶、用 silver 而非 gold 配色…"
             />
 
-            {submitError && <div className="ml-toast ml-toast--error">{submitError}</div>}
+            {submitError && (
+              <span className="ui-field__error">{submitError}</span>
+            )}
 
             <Button type="submit" variant="primary" size="lg" block loading={submitting}>
               {submitting ? "处理中…" : `支付 ${fmtPrice(detail.customPrice)} 立即定制`}

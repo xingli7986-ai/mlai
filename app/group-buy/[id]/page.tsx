@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, use } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Button, EmptyState, Input, Skeleton, Textarea } from "@/components/ui";
+import { Button, EmptyState, Input, Skeleton, Textarea, useToast } from "@/components/ui";
 import "../group-buy.css";
 
 type Props = {
@@ -53,6 +53,7 @@ export default function GroupBuyCheckoutPage({ params }: Props) {
   const { id } = use(params);
   const searchParams = useSearchParams();
   const router = useRouter();
+  const toast = useToast();
   const inviteCode = searchParams.get("invite") || "";
 
   const [groupBuy, setGroupBuy] = useState<GroupBuy | null>(null);
@@ -136,6 +137,7 @@ export default function GroupBuyCheckoutPage({ params }: Props) {
       const orderData = await orderRes.json();
       if (!orderRes.ok) {
         if (orderRes.status === 401) {
+          toast.show("请先登录后再下单", { tone: "warning" });
           router.push(`/login?redirect=/group-buy/${id}${inviteCode ? `?invite=${inviteCode}` : ""}`);
           return;
         }
@@ -158,7 +160,9 @@ export default function GroupBuyCheckoutPage({ params }: Props) {
       if (form) form.submit();
       else window.location.href = `/group-buy/${groupBuy.id}/progress`;
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "下单失败");
+      const message = err instanceof Error ? err.message : "下单失败";
+      setSubmitError(message);
+      toast.show(message, { tone: "error" });
     } finally {
       setSubmitting(false);
     }
@@ -261,7 +265,9 @@ export default function GroupBuyCheckoutPage({ params }: Props) {
             <Input label="收货地址" value={region} onChange={(e) => setRegion(e.target.value)} required placeholder="省 / 市 / 区" />
             <Textarea label="详细地址" value={address} onChange={(e) => setAddress(e.target.value)} required placeholder="街道、门牌号" />
 
-            {submitError && <div className="ml-toast ml-toast--error">{submitError}</div>}
+            {submitError && (
+              <span className="ui-field__error">{submitError}</span>
+            )}
 
             <Button type="submit" variant="primary" size="lg" block loading={submitting}>
               {submitting ? "处理中…" : `支付 ${fmtPrice(totalCents)} 参团`}

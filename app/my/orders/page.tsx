@@ -6,10 +6,11 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import {
   FABRIC_LABEL,
-  ORDER_STATUS_LABEL,
   SKIRT_LABEL,
   calculatePrice,
 } from "@/lib/constants";
+import { Badge } from "@/components/ui";
+import { getOrderStatusInfo } from "@/lib/orderStatus";
 
 type OrderWithDesign = {
   id: string;
@@ -42,14 +43,6 @@ const EMPTY_TEXT: Record<TabId, string> = {
   paid: "没有待发货的订单",
   shipped: "没有已发货的订单",
   completed: "没有已完成的订单",
-};
-
-const STATUS_CLASSNAME: Record<string, string> = {
-  pending: "bg-amber-50 text-amber-600",
-  paid: "bg-sky-50 text-sky-600",
-  shipped: "bg-indigo-50 text-indigo-600",
-  completed: "bg-emerald-50 text-emerald-600",
-  cancelled: "bg-gray-100 text-gray-500",
 };
 
 function formatDate(iso: string) {
@@ -279,15 +272,14 @@ export default function OrdersPage() {
 }
 
 function StatusPill({ status }: { status: string }) {
-  const text = ORDER_STATUS_LABEL[status] ?? status;
-  const className = STATUS_CLASSNAME[status] ?? "bg-gray-100 text-gray-500";
-  return (
-    <span
-      className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${className}`}
-    >
-      {text}
-    </span>
-  );
+  const info = getOrderStatusInfo(status);
+  return <Badge tone={info.tone}>{info.label}</Badge>;
+}
+
+function StatusHint({ status }: { status: string }) {
+  const info = getOrderStatusInfo(status);
+  if (!info.hint) return null;
+  return <span className="text-[11px] text-gray-500">{info.hint}</span>;
 }
 
 function OrderCard({
@@ -340,8 +332,9 @@ function OrderCard({
           <div className="mt-1 truncate text-xs text-gray-500">
             {order.design.prompt}
           </div>
-          <div className="mt-1.5 text-[11px] text-gray-400">
-            {formatDate(order.createdAt)}
+          <div className="mt-1.5 flex items-center gap-2 text-[11px] text-gray-400">
+            <span>{formatDate(order.createdAt)}</span>
+            <StatusHint status={order.status} />
           </div>
         </div>
         <div className="hidden shrink-0 text-right sm:block">
