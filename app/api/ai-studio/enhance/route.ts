@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/getAuthUser";
 import { uploadBufferToR2 } from "@/lib/upload";
 import { makeSuperResolution } from "@/lib/aliyun-sr";
+import { getUserRole } from "@/lib/userRole";
+import { checkUsageLimit, recordUsage, getDailyUsage } from "@/lib/aiUsage";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -17,6 +19,22 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { success: false, error: "未登录" },
       { status: 401 }
+    );
+  }
+
+  // PRD §6.4: enhance also counts as an AI generation against the daily cap.
+  const { role, aiDailyLimit } = await getUserRole(user);
+  const limitCheck = checkUsageLimit(user.id, aiDailyLimit);
+  if (!limitCheck.ok) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: limitCheck.error,
+        role,
+        used: getDailyUsage(user.id),
+        limit: aiDailyLimit,
+      },
+      { status: limitCheck.status },
     );
   }
 
@@ -53,9 +71,12 @@ export async function POST(req: Request) {
     const key = `studio/enhanced/${Date.now()}_${upscaleFactor}x.png`;
     const finalUrl = await uploadBufferToR2(buffer, key, "image/png");
 
+    const used = recordUsage(user.id);
     return NextResponse.json({
       success: true,
       images: [{ url: finalUrl }],
+      used,
+      limit: aiDailyLimit,
     });
   } catch (err) {
     console.error("AI Studio enhance error:", err);

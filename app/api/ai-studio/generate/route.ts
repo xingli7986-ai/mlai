@@ -7,6 +7,8 @@ import {
   TOOL_PROMPT_MAP,
   type StudioTool,
 } from "@/lib/ai-studio-prompts";
+import { getUserRole } from "@/lib/userRole";
+import { checkUsageLimit, recordUsage, getDailyUsage } from "@/lib/aiUsage";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -68,6 +70,22 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { success: false, error: "未登录" },
       { status: 401 }
+    );
+  }
+
+  // PRD §6.4: per-role daily generation cap.
+  const { role, aiDailyLimit } = await getUserRole(user);
+  const limitCheck = checkUsageLimit(user.id, aiDailyLimit);
+  if (!limitCheck.ok) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: limitCheck.error,
+        role,
+        used: getDailyUsage(user.id),
+        limit: aiDailyLimit,
+      },
+      { status: limitCheck.status },
     );
   }
 
@@ -160,7 +178,8 @@ export async function POST(req: Request) {
           { status: 502 }
         );
       }
-      return NextResponse.json({ success: true, images });
+      const used = recordUsage(user.id);
+      return NextResponse.json({ success: true, images, used, limit: aiDailyLimit });
     }
 
     // Gemini branch
@@ -239,7 +258,8 @@ export async function POST(req: Request) {
         { status: 502 }
       );
     }
-    return NextResponse.json({ success: true, images });
+    const used = recordUsage(user.id);
+    return NextResponse.json({ success: true, images, used, limit: aiDailyLimit });
   } catch (err) {
     console.error("AI Studio generate error:", err);
     const message = err instanceof Error ? err.message : "生成失败";

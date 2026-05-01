@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import LoginModal from "@/components/auth/LoginModal";
 
 interface CommentItem {
   id: string;
@@ -55,6 +56,7 @@ export default function DetailActions(props: Props) {
   const [commentTotal, setCommentTotal] = useState(initialCommentCount);
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<{ kind: "success" | "error"; text: string } | null>(null);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
 
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [commentLoading, setCommentLoading] = useState(true);
@@ -131,7 +133,11 @@ export default function DetailActions(props: Props) {
         setLiked(!optimistic);
         setLikeCount(likeCount);
         broadcast({ liked: !optimistic, likeCount });
-        flash("error", data.error || "请先登录");
+        if (res.status === 401) {
+          setLoginModalOpen(true);
+        } else {
+          flash("error", data.error || "操作失败");
+        }
         return;
       }
       setLiked(data.liked);
@@ -159,7 +165,11 @@ export default function DetailActions(props: Props) {
       if (!res.ok) {
         setFavorited(!optimistic);
         broadcast({ favorited: !optimistic });
-        flash("error", data.error || "请先登录");
+        if (res.status === 401) {
+          setLoginModalOpen(true);
+        } else {
+          flash("error", data.error || "操作失败");
+        }
         return;
       }
       setFavorited(data.favorited);
@@ -187,7 +197,11 @@ export default function DetailActions(props: Props) {
       });
       const data = await res.json();
       if (!res.ok) {
-        flash("error", data.error || "评论失败");
+        if (res.status === 401) {
+          setLoginModalOpen(true);
+        } else {
+          flash("error", data.error || "评论失败");
+        }
         return;
       }
       setComments((cs) => [data.comment, ...cs]);
@@ -206,27 +220,34 @@ export default function DetailActions(props: Props) {
 
   if (slot === "top") {
     return (
-      <div className="pdpIcons">
-        <button
-          type="button"
-          aria-label="点赞"
-          onClick={toggleLike}
-          disabled={busy}
-          className={liked ? "is-on is-on--like" : ""}
-        >
-          {liked ? "♥" : "♡"} {likeCount}
-        </button>
-        <button
-          type="button"
-          aria-label="收藏"
-          onClick={toggleFavorite}
-          disabled={busy}
-          className={favorited ? "is-on is-on--fav" : ""}
-        >
-          {favorited ? "★" : "☆"}
-        </button>
-        <button type="button" aria-label="分享">↗</button>
-      </div>
+      <>
+        <div className="pdpIcons">
+          <button
+            type="button"
+            aria-label="点赞"
+            onClick={toggleLike}
+            disabled={busy}
+            className={liked ? "is-on is-on--like" : ""}
+          >
+            {liked ? "♥" : "♡"} {likeCount}
+          </button>
+          <button
+            type="button"
+            aria-label="收藏"
+            onClick={toggleFavorite}
+            disabled={busy}
+            className={favorited ? "is-on is-on--fav" : ""}
+          >
+            {favorited ? "★" : "☆"}
+          </button>
+          <button type="button" aria-label="分享">↗</button>
+        </div>
+        <LoginModal
+          open={loginModalOpen}
+          onClose={() => setLoginModalOpen(false)}
+          description="登录后即可点赞、收藏、评论这件作品。"
+        />
+      </>
     );
   }
 
@@ -294,6 +315,11 @@ export default function DetailActions(props: Props) {
       {toast && (
         <div className={`pdpToast pdpToast--${toast.kind}`}>{toast.text}</div>
       )}
+      <LoginModal
+        open={loginModalOpen}
+        onClose={() => setLoginModalOpen(false)}
+        description="登录后即可点赞、收藏、评论这件作品。"
+      />
     </>
   );
 }
