@@ -3,6 +3,7 @@
 import Link from "next/link";
 import AssetImage from "@/components/AssetImage";
 import { products } from "@/lib/home-consumer-data";
+import { Badge, Button, Input, Select, Textarea } from "@/components/ui";
 import "../studio-home.css";
 import "./publish.css";
 
@@ -34,9 +35,9 @@ export default function PublishPage() {
           <h1>把作品上架到印花衣橱</h1>
         </div>
         <div className="pb-actions">
-          <button type="button" className="pb-btn">保存草稿</button>
-          <button type="button" className="pb-btn">预览</button>
-          <button type="button" className="pb-btn is-primary">提交审核</button>
+          <Button variant="secondary" size="sm">保存草稿</Button>
+          <Button variant="secondary" size="sm">预览</Button>
+          <Button variant="primary" size="sm">提交审核</Button>
         </div>
       </div>
 
@@ -65,7 +66,7 @@ export default function PublishPage() {
                   label="主图"
                   className="pb-tile__img"
                 />
-                <span className="pb-tile__badge">主图</span>
+                <Badge tone="dark" className="pb-tile__badge">主图</Badge>
               </div>
               {products.slice(1, 4).map((p) => (
                 <div key={p.id} className={`pb-tile tone-${p.tone}`}>
@@ -89,33 +90,29 @@ export default function PublishPage() {
 
           <article className="pb-card" id="info">
             <h2>② 基本信息</h2>
-            <div className="pb-field">
-              <label>作品名称</label>
-              <input type="text" defaultValue="墨影花园针织印花裹身裙" />
-            </div>
+            <Input label="作品名称" defaultValue="墨影花园针织印花裹身裙" />
             <div className="pb-row2">
-              <div className="pb-field">
-                <label>作品分类</label>
-                <select defaultValue="dress">
-                  <option value="dress">连衣裙 · 裹身款</option>
-                  <option value="midi">连衣裙 · 直筒款</option>
-                  <option value="evening">晚宴款</option>
-                </select>
-              </div>
-              <div className="pb-field">
-                <label>系列归属</label>
-                <select defaultValue="classic">
-                  <option value="classic">经典裹身系列</option>
-                  <option value="commute">通勤知性系列</option>
-                  <option value="vacation">夏日度假系列</option>
-                  <option value="evening">晚宴聚会系列</option>
-                </select>
-              </div>
+              <Select
+                label="作品分类"
+                defaultValue="dress"
+                options={[
+                  { value: "dress", label: "连衣裙 · 裹身款" },
+                  { value: "midi", label: "连衣裙 · 直筒款" },
+                  { value: "evening", label: "晚宴款" },
+                ]}
+              />
+              <Select
+                label="系列归属"
+                defaultValue="classic"
+                options={[
+                  { value: "classic", label: "经典裹身系列" },
+                  { value: "commute", label: "通勤知性系列" },
+                  { value: "vacation", label: "夏日度假系列" },
+                  { value: "evening", label: "晚宴聚会系列" },
+                ]}
+              />
             </div>
-            <div className="pb-field">
-              <label>设计描述</label>
-              <textarea defaultValue="水墨写意花卉印花，针织 V 领裹身设计，腰侧褶裥提供立体修身效果。从办公室到晚餐都能驾驭。" />
-            </div>
+            <Textarea label="设计描述" defaultValue="水墨写意花卉印花，针织 V 领裹身设计，腰侧褶裥提供立体修身效果。从办公室到晚餐都能驾驭。" />
           </article>
 
           <article className="pb-card" id="tags">
@@ -155,27 +152,26 @@ export default function PublishPage() {
               </div>
             </div>
             <div className="pb-row2" style={{ marginTop: 14 }}>
-              <div className="pb-field">
-                <label>排产周期</label>
-                <select defaultValue="14">
-                  <option value="7">7 天 · 急单</option>
-                  <option value="14">14 天 · 标准</option>
-                  <option value="21">21 天 · 高定</option>
-                </select>
-              </div>
-              <div className="pb-field">
-                <label>面料预设</label>
-                <select defaultValue="knit">
-                  <option value="knit">弹力针织印花</option>
-                  <option value="silk">醋酸真丝缎</option>
-                  <option value="linen">亚麻棉混纺</option>
-                </select>
-              </div>
+              <Select
+                label="排产周期"
+                defaultValue="14"
+                options={[
+                  { value: "7", label: "7 天 · 急单" },
+                  { value: "14", label: "14 天 · 标准" },
+                  { value: "21", label: "21 天 · 高定" },
+                ]}
+              />
+              <Select
+                label="面料预设"
+                defaultValue="knit"
+                options={[
+                  { value: "knit", label: "弹力针织印花" },
+                  { value: "silk", label: "醋酸真丝缎" },
+                  { value: "linen", label: "亚麻棉混纺" },
+                ]}
+              />
             </div>
-            <div className="pb-field">
-              <label>工艺细节备注</label>
-              <textarea placeholder="例：水洗后建议反面晾晒；可加内衬；袖口缝头处理方式 ..." />
-            </div>
+            <Textarea label="工艺细节备注" placeholder="例：水洗后建议反面晾晒；可加内衬；袖口缝头处理方式 ..." />
           </article>
 
           <article className="pb-card" id="agree">
@@ -195,8 +191,8 @@ export default function PublishPage() {
               </label>
             </div>
             <div style={{ marginTop: 18, display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <button type="button" className="pb-btn is-primary">提交审核</button>
-              <button type="button" className="pb-btn">保存为草稿</button>
+              <Button variant="primary">提交审核</Button>
+              <Button variant="secondary">保存为草稿</Button>
               <small style={{ marginLeft: "auto", color: "var(--pb-text3)", fontSize: 11, alignSelf: "center" }}>预计 24 小时内完成审核</small>
             </div>
           </article>

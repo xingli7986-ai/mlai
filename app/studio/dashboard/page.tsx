@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import AssetImage from "@/components/AssetImage";
 import { products } from "@/lib/home-consumer-data";
+import { Badge, Button } from "@/components/ui";
 import "../designer-center.css";
 import "../studio-home.css";
 
@@ -159,9 +160,9 @@ export default function DesignerCenterPage() {
           {error && <p className="ml-toast ml-toast--error" style={{ marginTop: 8 }}>{error}</p>}
         </div>
         <div className="dc-greet__actions">
-          <button type="button" className="dc-btn">本月 ▾</button>
-          <button type="button" className="dc-btn">导出报表</button>
-          <Link href="/studio/pattern/generate" className="dc-btn is-primary">+ 新建作品</Link>
+          <Button variant="secondary" size="sm">本月 ▾</Button>
+          <Button variant="secondary" size="sm">导出报表</Button>
+          <Button as="a" href="/studio/pattern/generate" variant="primary" size="sm">+ 新建作品</Button>
         </div>
       </header>
 
@@ -207,8 +208,8 @@ export default function DesignerCenterPage() {
               <b style={{ fontFamily: 'var(--font-display, "Cormorant Garamond"), serif', fontSize: 32, color: "var(--dc-gold)", lineHeight: 1, fontWeight: 700 }}>¥6,582.40</b>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
-              <button type="button" className="dc-btn is-primary" style={{ flex: 1 }}>立即提现</button>
-              <button type="button" className="dc-btn" style={{ flex: 1 }}>结算明细</button>
+              <Button variant="primary" block>立即提现</Button>
+              <Button variant="secondary" block>结算明细</Button>
             </div>
             <small style={{ display: "block", marginTop: 10, fontSize: 11, color: "var(--dc-text3)" }}>结算周期 T+1 · 已绑定建设银行 ****8896</small>
           </div>
@@ -280,7 +281,7 @@ export default function DesignerCenterPage() {
                   label={w.name}
                   className="dc-work__img"
                 />
-                <span className="dc-work__tag">{w.badge}</span>
+                <Badge tone="dark" className="dc-work__tag">{w.badge}</Badge>
               </div>
               <div className="dc-work__body">
                 <div className="dc-work__name">{w.name}</div>

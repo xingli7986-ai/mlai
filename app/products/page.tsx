@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Button, EmptyState, Skeleton } from "@/components/ui";
 import "../product-pages.css";
 
 interface DesignerLite {
@@ -259,20 +260,36 @@ function CollectionBody() {
             {loading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="galleryCard" aria-hidden>
-                  <div className="galleryCard__media ml-skeleton" style={{ aspectRatio: "3 / 4" }} />
+                  <Skeleton className="galleryCard__media" style={{ aspectRatio: "3 / 4", borderRadius: "var(--radius-lg)" }} />
                   <div className="galleryCard__body">
-                    <div className="ml-skeleton" style={{ height: 14, marginBottom: 6 }} />
-                    <div className="ml-skeleton" style={{ height: 12, width: "60%" }} />
+                    <Skeleton height={14} style={{ marginBottom: 6 }} />
+                    <Skeleton height={12} width="60%" />
                   </div>
                 </div>
               ))
             ) : error ? (
-              <div className="ml-toast ml-toast--error" style={{ gridColumn: "1 / -1" }}>
-                {error}
+              <div style={{ gridColumn: "1 / -1" }}>
+                <EmptyState
+                  title="加载失败"
+                  description={error}
+                  action={
+                    <Button variant="secondary" onClick={() => updateQuery({})}>
+                      重试
+                    </Button>
+                  }
+                />
               </div>
             ) : items.length === 0 ? (
-              <div className="ml-toast" style={{ gridColumn: "1 / -1" }}>
-                暂无符合条件的设计。试试其他筛选条件。
+              <div style={{ gridColumn: "1 / -1" }}>
+                <EmptyState
+                  title="暂无符合条件的设计"
+                  description="试试其他筛选条件，或浏览全部印花。"
+                  action={
+                    <Button as="a" href="/products" variant="secondary">
+                      查看全部
+                    </Button>
+                  }
+                />
               </div>
             ) : (
               items.map((p, i) => {

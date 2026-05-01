@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, use } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { Button, EmptyState, Input, Skeleton, Textarea } from "@/components/ui";
 import "../group-buy.css";
 
 type Props = {
@@ -167,9 +168,9 @@ export default function GroupBuyCheckoutPage({ params }: Props) {
     return (
       <main className="page-wrap gbPage">
         <div className="container" style={{ paddingTop: 60 }}>
-          <div className="ml-skeleton" style={{ height: 32, marginBottom: 16 }} />
-          <div className="ml-skeleton" style={{ height: 240, marginBottom: 16 }} />
-          <div className="ml-skeleton" style={{ height: 320 }} />
+          <Skeleton height={32} style={{ marginBottom: 16 }} />
+          <Skeleton height={240} style={{ marginBottom: 16 }} />
+          <Skeleton height={320} />
         </div>
       </main>
     );
@@ -179,9 +180,11 @@ export default function GroupBuyCheckoutPage({ params }: Props) {
     return (
       <main className="page-wrap gbPage">
         <div className="container" style={{ paddingTop: 60 }}>
-          <h1>未找到该拼团</h1>
-          <p>{loadError || "请稍后重试"}</p>
-          <p><Link href="/products">返回印花衣橱</Link></p>
+          <EmptyState
+            title="未找到该拼团"
+            description={loadError ?? "请稍后重试或返回印花衣橱挑选其他款式。"}
+            action={<Button as="a" href="/products" variant="primary">返回印花衣橱</Button>}
+          />
         </div>
       </main>
     );
@@ -250,25 +253,19 @@ export default function GroupBuyCheckoutPage({ params }: Props) {
               </div>
             </div>
 
-            <div className="ml-field">
-              <span className="ml-field__label">收货人</span>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <input className="ml-input" placeholder="姓名" value={name} onChange={(e) => setName(e.target.value)} required />
-                <input className="ml-input" placeholder="手机号" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="numeric" required />
-              </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <Input label="姓名" value={name} onChange={(e) => setName(e.target.value)} required placeholder="收货人姓名" />
+              <Input label="手机号" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="numeric" required placeholder="11 位手机号" />
             </div>
 
-            <div className="ml-field">
-              <span className="ml-field__label">收货地址</span>
-              <input className="ml-input" placeholder="省/市/区" value={region} onChange={(e) => setRegion(e.target.value)} required style={{ marginBottom: 8 }} />
-              <textarea className="ml-textarea" placeholder="详细地址（街道、门牌号）" value={address} onChange={(e) => setAddress(e.target.value)} required />
-            </div>
+            <Input label="收货地址" value={region} onChange={(e) => setRegion(e.target.value)} required placeholder="省 / 市 / 区" />
+            <Textarea label="详细地址" value={address} onChange={(e) => setAddress(e.target.value)} required placeholder="街道、门牌号" />
 
             {submitError && <div className="ml-toast ml-toast--error">{submitError}</div>}
 
-            <button type="submit" className="ml-btn ml-btn--primary ml-btn--lg ml-btn--block" disabled={submitting}>
+            <Button type="submit" variant="primary" size="lg" block loading={submitting}>
               {submitting ? "处理中…" : `支付 ${fmtPrice(totalCents)} 参团`}
-            </button>
+            </Button>
           </form>
 
           <aside className="ml-card" style={{ padding: 20, alignSelf: "start", display: "grid", gap: 12 }}>

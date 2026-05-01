@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
+import { Button, EmptyState, Input, Skeleton, Textarea } from "@/components/ui";
 import "./custom.css";
 
 type Props = {
@@ -119,8 +120,8 @@ export default function CustomOrderPage({ params }: Props) {
     return (
       <main className="page-wrap">
         <div className="container" style={{ paddingTop: 60 }}>
-          <div className="ml-skeleton" style={{ height: 32, marginBottom: 16 }} />
-          <div className="ml-skeleton" style={{ height: 320 }} />
+          <Skeleton height={32} style={{ marginBottom: 16 }} />
+          <Skeleton height={320} />
         </div>
       </main>
     );
@@ -129,9 +130,11 @@ export default function CustomOrderPage({ params }: Props) {
     return (
       <main className="page-wrap">
         <div className="container" style={{ paddingTop: 60 }}>
-          <h1>未找到该设计</h1>
-          <p>{loadError}</p>
-          <p><Link href="/products">返回印花衣橱</Link></p>
+          <EmptyState
+            title="未找到该设计"
+            description={loadError ?? "该设计可能已下架或不存在。"}
+            action={<Button as="a" href="/products" variant="primary">返回印花衣橱</Button>}
+          />
         </div>
       </main>
     );
@@ -184,30 +187,39 @@ export default function CustomOrderPage({ params }: Props) {
               </div>
             </div>
 
-            <div className="ml-field">
-              <span className="ml-field__label">收货人</span>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                <input className="ml-input" placeholder="姓名" value={name} onChange={(e) => setName(e.target.value)} required />
-                <input className="ml-input" placeholder="手机号" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="numeric" required />
-              </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <Input label="姓名" value={name} onChange={(e) => setName(e.target.value)} required placeholder="收货人姓名" />
+              <Input label="手机号" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="numeric" required placeholder="11 位手机号" />
             </div>
 
-            <div className="ml-field">
-              <span className="ml-field__label">收货地址</span>
-              <input className="ml-input" placeholder="省/市/区" value={region} onChange={(e) => setRegion(e.target.value)} required style={{ marginBottom: 8 }} />
-              <textarea className="ml-textarea" placeholder="详细地址" value={address} onChange={(e) => setAddress(e.target.value)} required />
-            </div>
+            <Input
+              label="收货地址"
+              value={region}
+              onChange={(e) => setRegion(e.target.value)}
+              required
+              placeholder="省 / 市 / 区"
+            />
+            <Textarea
+              label="详细地址"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              required
+              placeholder="街道、楼号、门牌号"
+            />
 
-            <div className="ml-field">
-              <span className="ml-field__label">个性化备注（可选）</span>
-              <textarea className="ml-textarea" placeholder="如：领口加捏褶、用 silver 而非 gold 配色…" value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} />
-            </div>
+            <Textarea
+              label="个性化备注（可选）"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              maxLength={500}
+              placeholder="如：领口加捏褶、用 silver 而非 gold 配色…"
+            />
 
             {submitError && <div className="ml-toast ml-toast--error">{submitError}</div>}
 
-            <button type="submit" className="ml-btn ml-btn--primary ml-btn--lg ml-btn--block" disabled={submitting}>
+            <Button type="submit" variant="primary" size="lg" block loading={submitting}>
               {submitting ? "处理中…" : `支付 ${fmtPrice(detail.customPrice)} 立即定制`}
-            </button>
+            </Button>
           </form>
 
           <aside className="ml-card" style={{ padding: 20, alignSelf: "start", display: "grid", gap: 12 }}>

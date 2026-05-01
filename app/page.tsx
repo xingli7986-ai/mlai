@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Badge, Button } from "@/components/ui";
 import "./home-consumer.css";
 
 const HERO_IMG = "/assets/images/home/01-hero/ChatGPT Image Apr 26, 2026, 02_09_53 PM.png";
@@ -246,12 +247,8 @@ export default function HomePage() {
               或定制你的专属针织印花连衣裙
             </p>
             <div className="ctas">
-              <Link href="/products" className="btn-primary">
-                去印花衣橱
-              </Link>
-              <Link href="/studio" className="btn-secondary">
-                定制专区
-              </Link>
+              <Button as="a" href="/products" variant="primary" size="lg">去印花衣橱</Button>
+              <Button as="a" href="/studio" variant="secondary" size="lg">定制专区</Button>
             </div>
             <div className="trust-row">
               <span className="trust-item">
@@ -281,12 +278,8 @@ export default function HomePage() {
           </div>
           <div className="hot-grid">
             {hotCards.map((card, idx) => {
-              const tagClass =
-                card.state === "hot"
-                  ? "tag-hot"
-                  : card.state === "almost"
-                  ? "tag-almost"
-                  : "tag-new";
+              const badgeTone =
+                card.state === "almost" ? "gold" : card.state === "new" ? "neutral" : "dark";
               return (
                 <article key={card.name} className="hot-card">
                   <div className="img-wrap">
@@ -297,7 +290,7 @@ export default function HomePage() {
                       sizes="(max-width: 480px) 50vw, (max-width: 1024px) 50vw, 25vw"
                       className="hot-img"
                     />
-                    <span className={`tag ${tagClass}`}>{card.tagText}</span>
+                    <Badge tone={badgeTone} className="hot-card__badge">{card.tagText}</Badge>
                   </div>
                   <div className="body">
                     <div className="name">{card.name}</div>
@@ -316,9 +309,7 @@ export default function HomePage() {
                         {formatCountdown(countdowns[idx] ?? 0)}
                       </span>
                     </div>
-                    <Link href={hotLinks[idx] || "/products"} className="card-btn">
-                      去拼团
-                    </Link>
+                    <Button as="a" href={hotLinks[idx] || "/products"} variant="primary" size="sm" block>去拼团</Button>
                   </div>
                 </article>
               );
@@ -468,9 +459,7 @@ export default function HomePage() {
                     <span className="pbig">¥1599</span>
                     <span className="plabel">起</span>
                   </div>
-                  <Link href="/products" className="cbtn">
-                    立即定制
-                  </Link>
+                  <Button as="a" href="/products" variant="primary">立即定制</Button>
                 </div>
               </div>
             </div>
@@ -506,12 +495,8 @@ export default function HomePage() {
           <h2>从灵感到成衣，只需一步</h2>
           <p className="sub">Fashion For You — 每一朵印花，都由你绽放</p>
           <div className="btns">
-            <Link href="/products" className="btn-g">
-              探索印花衣橱
-            </Link>
-            <Link href="/products" className="btn-ow">
-              开始定制
-            </Link>
+            <Button as="a" href="/products" variant="primary" size="lg">探索印花衣橱</Button>
+            <Button as="a" href="/products" variant="secondary" size="lg">开始定制</Button>
           </div>
           <div className="cta-chips">
             <div className="cta-chip">

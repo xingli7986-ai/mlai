@@ -3,6 +3,7 @@
 import Link from "next/link";
 import AssetImage from "@/components/AssetImage";
 import { products } from "@/lib/home-consumer-data";
+import { Badge, Button } from "@/components/ui";
 import "./studio-home.css";
 
 interface Tool {
@@ -46,7 +47,7 @@ function ToolTile({ tool }: { tool: Tool }) {
     <>
       <div className="st-tool__cover" style={style}>
         <span className="st-tool__no">{tool.no}</span>
-        {!tool.enabled && <span className="st-tool__soon">SOON</span>}
+        {!tool.enabled && <Badge tone="dark" className="st-tool__soon">SOON</Badge>}
       </div>
       <div>
         <div className="st-tool__name">{tool.name}</div>
@@ -99,9 +100,9 @@ export default function StudioHomePage() {
           <h1>下午好，Lulu <span style={{ fontSize: 22 }}>👋</span></h1>
           <p>欢迎来到 MaxLuLu AI Studio，从 16 个 AI 工具开始你的下一个设计：印花生成 → 上身预览 → 一键发布到印花衣橱。</p>
           <div className="st-hero__cta">
-            <Link href="/studio/pattern/generate" className="st-btn is-primary">+ 新建项目</Link>
-            <Link href="/studio/dashboard" className="st-btn">从草稿开始</Link>
-            <Link href="/studio/publish" className="st-btn">直接上传设计</Link>
+            <Button as="a" href="/studio/pattern/generate" variant="primary">+ 新建项目</Button>
+            <Button as="a" href="/studio/dashboard" variant="secondary">从草稿开始</Button>
+            <Button as="a" href="/studio/publish" variant="secondary">直接上传设计</Button>
           </div>
         </div>
       </section>

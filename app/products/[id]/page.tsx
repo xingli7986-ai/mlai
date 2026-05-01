@@ -2,6 +2,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import ConsumerNav from "@/components/ConsumerNav";
+import { Badge, Button } from "@/components/ui";
 import DetailActions from "./DetailActions";
 import {
   zhSkirtType,
@@ -147,7 +148,7 @@ export default async function ProductDetailPage({ params }: Props) {
             ) : (
               <span className="pdpMainMedia__ph">{initials}</span>
             )}
-            <span className="pdpBadge">众定中</span>
+            <Badge tone="dark" className="pdpBadge">众定中</Badge>
             <button type="button" className="pdpZoom" aria-label="放大">⤢</button>
           </div>
         </div>
@@ -259,12 +260,8 @@ export default async function ProductDetailPage({ params }: Props) {
           </div>
 
           <div className="pdpCtaRow pdpCtaRow--3">
-            <Link className="pdpCtaPrimary" href={`/group-buy/${detail.id}`}>
-              立即参团
-            </Link>
-            <Link className="pdpCtaSecondary" href={`/products/${detail.id}/custom`}>
-              个人定制
-            </Link>
+            <Button as="a" href={`/group-buy/${detail.id}`} variant="primary" size="lg" block>立即参团</Button>
+            <Button as="a" href={`/products/${detail.id}/custom`} variant="secondary" size="lg" block>个人定制</Button>
           </div>
 
           <ul className="pdpTrust">

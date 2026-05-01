@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AssetImage from "@/components/AssetImage";
 import { getProductDetail } from "@/lib/product-detail-data";
+import { Badge, Button, EmptyState } from "@/components/ui";
 import "../../group-buy.css";
 import "./progress.css";
 
@@ -37,8 +38,11 @@ export default async function GroupBuyProgressPage({ params }: Props) {
     return (
       <main className="page-wrap gbPage">
         <div className="container" style={{ marginTop: 40 }}>
-          <h1>未找到该团</h1>
-          <p><Link href="/products">返回印花衣橱</Link></p>
+          <EmptyState
+            title="未找到该团"
+            description="该众定可能已结束，欢迎查看其他正在进行的团。"
+            action={<Button as="a" href="/products" variant="primary">返回印花衣橱</Button>}
+          />
         </div>
       </main>
     );
@@ -101,7 +105,7 @@ export default async function GroupBuyProgressPage({ params }: Props) {
                 label={product.name}
                 className="gbpHero__img"
               />
-              <span className="gbpHero__tag">众定中</span>
+              <Badge tone="dark" className="gbpHero__tag">众定中</Badge>
             </div>
 
             <div className="gbpHero__body">
@@ -200,8 +204,8 @@ export default async function GroupBuyProgressPage({ params }: Props) {
               </div>
 
               <div className="gbpSide__cta">
-                <button type="button" className="gbCta">+ 邀请好友拼单</button>
-                <button type="button" className="gbCtaGhost">复制专属链接</button>
+                <Button variant="primary" block>+ 邀请好友拼单</Button>
+                <Button variant="secondary" block>复制专属链接</Button>
               </div>
 
               <ul className="gbpSide__rules">
