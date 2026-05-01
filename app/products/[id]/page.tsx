@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import ConsumerNav from "@/components/ConsumerNav";
 import { Badge, Button } from "@/components/ui";
 import DetailActions from "./DetailActions";
+import GroupBuyCta from "./GroupBuyCta";
 import {
   zhSkirtType,
   zhFabric,
@@ -260,7 +261,7 @@ export default async function ProductDetailPage({ params }: Props) {
           </div>
 
           <div className="pdpCtaRow pdpCtaRow--3">
-            <Button as="a" href={`/group-buy/${detail.id}`} variant="primary" size="lg" block>立即参团</Button>
+            <GroupBuyCta designId={detail.id} />
             <Button as="a" href={`/products/${detail.id}/custom`} variant="secondary" size="lg" block>个人定制</Button>
           </div>
 

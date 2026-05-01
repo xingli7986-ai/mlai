@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AssetImage from "@/components/AssetImage";
 import { products } from "@/lib/home-consumer-data";
@@ -14,6 +16,7 @@ import {
   StatsCard,
   Stepper,
   Textarea,
+  useToast,
 } from "@/components/ui";
 import "../studio-home.css";
 import "./join.css";
@@ -67,6 +70,61 @@ const FAQ = [
 const HERO_TILES = products.slice(0, 6);
 
 export default function DesignerLandingPage() {
+  const router = useRouter();
+  const toast = useToast();
+  const [form, setForm] = useState({
+    name: "",
+    studio: "",
+    phone: "",
+    email: "",
+    style: "ink",
+    experience: "3-5",
+    intro: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const update = <K extends keyof typeof form>(key: K, value: string) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
+
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/designer/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 401) {
+          router.push("/login?redirect=/studio/join");
+          return;
+        }
+        throw new Error(data.error || "提交失败");
+      }
+      toast.show(data.message ?? "申请已提交，等待审核", { tone: "success" });
+      setForm({
+        name: "",
+        studio: "",
+        phone: "",
+        email: "",
+        style: "ink",
+        experience: "3-5",
+        intro: "",
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "提交失败";
+      setError(message);
+      toast.show(message, { tone: "error" });
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <div className="dl-root">
       <section className="dl-hero">
@@ -184,14 +242,40 @@ export default function DesignerLandingPage() {
             className="dl-section__head--center"
           />
           <div className="dl-form-wrap">
-            <form className="dl-form" onSubmit={(e) => e.preventDefault()}>
-              <Input label="姓名" required placeholder="例：Luna" />
-              <Input label="设计工作室" required placeholder="例：MaxLuLu Studio" />
-              <Input label="手机号" required type="tel" placeholder="+86 138 ****" />
-              <Input label="邮箱" type="email" placeholder="hi@maxlulu.ai" />
+            <form className="dl-form" onSubmit={onSubmit}>
+              <Input
+                label="姓名"
+                required
+                placeholder="例：Luna"
+                value={form.name}
+                onChange={(e) => update("name", e.target.value)}
+              />
+              <Input
+                label="设计工作室"
+                required
+                placeholder="例：MaxLuLu Studio"
+                value={form.studio}
+                onChange={(e) => update("studio", e.target.value)}
+              />
+              <Input
+                label="手机号"
+                required
+                type="tel"
+                placeholder="+86 138 ****"
+                value={form.phone}
+                onChange={(e) => update("phone", e.target.value)}
+              />
+              <Input
+                label="邮箱"
+                type="email"
+                placeholder="hi@maxlulu.ai"
+                value={form.email}
+                onChange={(e) => update("email", e.target.value)}
+              />
               <Select
                 label="设计风格"
-                defaultValue="ink"
+                value={form.style}
+                onChange={(e) => update("style", e.target.value)}
                 options={[
                   { value: "ink", label: "水墨晕染" },
                   { value: "floral", label: "工笔花卉" },
@@ -202,7 +286,8 @@ export default function DesignerLandingPage() {
               />
               <Select
                 label="从业年限"
-                defaultValue="3-5"
+                value={form.experience}
+                onChange={(e) => update("experience", e.target.value)}
                 options={[
                   { value: "0-2", label: "0-2 年" },
                   { value: "3-5", label: "3-5 年" },
@@ -214,9 +299,12 @@ export default function DesignerLandingPage() {
                 label="作品集链接 / 简介"
                 placeholder="附上 Behance / 小红书 / 个人站等链接，简介 100 字内。"
                 containerClassName="dl-field--full"
+                value={form.intro}
+                onChange={(e) => update("intro", e.target.value)}
+                error={error ?? undefined}
               />
               <div className="dl-form__cta">
-                <Button type="submit" variant="primary">提交申请</Button>
+                <Button type="submit" variant="primary" loading={submitting}>提交申请</Button>
                 <Button as="a" href="/studio" variant="secondary">先体验工具</Button>
                 <small className="dl-form__note">
                   提交即表示同意 <Link href="/terms">《设计师入驻协议》</Link>
