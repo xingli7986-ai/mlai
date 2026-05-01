@@ -13,9 +13,9 @@
 
   background: var(--pb-bg);
   color: var(--pb-text);
-  margin: -32px -40px;
-  padding: 32px 40px 56px;
-  min-height: calc(100vh - 64px);
+  margin: 0;
+  padding: 32px clamp(16px, 3vw, 36px) 80px;
+  min-height: calc(100vh - 62px);
 }
 .pb-root h1, .pb-root h2 {
   margin: 0;
@@ -406,7 +406,7 @@
   .pb-priceRow { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
-  .pb-root { margin: -16px; padding: 16px; }
+  .pb-root { margin: 0; padding: 16px; }
   .pb-row2 { grid-template-columns: 1fr; }
   .pb-header { flex-direction: column; align-items: stretch; gap: 12px; }
   .pb-actions { flex-wrap: wrap; gap: 8px; }

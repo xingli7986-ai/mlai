@@ -57,7 +57,7 @@ const HERO_TILES = products.slice(0, 6);
 export default function DesignerLandingPage() {
   return (
     <div className="dl-root">
-      <div className="st-tabs" style={{ margin: "32px 40px 0" }}>
+      <div className="st-tabs">
         <Link href="/studio">工具页</Link>
         <Link href="/products">我的设计</Link>
         <Link href="/products">灵感</Link>
@@ -90,7 +90,7 @@ export default function DesignerLandingPage() {
                   src={p.image}
                   alt={p.name}
                   tone={p.tone}
-                  label={p.name.slice(0, 4)}
+                  label={p.name}
                   className="dl-hero__img"
                 />
               </div>

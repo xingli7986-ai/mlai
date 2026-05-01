@@ -73,7 +73,7 @@ export default function PublishPage() {
                     src={p.image}
                     alt={p.name}
                     tone={p.tone}
-                    label={p.name.slice(0, 2)}
+                    label={p.name}
                     className="pb-tile__img"
                   />
                 </div>
@@ -216,7 +216,7 @@ export default function PublishPage() {
                       src={p.image}
                       alt={p.name}
                       tone={p.tone}
-                      label={p.name.slice(0, 2)}
+                      label={p.name}
                       className="pb-published__img"
                     />
                   </div>

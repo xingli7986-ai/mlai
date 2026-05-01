@@ -277,7 +277,7 @@ export default function DesignerCenterPage() {
                   src={w.image}
                   alt={w.name}
                   tone={w.tone}
-                  label={w.name.slice(0, 4)}
+                  label={w.name}
                   className="dc-work__img"
                 />
                 <span className="dc-work__tag">{w.badge}</span>

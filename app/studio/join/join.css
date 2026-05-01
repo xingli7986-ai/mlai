@@ -14,9 +14,9 @@
 
   background: var(--dl-bg);
   color: var(--dl-text);
-  margin: -32px -40px;
-  padding: 0;
-  min-height: calc(100vh - 64px);
+  margin: 0;
+  padding: 32px clamp(16px, 3vw, 36px) 80px;
+  min-height: calc(100vh - 62px);
 }
 .dl-root h1, .dl-root h2, .dl-root h3, .dl-root h4 {
   margin: 0;
@@ -418,7 +418,7 @@
   .dl-form { grid-template-columns: 1fr; }
 }
 @media (max-width: 760px) {
-  .dl-root { margin: -16px; }
+  .dl-root { margin: 0; padding: 16px; }
   .dl-container { padding: 0 16px; }
   .dl-hero { padding: 28px 0; }
   .dl-section { padding: 36px 0; }

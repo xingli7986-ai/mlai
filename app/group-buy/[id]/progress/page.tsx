@@ -98,7 +98,7 @@ export default async function GroupBuyProgressPage({ params }: Props) {
                 src={product.image}
                 alt={product.name}
                 tone={product.tone}
-                label={product.name.slice(0, 4)}
+                label={product.name}
                 className="gbpHero__img"
               />
               <span className="gbpHero__tag">众定中</span>

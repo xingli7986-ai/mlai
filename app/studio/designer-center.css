@@ -15,9 +15,9 @@
 
   background: var(--dc-bg);
   color: var(--dc-text);
-  margin: -32px -40px;
-  padding: 32px 40px;
-  min-height: calc(100vh - 64px);
+  margin: 0;
+  padding: 32px clamp(16px, 3vw, 36px) 80px;
+  min-height: calc(100vh - 62px);
 }
 
 .dc-root h1, .dc-root h2, .dc-root h3, .dc-root h4 {
@@ -525,7 +525,7 @@
   .dc-works { grid-template-columns: repeat(3, 1fr); }
 }
 @media (max-width: 760px) {
-  .dc-root { margin: -16px; padding: 16px; }
+  .dc-root { margin: 0; padding: 16px; }
   .dc-stats { grid-template-columns: 1fr; }
   .dc-works { grid-template-columns: repeat(2, 1fr); }
   .dc-greet { flex-direction: column; align-items: stretch; gap: 12px; }

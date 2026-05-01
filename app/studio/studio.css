@@ -117,11 +117,11 @@
 }
 .studio-root .topbar > div:first-child {
   height: 100%;
-  padding: 0 16px;
+  padding: 0 14px;
   display: flex;
   align-items: center;
   gap: 12px;
-  border-right: 1px solid var(--studio-border);
+  border-right: 1px solid #e6e1da;
 }
 .studio-root .topbar-actions {
   height: 100%;
@@ -443,7 +443,7 @@
 
 .studio-root .main {
   margin-left: 244px;
-  padding: 28px clamp(16px, 3vw, 36px) 80px;
+  padding: 0;
   min-width: 0;
 }
 

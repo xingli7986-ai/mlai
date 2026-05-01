@@ -63,7 +63,7 @@ export default function PatternApplyPage() {
                       src={p.image}
                       alt={p.name}
                       tone={p.tone}
-                      label={p.name.slice(0, 2)}
+                      label={p.name}
                       className="ft-thumbnail__img"
                     />
                   </div>
@@ -194,7 +194,7 @@ export default function PatternApplyPage() {
                       src={p.image}
                       alt={p.name}
                       tone={p.tone}
-                      label={p.name.slice(0, 2)}
+                      label={p.name}
                       className="ft-history__img"
                     />
                   </div>

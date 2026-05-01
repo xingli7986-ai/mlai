@@ -315,7 +315,7 @@ export default function StudioLayout({ children }: { children: ReactNode }) {
   return (
     <div className="studio-root">
       <header className="topbar">
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div>
           <button
             className="hamburger"
             type="button"

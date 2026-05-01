@@ -146,7 +146,7 @@ export default function StudioHomePage() {
                     src={p.image}
                     alt={p.name}
                     tone={p.tone}
-                    label={p.name.slice(0, 4)}
+                    label={p.name}
                     className="st-draft__img"
                   />
                 </div>
@@ -172,7 +172,7 @@ export default function StudioHomePage() {
                     src={p.image}
                     alt={p.name}
                     tone={p.tone}
-                    label={p.name.slice(0, 2)}
+                    label={p.name}
                     className="st-inspire__img"
                   />
                 </div>

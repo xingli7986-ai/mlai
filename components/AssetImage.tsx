@@ -25,8 +25,26 @@ export default function AssetImage({
         className={`${className} asset-fallback pattern-${tone}`}
         aria-label={alt}
         role="img"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "8px",
+          overflow: "hidden",
+        }}
       >
-        <span>{label ?? "MaxLuLu"}</span>
+        <span
+          style={{
+            display: "block",
+            width: "100%",
+            textAlign: "center",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {label ?? "MaxLuLu"}
+        </span>
       </div>
     );
   }

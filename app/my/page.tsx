@@ -227,7 +227,7 @@ export default function MyCenterPage() {
                   : FAVORITES.map((p) => (
                       <Link href={`/products/${p.id}`} key={p.id} className="mcWardrobeCard">
                         <div className={`mcWardrobeCard__media tone-${p.tone}`}>
-                          <AssetImage src={p.image} alt={p.name} tone={p.tone} label={p.name.slice(0, 4)} className="mcWardrobeCard__img" />
+                          <AssetImage src={p.image} alt={p.name} tone={p.tone} label={p.name} className="mcWardrobeCard__img" />
                           <button type="button" className="mcWardrobeCard__heart" aria-label="取消收藏">♥</button>
                         </div>
                         <div className="mcWardrobeCard__body">
@@ -281,7 +281,7 @@ export default function MyCenterPage() {
                     : ORDERS.slice(0, 3).map((o) => (
                         <Link key={o.id} href={`/group-buy/${o.product.id}/progress`} className="mcOrder">
                           <div className={`mcOrder__media tone-${o.product.tone}`}>
-                            <AssetImage src={o.product.image} alt={o.product.name} tone={o.product.tone} label={o.product.name.slice(0, 4)} className="mcOrder__img" />
+                            <AssetImage src={o.product.image} alt={o.product.name} tone={o.product.tone} label={o.product.name} className="mcOrder__img" />
                           </div>
                           <div className="mcOrder__body">
                             <b>{o.product.name}</b>

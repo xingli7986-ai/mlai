@@ -17,9 +17,9 @@
 
   background: var(--st-bg);
   color: var(--st-text);
-  margin: -32px -40px;
-  padding: 32px 40px 48px;
-  min-height: calc(100vh - 64px);
+  margin: 0;
+  padding: 32px clamp(16px, 3vw, 36px) 80px;
+  min-height: calc(100vh - 62px);
 }
 .st-root h1, .st-root h2, .st-root h3, .st-root h4 {
   margin: 0;
@@ -367,7 +367,7 @@
   .st-drafts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 760px) {
-  .st-root { margin: -16px; padding: 16px; }
+  .st-root { margin: 0; padding: 16px; }
   .st-grid7, .st-grid9 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .st-drafts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .st-hero { grid-template-columns: 1fr; }
