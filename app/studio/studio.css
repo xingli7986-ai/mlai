@@ -106,15 +106,33 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  display: flex;
+  display: grid;
+  grid-template-columns: 244px 1fr;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
   height: 62px;
-  padding: 0 clamp(16px, 3vw, 28px);
-  background: rgba(15, 15, 16, 0.88);
+  padding: 0;
+  background: rgba(15, 15, 16, 0.92);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--studio-border);
+}
+.studio-root .topbar > div:first-child {
+  height: 100%;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-right: 1px solid var(--studio-border);
+}
+.studio-root .topbar-actions {
+  height: 100%;
+  padding: 0 clamp(16px, 3vw, 36px);
+  justify-self: end;
+  align-self: center;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
 }
 .studio-root .topbar .brand-name {
   font-family: var(--serif);
@@ -127,17 +145,13 @@
 }
 .studio-root .topbar .brand-sub {
   display: block;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--studio-sub);
   margin-top: 2px;
 }
-.studio-root .topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+/* legacy actions block — values overridden by grid topbar above */
 .studio-root .icon-btn {
   border: 0;
   background: rgba(255, 255, 255, 0.06);
@@ -190,7 +204,7 @@
 
 /* ===== Sidebar (light cream theme per design/studio-sidebar.png) ===== */
 .studio-root .layout {
-  display: flex;
+  display: block;
   min-height: calc(100vh - 62px);
 }
 .studio-root .sidebar {
@@ -212,13 +226,14 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  position: sticky;
+  position: fixed;
   top: 62px;
-  align-self: flex-start;
+  left: 0;
   height: calc(100vh - 62px);
   overflow: hidden;
   color: var(--sb-text);
   font-family: var(--sans);
+  z-index: 30;
 }
 
 .studio-root .sidebar .sidebar-brand {
@@ -277,9 +292,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 10px;
+  padding: 10px 10px;
   border-radius: 10px;
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--sb-text);
   transition: background 0.15s ease, color 0.15s ease;
@@ -329,8 +344,8 @@
   border-left: 1px solid var(--sb-line);
 }
 .studio-root .sidebar .nav-item.is-sub {
-  padding: 6px 10px;
-  font-size: 12.5px;
+  padding: 7px 10px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--sb-text2);
 }
@@ -381,16 +396,16 @@
 .studio-root .sidebar .designer-card .dc-body b {
   display: block;
   font-family: var(--serif);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--sb-text);
   letter-spacing: 0.01em;
 }
 .studio-root .sidebar .designer-card .dc-body small {
   display: block;
-  font-size: 10.5px;
+  font-size: 12px;
   color: var(--sb-text2);
-  margin-top: 1px;
+  margin-top: 2px;
 }
 .studio-root .sidebar .designer-card > svg {
   color: var(--sb-gold);
@@ -426,7 +441,11 @@
   box-shadow: 6px 0 24px rgba(0, 0, 0, 0.3);
 }
 
-.studio-root .main { flex: 1; padding: 28px clamp(16px, 3vw, 36px) 80px; }
+.studio-root .main {
+  margin-left: 244px;
+  padding: 28px clamp(16px, 3vw, 36px) 80px;
+  min-width: 0;
+}
 
 /* ===== Studio home shell ===== */
 .studio-root .studio-shell {
@@ -621,9 +640,70 @@
 }
 @media (max-width: 900px) {
   .studio-root .sidebar { display: none; }
+  .studio-root .main { margin-left: 0; }
   .studio-root .hamburger { display: grid; }
+  .studio-root .topbar {
+    grid-template-columns: 1fr auto;
+    padding: 0 12px;
+  }
+  .studio-root .topbar > div:first-child {
+    padding: 0;
+    border-right: 0;
+  }
+  .studio-root .topbar-actions {
+    padding: 0;
+    gap: 6px;
+  }
 }
 @media (max-width: 640px) {
   .studio-root .topbar .brand-sub { display: none; }
+  .studio-root .topbar .brand-name { font-size: 18px; }
   .studio-root .tool-grid { grid-template-columns: repeat(2, 1fr); }
+  /* hide secondary topbar buttons on phones to fit width */
+  .studio-root .topbar-actions .icon-btn { display: none; }
+}
+@media (max-width: 420px) {
+  .studio-root .topbar-actions .btn.gold.small { padding: 6px 10px; font-size: 11px; }
+}
+
+/* =====================================================================
+   Font-size minimums (UX audit: body ≥14px, h1/h2 ≥20px)
+   Applied within .main on each page-root scope. Captions/eyebrows
+   intentionally stay smaller (.eyebrow, .small, [class*="__no"]).
+   ===================================================================== */
+.studio-root .main :is(.st-root, .dc-root, .dl-root, .pb-root, .ft-root) p:not(.eyebrow) {
+  font-size: 14px;
+  line-height: 1.65;
+}
+.studio-root .main :is(.st-root, .dc-root, .dl-root, .pb-root, .ft-root) label {
+  font-size: 13px;
+}
+.studio-root .main :is(.st-root, .dc-root, .dl-root, .pb-root, .ft-root) input,
+.studio-root .main :is(.st-root, .dc-root, .dl-root, .pb-root, .ft-root) select,
+.studio-root .main :is(.st-root, .dc-root, .dl-root, .pb-root, .ft-root) textarea {
+  font-size: 14px;
+}
+.studio-root .main :is(.st-root, .dc-root, .dl-root, .pb-root, .ft-root) td {
+  font-size: 14px;
+}
+.studio-root .main :is(.st-root, .dc-root, .dl-root, .pb-root, .ft-root) th {
+  font-size: 13px;
+}
+.studio-root .main :is(.st-root, .dc-root, .dl-root, .pb-root, .ft-root) h1 {
+  font-size: clamp(24px, 2.4vw, 34px);
+}
+.studio-root .main :is(.st-root, .dc-root, .dl-root, .pb-root, .ft-root) h2 {
+  font-size: 20px;
+}
+.studio-root .main :is(.st-root, .dc-root, .dl-root, .pb-root, .ft-root) h3 {
+  font-size: 18px;
+}
+/* primary list-item text inside cards (avoid bumping <b> inside h tags) */
+.studio-root .main :is(.st-root, .dc-root, .dl-root, .pb-root, .ft-root) :is(li, .pb-published__item, .dl-benefit, .dl-step, .dl-case, .dl-faq__item, .dc-quick-item, .ft-history__item, .pb-aside) > b,
+.studio-root .main :is(.st-root, .dc-root, .dl-root, .pb-root, .ft-root) :is(li, .pb-published__item, .dl-benefit, .dl-step, .dl-case, .dl-faq__item, .dc-quick-item, .ft-history__item) > div > b {
+  font-size: 14px;
+}
+/* common sub-item small text floor */
+.studio-root .main :is(.st-root, .dc-root, .dl-root, .pb-root, .ft-root) :is(li, .pb-published__item, .dl-benefit, .dl-step, .dl-case, .dl-faq__item, .dc-quick-item, .ft-history__item) > div > small {
+  font-size: 12px;
 }

@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, useState, type ReactNode } from "react";
 import "./studio.css";
-import "./dark-mode.css";
 
 type IconName =
   | "home"

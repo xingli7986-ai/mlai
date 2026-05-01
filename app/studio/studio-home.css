@@ -47,12 +47,12 @@
   margin-bottom: 18px;
 }
 .st-tabs a, .st-tabs button {
-  padding: 8px 16px;
+  padding: 9px 18px;
   border-radius: 999px;
   border: none;
   background: transparent;
   color: var(--st-text2);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: background 160ms, color 160ms;
@@ -92,7 +92,7 @@
   gap: 14px;
 }
 .st-hero__body h1 {
-  font-size: 26px;
+  font-size: 28px;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -100,7 +100,7 @@
 .st-hero__body p {
   margin: 0;
   color: var(--st-text2);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.7;
 }
 .st-hero__cta {
@@ -109,13 +109,13 @@
   flex-wrap: wrap;
 }
 .st-btn {
-  height: 38px;
-  padding: 0 16px;
+  height: 40px;
+  padding: 0 18px;
   border-radius: 10px;
   border: 1px solid var(--st-border);
   background: var(--st-card);
   color: var(--st-text);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   display: inline-flex;
@@ -146,10 +146,10 @@
   margin-bottom: 14px;
 }
 .st-section__head h2 {
-  font-size: 20px;
+  font-size: 22px;
 }
 .st-section__head a {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--st-gold);
 }
 
@@ -218,12 +218,12 @@
   align-items: center;
 }
 .st-tool__name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--st-text);
 }
 .st-tool__desc {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--st-text2);
   line-height: 1.5;
 }
@@ -248,9 +248,9 @@
   margin-bottom: 14px;
   gap: 12px;
 }
-.st-card__head h2 { font-size: 18px; }
+.st-card__head h2 { font-size: 20px; }
 .st-card__head .more, .st-card__head a {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--st-gold);
 }
 
@@ -294,11 +294,11 @@
   gap: 4px;
 }
 .st-draft__body b {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--st-text);
 }
 .st-draft__body small {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--st-text3);
 }
 
@@ -339,18 +339,18 @@
 }
 .st-inspire b {
   display: block;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--st-text);
 }
 .st-inspire small {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--st-text2);
   margin-top: 2px;
 }
 .st-inspire em {
   font-style: normal;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--st-gold);
   height: 22px;
   padding: 0 8px;

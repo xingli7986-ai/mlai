@@ -528,4 +528,9 @@
   .dc-root { margin: -16px; padding: 16px; }
   .dc-stats { grid-template-columns: 1fr; }
   .dc-works { grid-template-columns: repeat(2, 1fr); }
+  .dc-greet { flex-direction: column; align-items: stretch; gap: 12px; }
+  .dc-greet__actions { flex-wrap: wrap; gap: 8px; }
+  .dc-greet__actions .dc-btn { flex: 1 1 auto; min-width: max-content; }
+  .dc-card__head { flex-wrap: wrap; gap: 8px; }
+  .dc-tabs { flex-wrap: wrap; }
 }

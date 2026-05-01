@@ -408,4 +408,8 @@
 @media (max-width: 760px) {
   .pb-root { margin: -16px; padding: 16px; }
   .pb-row2 { grid-template-columns: 1fr; }
+  .pb-header { flex-direction: column; align-items: stretch; gap: 12px; }
+  .pb-actions { flex-wrap: wrap; gap: 8px; }
+  .pb-actions .pb-btn { flex: 1 1 auto; min-width: max-content; }
+  .pb-card__head { flex-wrap: wrap; gap: 8px; }
 }
