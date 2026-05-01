@@ -1,0 +1,213 @@
+# MaxLuLu AI 网站信息架构（IA）
+
+> 版本：v1.1 | 日期：2026-05-01 v1.1 变更：修正 Studio 侧边栏与 Sitemap 一致性；清理顶栏/侧边栏重复导航；/studio/join 使用公开布局
+
+---
+
+## 一、全站结构总览
+
+```
+MaxLuLu AI
+├── 消费者前台（浅色主题，ConsumerNav 导航）
+│   ├── 首页 /
+│   ├── 印花衣橱 /products
+│   ├── 设计详情 /products/[id]
+│   ├── 个人定制 /products/[id]/custom
+│   ├── 参团购买 /group-buy/[id]
+│   ├── 参团进度 /group-buy/[id]/progress
+│   ├── 邀约落地页 /invite/[code]
+│   ├── 个人中心 /my
+│   └── 搜索 /search
+│
+├── 设计师工作台 Studio（浅色主题 + 侧边栏布局）
+│   ├── 工具首页 /studio
+│   ├── 设计师入驻 /studio/join ⚠️ 使用公开布局，不显示侧边栏
+│   ├── 设计师中心 /studio/dashboard
+│   ├── 我的项目 /studio/projects
+│   ├── 我的设计 /studio/designs
+│   ├── 设置 /studio/settings
+│   ├── 发布设计 /studio/publish
+│   ├── 图案工作室
+│   │   ├── 图案生成 /studio/pattern/generate
+│   │   ├── 四方连续 /studio/pattern/seamless
+│   │   ├── 画风复刻 /studio/pattern/style-clone
+│   │   ├── 图案融合 /studio/pattern/fusion
+│   │   ├── 工艺融合 /studio/pattern/craft
+│   │   ├── 图案涂改 /studio/pattern/edit
+│   │   └── 图案变清晰 /studio/pattern/enhance
+│   └── 服装实验室
+│       ├── 线稿生成 /studio/fashion/sketch
+│       ├── 线稿成款 /studio/fashion/render
+│       ├── 局部改款 /studio/fashion/modify
+│       ├── 款式创新 /studio/fashion/innovate
+│       ├── 风格融合 /studio/fashion/style-fusion
+│       ├── 系列配色 /studio/fashion/color
+│       ├── 定向换色 /studio/fashion/recolor
+│       ├── 面料上身 /studio/fashion/fabric
+│       └── 图案上身 /studio/fashion/pattern
+│
+└── 管理后台（需管理员权限）
+    └── 管理中心 /admin/manage
+```
+
+---
+
+## 二、导航结构
+
+### 2.1 消费者顶部导航（ConsumerNav）
+
+**所有消费者前台页面共用，components/ConsumerNav.tsx**
+
+|位置|内容|链接|
+|---|---|---|
+|左侧 Logo|MaxLuLu AI|/|
+|导航项 1|印花衣橱|/products|
+|导航项 2|热拼专区|/products?sort=hot-group|
+|导航项 3|个性定制|/products（选款后进定制）|
+|右侧（未登录）|登录|弹出登录框|
+|右侧（已登录）|个人中心|/my|
+|右侧小入口|设计师入驻|/studio/join|
+
+**规则：**
+
+- "热拼专区"不是独立页面，复用印花衣橱页 + sort 参数筛选
+- "个性定制"不直接进 Studio，而是进印花衣橱选款后再进定制页
+- "设计师入驻"是低调小入口（文字链接或小按钮），不在主导航栏突出
+
+### 2.2 Studio 顶部导航栏（精简版）
+
+**只承载全局功能入口，不放页面导航（页面导航全在侧边栏）**
+
+|位置|内容|功能|
+|---|---|---|
+|左侧品牌|MaxLuLu AI Studio|点击回 /studio|
+|右侧|搜索按钮|搜索工具/设计|
+|右侧|通知按钮|通知列表|
+|右侧|用户头像|下拉菜单（个人中心/退出）|
+|右侧|+ 新建项目|创建新设计项目|
+
+**禁止：** 顶栏不放"工具页 / 我的设计 / 灵感 / 发布设计 / 设计师中心 / 入驻申请"等页面导航链接。这些全部由侧边栏承载，避免重复。
+
+### 2.3 Studio 侧边栏（唯一主导航）
+
+__所有 /studio/_ 页面共用（/studio/join 除外），定义在 app/studio/layout.tsx_*
+
+|分组|菜单项|链接|优先级|
+|---|---|---|---|
+|**工作台**|工具首页|/studio|P0|
+||我的项目|/studio/projects|P1|
+||我的设计|/studio/designs|P1|
+||设计师中心|/studio/dashboard|P1|
+||发布设计|/studio/publish|P1|
+|**工具**|图案工作室|展开子菜单 → 7 个工具|P0-P2|
+||服装实验室|展开子菜单 → 9 个工具|P0-P2|
+|**账户**|设置|/studio/settings|P1|
+
+**与旧版差异：**
+
+- 删除了"灵感推荐"（消费者功能，不放设计师侧边栏）
+- 删除了"品牌资料库"（P2，暂不暴露入口）
+- 删除了"收藏夹"（P2，暂不暴露入口）
+- 设计师中心和发布设计从顶栏移到侧边栏
+
+### 2.4 /studio/join 特殊布局
+
+**设计师入驻页是公开营销页，不是工作台页面。**
+
+|规则|说明|
+|---|---|
+|路由|/studio/join（保持不变）|
+|布局|使用公开页面布局（独立 Layout），不显示 Studio 侧边栏|
+|导航|显示精简 Header（Logo + 返回首页 + 登录），或消费者导航|
+|权限|不要求任何权限，guest 可访问|
+|目的|提高入驻申请转化率，不受工作台菜单干扰|
+
+---
+
+## 三、页面层级与父子关系
+
+### 3.1 消费者路径
+
+```
+/ (首页)
+├── /products (印花衣橱)
+│   ├── /products/[id] (设计详情)
+│   │   └── /products/[id]/custom (个人定制下单)
+│   └── ?sort=hot-group (热拼筛选，同页面)
+├── /group-buy/[id] (参团购买)
+│   └── /group-buy/[id]/progress (参团进度)
+├── /invite/[code] (邀约落地页)
+├── /my (个人中心)
+│   ├── Tab: 我的订单
+│   ├── Tab: 我的收藏
+│   ├── Tab: 我的参团
+│   ├── Tab: 我的邀约
+│   └── Tab: 账号设置
+└── /search (搜索)
+```
+
+### 3.2 设计师路径
+
+```
+/studio/join (入驻申请 — 公开布局，无侧边栏)
+/studio (工具首页 — Studio 布局)
+├── /studio/projects (我的项目)
+├── /studio/designs (我的设计)
+├── /studio/dashboard (设计师中心)
+├── /studio/publish (发布设计)
+├── /studio/settings (设置)
+├── /studio/pattern/* (图案工作室 7 个工具)
+└── /studio/fashion/* (服装实验室 9 个工具)
+```
+
+### 3.3 管理员路径
+
+```
+/admin/manage (管理中心)
+├── Tab: 设计审核
+├── Tab: 拼团管理
+└── Tab: 提现管理
+```
+
+---
+
+## 四、页面间跳转关系
+
+### 4.1 消费者核心跳转
+
+|起点|触发|终点|
+|---|---|---|
+|首页 热拼卡片|点击商品图|/products/[id]|
+|首页 热门卡片|点击商品图|/products/[id]|
+|首页 CTA"逛逛印花衣橱"|点击按钮|/products|
+|印花衣橱 设计卡片|点击卡片|/products/[id]|
+|设计详情 "参团购买"|点击按钮|POST /api/group-buys/find-or-create → /group-buy/[id]|
+|设计详情 "定制此款"|点击按钮|/products/[id]/custom|
+|参团购买 支付成功|支付宝回调|/group-buy/[id]/progress|
+|定制页 支付成功|支付宝回调|/my（订单 Tab）|
+|邀约链接|打开链接|/invite/[code] → 引导至参团页|
+
+### 4.2 设计师核心跳转
+
+|起点|触发|终点|
+|---|---|---|
+|消费者导航 "设计师入驻"|点击|/studio/join（公开布局）|
+|入驻页 "立即申请入驻"|点击按钮|弹出申请表单|
+|入驻页 "先体验工具"|点击按钮|/studio|
+|工具首页 工具卡片|点击|对应工具页|
+|AI 工具 生成完成|点击"发布"|/studio/publish|
+|发布设计 提交|审核通过后|作品出现在 /products|
+|设计师中心 "提现"|点击|弹出提现表单|
+
+---
+
+## 五、URL 规范
+
+|规则|说明|
+|---|---|
+|动态路由统一用 `[id]`|不用 `[slug]`，MVP 阶段用数据库 ID|
+|消费者页面|无前缀，直接 /products, /my, /group-buy|
+|设计师页面|统一 /studio/* 前缀|
+|管理员页面|统一 /admin/* 前缀|
+|查询参数|筛选用 ?sort=, ?category=, ?fabric=, ?page=|
+|不新建独立页面|"热拼专区"复用 /products?sort=hot-group|

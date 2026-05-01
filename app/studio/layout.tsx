@@ -164,18 +164,10 @@ const NAV_GROUPS: NavGroup[] = [
     type: "list",
     items: [
       { label: "工具首页", href: "/studio", icon: "home", match: (p) => p === "/studio" },
-      { label: "我的项目", href: "/studio/dashboard", icon: "folder", match: (p) => p.startsWith("/studio/dashboard") },
-      { label: "我的设计", href: "/products", icon: "grid" },
-      { label: "收藏夹", href: "/my", icon: "heart" },
-    ],
-  },
-  {
-    id: "discover",
-    title: "发现",
-    type: "list",
-    items: [
-      { label: "灵感推荐", href: "/products", icon: "bulb" },
-      { label: "品牌资料库", href: "/about", icon: "book" },
+      { label: "我的项目", href: "/studio/projects", icon: "folder", match: (p) => p.startsWith("/studio/projects") },
+      { label: "我的设计", href: "/studio/designs", icon: "grid", match: (p) => p.startsWith("/studio/designs") },
+      { label: "设计师中心", href: "/studio/dashboard", icon: "crown", match: (p) => p.startsWith("/studio/dashboard") },
+      { label: "发布设计", href: "/studio/publish", icon: "bulb", match: (p) => p.startsWith("/studio/publish") },
     ],
   },
   {
@@ -193,7 +185,7 @@ const NAV_GROUPS: NavGroup[] = [
     title: "账户",
     type: "list",
     items: [
-      { label: "设置", href: "/my", icon: "settings" },
+      { label: "设置", href: "/studio/settings", icon: "settings", match: (p) => p.startsWith("/studio/settings") },
     ],
   },
 ];
@@ -310,7 +302,29 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export default function StudioLayout({ children }: { children: ReactNode }) {
+  const pathname = usePathname() || "/studio";
   const [open, setOpen] = useState(false);
+
+  // /studio/join is a public marketing page — render the minimal public shell
+  // (no studio sidebar) per IA §2.4.
+  if (pathname === "/studio/join") {
+    return (
+      <div className="studio-root studio-root--public">
+        <header className="public-header">
+          <Link href="/" className="public-header__brand" aria-label="MaxLuLu AI">
+            <span className="brand-name">
+              MaxLuLu <em>AI</em>
+            </span>
+          </Link>
+          <nav className="public-header__nav">
+            <Link href="/" className="public-link">返回首页</Link>
+            <Link href="/login" className="public-link">登录</Link>
+          </nav>
+        </header>
+        <main className="public-main">{children}</main>
+      </div>
+    );
+  }
 
   return (
     <div className="studio-root">

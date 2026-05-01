@@ -1,0 +1,265 @@
+/* MaxLuLu UI base components — built on design system tokens (app/globals.css :root).
+   Selector prefix: .ui-* to avoid collisions with page-scoped styles. */
+
+/* ============== Button ============== */
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 24px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 20px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--motion-base),
+    border-color var(--motion-base),
+    color var(--motion-base),
+    transform var(--motion-base),
+    box-shadow var(--motion-base);
+  user-select: none;
+}
+.ui-btn:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.ui-btn:disabled,
+.ui-btn[aria-disabled="true"] {
+  cursor: not-allowed;
+  background: #D8D0C6;
+  color: var(--color-text-muted);
+  border-color: transparent;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Primary — gold, white text */
+.ui-btn--primary {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary);
+}
+.ui-btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+  transform: translateY(-1px);
+}
+.ui-btn--primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Secondary — surface, bordered */
+.ui-btn--secondary {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+}
+.ui-btn--secondary:hover:not(:disabled) {
+  background: var(--color-surface-soft);
+  border-color: var(--color-border-strong);
+}
+
+/* Ghost — transparent, hover surface-soft */
+.ui-btn--ghost {
+  background: transparent;
+  color: var(--color-text-primary);
+  border-color: transparent;
+}
+.ui-btn--ghost:hover:not(:disabled) {
+  background: var(--color-surface-soft);
+  color: var(--color-text-primary);
+}
+
+.ui-btn--block { width: 100%; }
+.ui-btn--sm { height: 36px; padding: 0 16px; font-size: 13px; }
+.ui-btn--lg { height: 56px; padding: 0 28px; font-size: 16px; border-radius: var(--radius-lg); }
+
+/* Loading state */
+.ui-btn[data-loading="true"] {
+  cursor: progress;
+  pointer-events: none;
+}
+.ui-btn__spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  opacity: 0.85;
+  animation: ui-spin 0.8s linear infinite;
+}
+@keyframes ui-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============== Card ============== */
+.ui-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-card);
+  transition:
+    transform var(--motion-base),
+    border-color var(--motion-base),
+    box-shadow var(--motion-base);
+}
+.ui-card--hover:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-hover);
+}
+.ui-card--soft {
+  background: var(--color-surface-soft);
+}
+.ui-card--flat {
+  box-shadow: none;
+}
+
+/* ============== Input ============== */
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.ui-field__label {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.ui-field__label .required {
+  color: var(--color-error);
+  margin-left: 2px;
+}
+.ui-input {
+  height: 48px;
+  padding: 0 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  outline: none;
+  transition: border-color var(--motion-base), box-shadow var(--motion-base);
+  width: 100%;
+}
+.ui-input::placeholder {
+  color: var(--color-text-muted);
+}
+.ui-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(179, 138, 86, 0.14);
+}
+.ui-input:disabled {
+  background: var(--color-surface-soft);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+.ui-input[aria-invalid="true"],
+.ui-input--error {
+  border-color: var(--color-error);
+  box-shadow: 0 0 0 3px rgba(200, 69, 50, 0.10);
+}
+.ui-field__error {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-error);
+  margin-top: 2px;
+}
+.ui-field__hint {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-text-muted);
+}
+
+/* Textarea variant */
+.ui-input--textarea {
+  height: auto;
+  min-height: 120px;
+  padding: 14px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+/* ============== SectionHeader ============== */
+.ui-section-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 720px;
+}
+.ui-section-header--center {
+  text-align: center;
+  align-items: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+.ui-section-header__eyebrow {
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  margin: 0;
+}
+.ui-section-header__title {
+  font-size: 36px;
+  line-height: 44px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.ui-section-header__description {
+  font-size: 16px;
+  line-height: 28px;
+  color: var(--color-text-secondary);
+  max-width: 640px;
+  margin: 0;
+}
+@media (max-width: 768px) {
+  .ui-section-header__title {
+    font-size: 28px;
+    line-height: 36px;
+  }
+}
+
+/* ============== Badge ============== */
+.ui-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.ui-badge--gold {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-hover);
+}
+.ui-badge--neutral {
+  background: #F2EEE8;
+  color: var(--color-text-secondary);
+}
+.ui-badge--dark {
+  background: var(--color-dark);
+  color: var(--color-text-on-dark);
+}
+.ui-badge--success {
+  background: rgba(79, 138, 98, 0.12);
+  color: var(--color-success);
+}

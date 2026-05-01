@@ -2,27 +2,95 @@
 @import "./design-system.css";
 
 :root {
-  /* Primary */
+  /* ==========================================================================
+     Design System tokens (single source of truth)
+     Source: design/MaxLuLu AI Design System ... Part 5 — Recommended CSS Variables
+     ========================================================================== */
+
+  /* Colors — surfaces & backgrounds */
+  --color-bg: #F6F1E8;
+  --color-surface: #FFFDF9;
+  --color-surface-soft: #FBF7F0;
+
+  /* Colors — primary (gold) */
+  --color-primary: #B38A56;
+  --color-primary-hover: #9C7443;
+  --color-primary-soft: #EFE3D0;
+  --color-primary-strong: #D8C4A4;
+
+  /* Colors — text */
+  --color-text-primary: #1E1B18;
+  --color-text-secondary: #6F665E;
+  --color-text-muted: #A39A91;
+  --color-text-on-dark: #FFFDF9;
+
+  /* Colors — borders */
+  --color-border: #E7DED2;
+  --color-border-strong: #D8C4A4;
+
+  /* Colors — dark surfaces */
+  --color-dark: #181512;
+  --color-dark-soft: #2A211B;
+  --color-white: #FFFFFF;
+
+  /* Colors — functional */
+  --color-error: #C84532;
+  --color-success: #4F8A62;
+  --color-warning: #C9903D;
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 999px;
+
+  /* Shadow */
+  --shadow-card: 0 1px 2px rgba(24, 21, 18, 0.04), 0 8px 24px rgba(24, 21, 18, 0.06);
+  --shadow-hover: 0 12px 32px rgba(24, 21, 18, 0.10), 0 24px 64px rgba(24, 21, 18, 0.08);
+  --shadow-modal: 0 24px 80px rgba(24, 21, 18, 0.18);
+
+  /* Spacing — 8pt grid */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-18: 72px;
+  --space-24: 96px;
+  --space-28: 112px;
+
+  /* Layout */
+  --container-max: 1200px;
+  --container-max-lg: 1280px;
+  --header-height: 72px;
+  --sidebar-width: 220px;
+
+  /* Motion */
+  --motion-base: 180ms ease-out;
+
+  /* ==========================================================================
+     Legacy palette tokens — kept so existing pages keep working.
+     Do not introduce these in new code; use the design-system tokens above.
+     ========================================================================== */
   --deep-noir: #0C0C0F;
   --charcoal: #1E1E1E;
   --warm-ivory: #F7F0E9;
-
-  /* Secondary */
   --taupe: #B8B176;
   --soft-rose: #F7D4CF;
   --misty-sage: #A3AC98;
-
-  /* Accent */
   --champagne-gold: #C8A875;
   --terracotta: #C68A44;
   --dusty-plum: #7D5B6E;
-
-  /* Neutrals */
   --silver-gray: #D8D7D3;
   --light-linen: #F1EDE6;
   --white: #F9F9FF;
-
-  /* Background/foreground aliases (legacy) */
   --background: var(--warm-ivory);
   --foreground: var(--deep-noir);
 

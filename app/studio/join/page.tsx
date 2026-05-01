@@ -57,45 +57,56 @@ const HERO_TILES = products.slice(0, 6);
 export default function DesignerLandingPage() {
   return (
     <div className="dl-root">
-      <div className="st-tabs">
-        <Link href="/studio">工具页</Link>
-        <Link href="/products">我的设计</Link>
-        <Link href="/products">灵感</Link>
-        <Link href="/studio/publish">发布设计</Link>
-        <Link href="/studio/dashboard">设计师中心</Link>
-        <Link href="/studio/join" className="is-active">入驻申请</Link>
-      </div>
-
       <section className="dl-hero">
-        <div className="dl-container" style={{ display: "contents" }}>
-          <div>
-            <p className="eyebrow">设计师入驻申请</p>
-            <h1>成为 MaxLuLu AI<br />设计师</h1>
-            <p>每个原创印花都能被穿上身。我们用 AI 工具帮你把灵感快速变成针织印花连衣裙，工厂直接生产，让你的作品直达全国 200 万 + 用户。</p>
-            <div className="dl-hero__stats">
-              <div className="dl-hero__stat"><b>128</b><small>签约设计师</small></div>
-              <div className="dl-hero__stat"><b>10%</b><small>设计师分润</small></div>
-              <div className="dl-hero__stat"><b>14天</b><small>排产周期</small></div>
-              <div className="dl-hero__stat"><b>200万+</b><small>月活用户</small></div>
+        <div>
+          <p className="eyebrow">设计师入驻申请</p>
+          <h1>
+            成为 MaxLuLu AI
+            <br />
+            设计师
+          </h1>
+          <p className="dl-hero__lead">
+            每个原创印花都能被穿上身。我们用 AI 工具帮你把灵感快速变成针织印花连衣裙，工厂直接生产，让你的作品直达全国 200 万 + 用户。
+          </p>
+          <div className="dl-hero__stats">
+            <div className="dl-hero__stat">
+              <b>128</b>
+              <small>签约设计师</small>
             </div>
-            <div className="dl-hero__cta">
-              <a href="#apply" className="dl-btn is-primary">立即申请入驻</a>
-              <Link href="/studio" className="dl-btn">先体验工具 →</Link>
+            <div className="dl-hero__stat">
+              <b>10%</b>
+              <small>设计师分润</small>
+            </div>
+            <div className="dl-hero__stat">
+              <b>14天</b>
+              <small>排产周期</small>
+            </div>
+            <div className="dl-hero__stat">
+              <b>200万+</b>
+              <small>月活用户</small>
             </div>
           </div>
-          <div className="dl-hero__media">
-            {HERO_TILES.map((p) => (
-              <div key={p.id} className={`dl-hero__tile tone-${p.tone}`}>
-                <AssetImage
-                  src={p.image}
-                  alt={p.name}
-                  tone={p.tone}
-                  label={p.name}
-                  className="dl-hero__img"
-                />
-              </div>
-            ))}
+          <div className="dl-hero__cta">
+            <a href="#apply" className="dl-btn is-primary">
+              立即申请入驻
+            </a>
+            <Link href="/studio" className="dl-btn">
+              先体验工具 →
+            </Link>
           </div>
+        </div>
+        <div className="dl-hero__media">
+          {HERO_TILES.map((p) => (
+            <div key={p.id} className={`dl-hero__tile tone-${p.tone}`}>
+              <AssetImage
+                src={p.image}
+                alt={p.name}
+                tone={p.tone}
+                label={p.name}
+                className="dl-hero__img"
+              />
+            </div>
+          ))}
         </div>
       </section>
 
@@ -142,6 +153,7 @@ export default function DesignerLandingPage() {
           <div className="dl-section__head">
             <p className="eyebrow">设计师案例</p>
             <h2>她们已经在 MaxLuLu 上找到了节奏</h2>
+            <p>真实的设计师，真实的作品和分润数据，验证 MaxLuLu 的众定制路径。</p>
           </div>
           <div className="dl-cases">
             {CASES.map((c) => (
@@ -153,10 +165,14 @@ export default function DesignerLandingPage() {
                     <small>{c.studio}</small>
                   </div>
                 </div>
-                <p>"{c.quote}"</p>
+                <p className="dl-case__quote">&ldquo;{c.quote}&rdquo;</p>
                 <div className="dl-case__stats">
-                  <span><b>{c.works}</b> 件作品</span>
-                  <span><b>{c.revenue}</b> 累计分润</span>
+                  <span>
+                    <b>{c.works}</b>件作品
+                  </span>
+                  <span>
+                    <b>{c.revenue}</b>累计分润
+                  </span>
                 </div>
               </article>
             ))}
@@ -171,52 +187,66 @@ export default function DesignerLandingPage() {
             <h2>提交申请，我们 3 天内回复</h2>
             <p>建议附上 3 件原创作品 + 个人简介。提交后会发送验证短信到你的手机号。</p>
           </div>
-          <form className="dl-form" onSubmit={(e) => e.preventDefault()}>
-            <div className="dl-field">
-              <label>姓名</label>
-              <input type="text" placeholder="例：Luna" />
-            </div>
-            <div className="dl-field">
-              <label>设计工作室</label>
-              <input type="text" placeholder="例：MaxLuLu Studio" />
-            </div>
-            <div className="dl-field">
-              <label>手机号</label>
-              <input type="tel" placeholder="+86 138 ****" />
-            </div>
-            <div className="dl-field">
-              <label>邮箱</label>
-              <input type="email" placeholder="hi@maxlulu.ai" />
-            </div>
-            <div className="dl-field">
-              <label>设计风格</label>
-              <select defaultValue="ink">
-                <option value="ink">水墨晕染</option>
-                <option value="floral">工笔花卉</option>
-                <option value="geometry">几何拼接</option>
-                <option value="tropical">热带印花</option>
-                <option value="custom">其他 / 自定义</option>
-              </select>
-            </div>
-            <div className="dl-field">
-              <label>从业年限</label>
-              <select defaultValue="3-5">
-                <option value="0-2">0-2 年</option>
-                <option value="3-5">3-5 年</option>
-                <option value="6-10">6-10 年</option>
-                <option value="10+">10 年以上</option>
-              </select>
-            </div>
-            <div className="dl-field dl-field--full">
-              <label>作品集链接 / 简介</label>
-              <textarea placeholder="附上 Behance / 小红书 / 个人站等链接，简介 100 字内。" />
-            </div>
-            <div className="dl-form__cta">
-              <button type="submit" className="dl-btn is-primary">提交申请</button>
-              <Link href="/studio" className="dl-btn">先体验工具</Link>
-              <small style={{ marginLeft: "auto" }}>提交即表示同意 <Link href="/terms" style={{ color: "var(--dl-gold)" }}>《设计师入驻协议》</Link></small>
-            </div>
-          </form>
+          <div className="dl-form-wrap">
+            <form className="dl-form" onSubmit={(e) => e.preventDefault()}>
+              <div className="dl-field">
+                <label>
+                  姓名<span className="req">*</span>
+                </label>
+                <input type="text" placeholder="例：Luna" required />
+              </div>
+              <div className="dl-field">
+                <label>
+                  设计工作室<span className="req">*</span>
+                </label>
+                <input type="text" placeholder="例：MaxLuLu Studio" required />
+              </div>
+              <div className="dl-field">
+                <label>
+                  手机号<span className="req">*</span>
+                </label>
+                <input type="tel" placeholder="+86 138 ****" required />
+              </div>
+              <div className="dl-field">
+                <label>邮箱</label>
+                <input type="email" placeholder="hi@maxlulu.ai" />
+              </div>
+              <div className="dl-field">
+                <label>设计风格</label>
+                <select defaultValue="ink">
+                  <option value="ink">水墨晕染</option>
+                  <option value="floral">工笔花卉</option>
+                  <option value="geometry">几何拼接</option>
+                  <option value="tropical">热带印花</option>
+                  <option value="custom">其他 / 自定义</option>
+                </select>
+              </div>
+              <div className="dl-field">
+                <label>从业年限</label>
+                <select defaultValue="3-5">
+                  <option value="0-2">0-2 年</option>
+                  <option value="3-5">3-5 年</option>
+                  <option value="6-10">6-10 年</option>
+                  <option value="10+">10 年以上</option>
+                </select>
+              </div>
+              <div className="dl-field dl-field--full">
+                <label>作品集链接 / 简介</label>
+                <textarea placeholder="附上 Behance / 小红书 / 个人站等链接，简介 100 字内。" />
+              </div>
+              <div className="dl-form__cta">
+                <button type="submit" className="dl-btn is-primary">
+                  提交申请
+                </button>
+                <Link href="/studio" className="dl-btn">
+                  先体验工具
+                </Link>
+                <small className="dl-form__note">
+                  提交即表示同意 <Link href="/terms">《设计师入驻协议》</Link>
+                </small>
+              </div>
+            </form>
+          </div>
         </div>
       </section>
 
@@ -227,11 +257,16 @@ export default function DesignerLandingPage() {
             <h2>关于入驻，我们听过最多的问题</h2>
           </div>
           <div className="dl-faq">
-            {FAQ.map((f) => (
-              <div key={f.q} className="dl-faq__item">
-                <b>{f.q}</b>
-                <p>{f.a}</p>
-              </div>
+            {FAQ.map((f, i) => (
+              <details key={f.q} className="dl-faq__item" open={i === 0}>
+                <summary>
+                  <span>{f.q}</span>
+                  <span className="dl-faq__plus" aria-hidden>
+                    +
+                  </span>
+                </summary>
+                <div className="dl-faq__body">{f.a}</div>
+              </details>
             ))}
           </div>
         </div>
@@ -239,9 +274,20 @@ export default function DesignerLandingPage() {
 
       <section className="dl-container">
         <div className="dl-cta">
+          <p className="eyebrow">FROM TODAY</p>
           <h2>从今天起，被更多人穿上身</h2>
-          <p>用 16 个 AI 工具 + 众定制工厂，把每个原创印花变成可量产的连衣裙。</p>
-          <a href="#apply" className="dl-btn is-primary">立即申请入驻</a>
+          <p>加入 MaxLuLu AI，获得稳定的流量入口、众定制工厂、透明分润，让每个原创印花都能落地成衣。</p>
+          <div className="dl-cta__actions">
+            <a href="#apply" className="dl-btn is-primary">
+              立即申请入驻
+            </a>
+            <Link href="/studio" className="dl-btn is-ghost">
+              先体验工具 →
+            </Link>
+          </div>
+          <span className="dl-cta__hint">
+            已有账号？<Link href="/login">立即登录</Link>
+          </span>
         </div>
       </section>
     </div>
