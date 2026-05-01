@@ -72,9 +72,9 @@ export async function POST(req: Request) {
   const batchId = Date.now();
 
   if (model === "gpt-image-2") {
-    if (!process.env.SUCHUANG_API_KEY) {
+    if (!process.env.YXAI_API_KEY) {
       return NextResponse.json(
-        { error: "SUCHUANG_API_KEY is not configured" },
+        { error: "YXAI_API_KEY is not configured" },
         { status: 500 }
       );
     }

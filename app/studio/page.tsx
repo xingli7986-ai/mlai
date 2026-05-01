@@ -95,7 +95,7 @@ export default function StudioHomePage() {
           />
         </div>
         <div className="st-hero__body">
-          <p className="eyebrow">AI DESIGN STUDIO · 工具首页</p>
+          <p className="eyebrow">AI 设计工作室 · 工具首页</p>
           <h1>下午好，Lulu <span style={{ fontSize: 22 }}>👋</span></h1>
           <p>欢迎来到 MaxLuLu AI Studio，从 16 个 AI 工具开始你的下一个设计：印花生成 → 上身预览 → 一键发布到印花衣橱。</p>
           <div className="st-hero__cta">
@@ -109,7 +109,7 @@ export default function StudioHomePage() {
       <section className="st-section">
         <div className="st-section__head">
           <div>
-            <p className="eyebrow">PATTERN STUDIO · 图案工作室</p>
+            <p className="eyebrow">图案工作室</p>
             <h2>7 个图案工具</h2>
           </div>
           <Link href="/studio/pattern/generate">查看入门指引 →</Link>
@@ -122,7 +122,7 @@ export default function StudioHomePage() {
       <section className="st-section">
         <div className="st-section__head">
           <div>
-            <p className="eyebrow">GARMENT LAB · 服装实验室</p>
+            <p className="eyebrow">服装实验室</p>
             <h2>9 个服装工具</h2>
           </div>
           <Link href="/studio/fashion/sketch">查看入门指引 →</Link>

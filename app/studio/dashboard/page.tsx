@@ -136,7 +136,7 @@ export default function DesignerCenterPage() {
 
   const liveStats = data
     ? [
-        { label: "总收益", value: fmtMoney(data.stats.grossEarnings), unit: "元", delta: "30% 分润累计", trend: "up" as const, badge: "累计" },
+        { label: "总收益", value: fmtMoney(data.stats.grossEarnings), unit: "元", delta: "10% 分润累计", trend: "up" as const, badge: "累计" },
         { label: "近 30 天", value: fmtMoney(data.stats.last30dEarnings), unit: "元", delta: `${data.stats.totalOrders} 单`, trend: "up" as const, badge: "30D" },
         { label: "可提现", value: fmtMoney(data.stats.withdrawable), unit: "元", delta: `已提 ¥${fmtMoney(data.stats.totalWithdrawn)}`, trend: "up" as const, badge: "T+1" },
         { label: "作品", value: String(data.stats.totalDesigns), unit: `已审核 ${data.stats.approvedDesigns}`, delta: `${data.stats.totalLikes} 点赞`, trend: "up" as const, badge: "实时" },
@@ -154,7 +154,7 @@ export default function DesignerCenterPage() {
       </div>
       <header className="dc-greet">
         <div>
-          <p className="eyebrow">DESIGNER CENTER · 设计师中心</p>
+          <p className="eyebrow">设计师中心</p>
           <h1>欢迎回来，{data?.designer.displayName ?? "Luna"} <small>· 共 {data?.stats.totalDesigns ?? "—"} 件作品 · {data?.stats.totalOrders ?? "—"} 订单</small></h1>
           {error && <p className="ml-toast ml-toast--error" style={{ marginTop: 8 }}>{error}</p>}
         </div>

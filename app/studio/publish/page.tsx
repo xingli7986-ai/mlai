@@ -30,7 +30,7 @@ export default function PublishPage() {
 
       <div className="pb-header">
         <div>
-          <p className="eyebrow">PUBLISH DESIGN · 发布作品</p>
+          <p className="eyebrow">发布作品</p>
           <h1>把作品上架到印花衣橱</h1>
         </div>
         <div className="pb-actions">
@@ -150,8 +150,8 @@ export default function PublishPage() {
                 <b>¥ 1,299</b>
               </div>
               <div className="pb-priceBox">
-                <small>设计师分润 30%</small>
-                <b>¥ 179.7</b>
+                <small>设计师分润 10%</small>
+                <b>¥ 59.9</b>
               </div>
             </div>
             <div className="pb-row2" style={{ marginTop: 14 }}>
@@ -187,7 +187,7 @@ export default function PublishPage() {
               </label>
               <label className="pb-check">
                 <input type="checkbox" defaultChecked />
-                <span>同意按 30% 分润 + 5% 平台费 + 工厂加工费的结算方式</span>
+                <span>同意按 10% 分润 + 5% 平台费 + 工厂加工费的结算方式</span>
               </label>
               <label className="pb-check">
                 <input type="checkbox" />

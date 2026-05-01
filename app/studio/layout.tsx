@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo, useState, type ReactNode } from "react";
 import "./studio.css";
+import "./dark-mode.css";
 
 type IconName =
   | "home"
@@ -160,27 +161,27 @@ interface NavGroup {
 const NAV_GROUPS: NavGroup[] = [
   {
     id: "workspace",
-    title: "Workspace",
+    title: "工作台",
     type: "list",
     items: [
-      { label: "Dashboard", href: "/studio", icon: "home", match: (p) => p === "/studio" },
-      { label: "My Projects", href: "/studio/dashboard", icon: "folder", match: (p) => p.startsWith("/studio/dashboard") },
-      { label: "My Designs", href: "/products", icon: "grid" },
-      { label: "Favorites", href: "/my", icon: "heart" },
+      { label: "工具首页", href: "/studio", icon: "home", match: (p) => p === "/studio" },
+      { label: "我的项目", href: "/studio/dashboard", icon: "folder", match: (p) => p.startsWith("/studio/dashboard") },
+      { label: "我的设计", href: "/products", icon: "grid" },
+      { label: "收藏夹", href: "/my", icon: "heart" },
     ],
   },
   {
     id: "discover",
-    title: "Discover",
+    title: "发现",
     type: "list",
     items: [
-      { label: "Inspiration", href: "/products", icon: "bulb" },
-      { label: "Brand Library", href: "/about", icon: "book" },
+      { label: "灵感推荐", href: "/products", icon: "bulb" },
+      { label: "品牌资料库", href: "/about", icon: "book" },
     ],
   },
   {
     id: "tools",
-    title: "Tools",
+    title: "工具",
     type: "expandable",
     defaultOpen: true,
     items: [
@@ -190,10 +191,10 @@ const NAV_GROUPS: NavGroup[] = [
   },
   {
     id: "account",
-    title: "Account",
+    title: "账户",
     type: "list",
     items: [
-      { label: "Settings", href: "/my", icon: "settings" },
+      { label: "设置", href: "/my", icon: "settings" },
     ],
   },
 ];
@@ -300,7 +301,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <Icon name="crown" size={16} />
         </div>
         <div className="dc-body">
-          <b>Designer Plan</b>
+          <b>设计师计划</b>
           <small>设计师入驻 / 升级</small>
         </div>
         <Icon name="chevron-right" size={14} />
@@ -324,11 +325,11 @@ export default function StudioLayout({ children }: { children: ReactNode }) {
           >
             <Icon name="menu" />
           </button>
-          <Link href="/studio" aria-label="MaxLuLu AI Studio">
+          <Link href="/studio" aria-label="MaxLuLu AI 设计工作室">
             <span className="brand-name">
               MaxLuLu <em>AI</em>
             </span>
-            <span className="brand-sub">AI Design Studio</span>
+            <span className="brand-sub">AI 设计工作室</span>
           </Link>
         </div>
 
@@ -343,7 +344,7 @@ export default function StudioLayout({ children }: { children: ReactNode }) {
             M
           </Link>
           <Link href="/studio/pattern/generate" className="btn gold small">
-            + New Project
+            + 新建项目
           </Link>
         </div>
       </header>

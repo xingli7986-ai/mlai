@@ -7,7 +7,7 @@ import "../studio-home.css";
 import "./join.css";
 
 const BENEFITS = [
-  { ic: "✦", title: "高分润 30%", desc: "每件成衣订单按设计师分润，平台 / 工厂 / 设计师三方透明结算。" },
+  { ic: "✦", title: "稳定分润 10%", desc: "每件成衣订单按设计师分润，平台 / 工厂 / 设计师三方透明结算。" },
   { ic: "✚", title: "一站式工具", desc: "16 个 AI 工具，从灵感到 Tech Pack 到工艺单全部内置。" },
   { ic: "★", title: "稳定流量入口", desc: "每月 200 万 + 印花衣橱曝光，新人可申请首期推荐位。" },
   { ic: "↻", title: "无库存压力", desc: "众定制成团模式，平台帮你预收订金，工厂直接生产。" },
@@ -45,7 +45,7 @@ const CASES = [
 ];
 
 const FAQ = [
-  { q: "入驻是否收费？", a: "完全免费。仅在订单成交后按 5% 平台费 + 工厂加工费扣除，设计师分润 30% 起。" },
+  { q: "入驻是否收费？", a: "完全免费。仅在订单成交后按 5% 平台费 + 工厂加工费扣除，设计师可获 10% 销售额分润。" },
   { q: "需要提供哪些资料？", a: "至少 3 件原创作品（图片或矢量图）+ 设计师简介 + 身份证 + 银行卡四要素，全程在线提交。" },
   { q: "是否要求独家代理？", a: "不要求独家。但 MaxLuLu 首发的款式可享额外 5% 流量补贴 90 天。" },
   { q: "排产周期与版权？", a: "众定成团后 14 个工作日内完成生产，作品版权归设计师所有，平台仅获信息网络传播权。" },
@@ -69,12 +69,12 @@ export default function DesignerLandingPage() {
       <section className="dl-hero">
         <div className="dl-container" style={{ display: "contents" }}>
           <div>
-            <p className="eyebrow">DESIGNER ONBOARDING · 入驻申请</p>
+            <p className="eyebrow">设计师入驻申请</p>
             <h1>成为 MaxLuLu AI<br />设计师</h1>
             <p>每个原创印花都能被穿上身。我们用 AI 工具帮你把灵感快速变成针织印花连衣裙，工厂直接生产，让你的作品直达全国 200 万 + 用户。</p>
             <div className="dl-hero__stats">
               <div className="dl-hero__stat"><b>128</b><small>签约设计师</small></div>
-              <div className="dl-hero__stat"><b>30%</b><small>分润起</small></div>
+              <div className="dl-hero__stat"><b>10%</b><small>设计师分润</small></div>
               <div className="dl-hero__stat"><b>14天</b><small>排产周期</small></div>
               <div className="dl-hero__stat"><b>200万+</b><small>月活用户</small></div>
             </div>
@@ -102,7 +102,7 @@ export default function DesignerLandingPage() {
       <section className="dl-section dl-section--card">
         <div className="dl-container">
           <div className="dl-section__head">
-            <p className="eyebrow">PLATFORM BENEFITS · 平台优势</p>
+            <p className="eyebrow">平台优势</p>
             <h2>为什么选择 MaxLuLu AI</h2>
             <p>从灵感到成衣，AI 工具 + 众定制工厂 + 透明分润，让每一位设计师都能持续创作。</p>
           </div>
@@ -121,7 +121,7 @@ export default function DesignerLandingPage() {
       <section className="dl-section">
         <div className="dl-container">
           <div className="dl-section__head">
-            <p className="eyebrow">PROCESS · 入驻流程</p>
+            <p className="eyebrow">入驻流程</p>
             <h2>4 步完成入驻</h2>
             <p>从提交申请到上线作品，平均 5 个工作日。审核期间也可在 Studio 工具中熟悉操作。</p>
           </div>
@@ -140,7 +140,7 @@ export default function DesignerLandingPage() {
       <section className="dl-section dl-section--card">
         <div className="dl-container">
           <div className="dl-section__head">
-            <p className="eyebrow">SUCCESS STORIES · 设计师案例</p>
+            <p className="eyebrow">设计师案例</p>
             <h2>她们已经在 MaxLuLu 上找到了节奏</h2>
           </div>
           <div className="dl-cases">
@@ -167,7 +167,7 @@ export default function DesignerLandingPage() {
       <section className="dl-section" id="apply">
         <div className="dl-container">
           <div className="dl-section__head">
-            <p className="eyebrow">APPLICATION · 入驻申请</p>
+            <p className="eyebrow">入驻申请</p>
             <h2>提交申请，我们 3 天内回复</h2>
             <p>建议附上 3 件原创作品 + 个人简介。提交后会发送验证短信到你的手机号。</p>
           </div>
@@ -223,7 +223,7 @@ export default function DesignerLandingPage() {
       <section className="dl-section dl-section--card">
         <div className="dl-container">
           <div className="dl-section__head">
-            <p className="eyebrow">FAQ · 常见问题</p>
+            <p className="eyebrow">常见问题</p>
             <h2>关于入驻，我们听过最多的问题</h2>
           </div>
           <div className="dl-faq">

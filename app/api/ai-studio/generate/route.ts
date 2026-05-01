@@ -118,9 +118,9 @@ export async function POST(req: Request) {
 
   try {
     if (model === "gpt-image-2") {
-      if (!process.env.SUCHUANG_API_KEY) {
+      if (!process.env.YXAI_API_KEY) {
         return NextResponse.json(
-          { success: false, error: "SUCHUANG_API_KEY is not configured" },
+          { success: false, error: "YXAI_API_KEY is not configured" },
           { status: 500 }
         );
       }

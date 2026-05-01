@@ -81,8 +81,8 @@ export default function PatternGeneratePage() {
 
       <div className="ft-header">
         <div>
-          <p className="eyebrow">PATTERN STUDIO · 01</p>
-          <h1>图案生成 · Pattern Generate</h1>
+          <p className="eyebrow">图案工作室 · 01</p>
+          <h1>图案生成</h1>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <button type="button" className="ft-btn">导入历史</button>

@@ -1,111 +1,101 @@
 /**
- * 速创API（物印科技）— GPT-Image-2 生图
- * 异步模式：提交任务 → 轮询结果
+ * 永鑫科技 GPT-Image-2 — OpenAI 兼容 /images/generations
+ * 同步返回 data[0].url 或 data[0].b64_json
+ *
+ * 文件名保留为 suchuang.ts 仅为兼容历史 import 路径，
+ * 实际后端已切换到永鑫科技。
  */
 
-const API_KEY = process.env.SUCHUANG_API_KEY!;
-const BASE_URL = process.env.SUCHUANG_BASE_URL || "https://api.wuyinkeji.com";
+const API_KEY = process.env.YXAI_API_KEY!;
+const BASE_URL = process.env.YXAI_BASE_URL || "https://yxai.anthropic.edu.pl/v1";
 
-interface SubmitResponse {
-  code: number;
-  msg: string;
-  data: { id: string };
+interface OpenAIImageResponse {
+  created?: number;
+  data: Array<{
+    url?: string;
+    b64_json?: string;
+    revised_prompt?: string;
+  }>;
+  error?: { message?: string; type?: string; code?: string };
 }
 
-interface DetailResponse {
-  code: number;
-  data: {
-    task_id: string;
-    status: number; // 0=排队, 1=处理中, 2=完成, 3=失败
-    result?: string[];
-    created_at: string;
-    updated_at: string;
-  };
-}
+const SIZE_MAP: Record<string, string> = {
+  "1:1": "1024x1024",
+  "3:4": "768x1024",
+  "4:3": "1024x768",
+  "9:16": "576x1024",
+  "16:9": "1024x576",
+  "2:3": "768x1152",
+  "3:2": "1152x768",
+};
 
-export async function submitImageTask(
-  prompt: string,
-  options?: {
-    size?: string;
-    urls?: string[];
-  }
-): Promise<string> {
-  const body: Record<string, unknown> = {
-    prompt,
-    size: options?.size || "1:1",
-  };
-  if (options?.urls && options.urls.length > 0) {
-    body.urls = options.urls;
-  }
-
-  const res = await fetch(`${BASE_URL}/api/async/image_gpt`, {
-    method: "POST",
-    headers: {
-      Authorization: API_KEY,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    throw new Error(`速创API提交失败: HTTP ${res.status}`);
-  }
-
-  const data: SubmitResponse = await res.json();
-  if (data.code !== 200) {
-    throw new Error(`速创API提交失败: ${data.msg}`);
-  }
-
-  return data.data.id;
-}
-
-export async function queryTaskResult(
-  taskId: string
-): Promise<DetailResponse["data"]> {
-  const res = await fetch(
-    `${BASE_URL}/api/async/detail?key=${API_KEY}&id=${taskId}`
-  );
-
-  if (!res.ok) {
-    throw new Error(`速创API查询失败: HTTP ${res.status}`);
-  }
-
-  const data: DetailResponse = await res.json();
-  if (data.code !== 200) {
-    throw new Error(`速创API查询失败: code ${data.code}`);
-  }
-
-  return data.data;
+function normalizeSize(input?: string): string {
+  if (!input) return "1024x1024";
+  if (SIZE_MAP[input]) return SIZE_MAP[input];
+  if (/^\d+x\d+$/.test(input)) return input;
+  return "1024x1024";
 }
 
 /**
- * 提交任务并轮询等待结果。每 3 秒一次，最多 120 秒。
+ * 调永鑫科技 OpenAI 兼容生图接口。
+ * 返回图像 URL 数组（如永鑫只回 base64，会转成 data URL）。
  */
 export async function generateWithGPTImage2(
   prompt: string,
   options?: {
     size?: string;
+    n?: number;
+    /**
+     * 兼容旧调用：可传入参考图 URL 数组，自动拼接进 prompt 文本。
+     * （OpenAI 标准 /images/generations 不接受图片输入；如需图生图请用
+     * /images/edits，目前永鑫接口未启用，先以文本提示形式承接。）
+     */
     urls?: string[];
   }
 ): Promise<string[]> {
-  const taskId = await submitImageTask(prompt, options);
+  const size = normalizeSize(options?.size);
+  const n = Math.max(1, Math.min(options?.n ?? 1, 4));
 
-  const maxAttempts = 40;
-  const intervalMs = 3000;
-
-  for (let i = 0; i < maxAttempts; i++) {
-    await new Promise((resolve) => setTimeout(resolve, intervalMs));
-
-    const result = await queryTaskResult(taskId);
-
-    if (result.status === 2 && result.result && result.result.length > 0) {
-      return result.result;
-    }
-
-    if (result.status === 3) {
-      throw new Error("GPT-Image-2 生图失败");
-    }
+  let finalPrompt = prompt;
+  if (options?.urls && options.urls.length > 0) {
+    const refs = options.urls.map((u, i) => `[Reference image ${i + 1}]: ${u}`).join("\n");
+    finalPrompt = `${prompt}\n\nUse these as visual reference inputs:\n${refs}`;
   }
 
-  throw new Error("GPT-Image-2 生图超时（120秒）");
+  const res = await fetch(`${BASE_URL}/images/generations`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "gpt-image-2",
+      prompt: finalPrompt,
+      size,
+      n,
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`永鑫科技生图失败: HTTP ${res.status} ${text.slice(0, 200)}`);
+  }
+
+  const data = (await res.json()) as OpenAIImageResponse;
+
+  if (data.error) {
+    throw new Error(`永鑫科技生图失败: ${data.error.message || data.error.code || "unknown"}`);
+  }
+
+  if (!Array.isArray(data.data) || data.data.length === 0) {
+    throw new Error("永鑫科技生图失败: 返回为空");
+  }
+
+  return data.data
+    .map((item) => {
+      if (item.url) return item.url;
+      if (item.b64_json) return `data:image/png;base64,${item.b64_json}`;
+      return null;
+    })
+    .filter((u): u is string => typeof u === "string");
 }
