@@ -15,7 +15,7 @@ import {
 import "../../product-pages.css";
 
 type Props = {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
 };
 
 interface DesignerInfo {
@@ -52,13 +52,13 @@ interface DesignDetail {
   isFavorited: boolean;
 }
 
-async function fetchDetail(slug: string): Promise<DesignDetail | null> {
+async function fetchDetail(id: string): Promise<DesignDetail | null> {
   const h = await headers();
   const host = h.get("host") || "localhost:3000";
   const proto = h.get("x-forwarded-proto") || "http";
   const cookie = h.get("cookie") || "";
   try {
-    const res = await fetch(`${proto}://${host}/api/designs/${slug}`, {
+    const res = await fetch(`${proto}://${host}/api/designs/${id}`, {
       headers: cookie ? { cookie } : undefined,
       cache: "no-store",
     });
@@ -87,8 +87,8 @@ function fmtPrice(cents: number): string {
 }
 
 export default async function ProductDetailPage({ params }: Props) {
-  const { slug } = await params;
-  const detail = await fetchDetail(slug);
+  const { id } = await params;
+  const detail = await fetchDetail(id);
 
   if (!detail) {
     notFound();

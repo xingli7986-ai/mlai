@@ -208,14 +208,16 @@
   min-height: calc(100vh - var(--header-height));
 }
 .studio-root .sidebar {
-  --sb-bg: var(--color-surface-soft);
+  --sb-bg: #F8F5F0;
   --sb-card: var(--color-surface);
   --sb-text: var(--color-text-primary);
   --sb-text2: var(--color-text-secondary);
   --sb-text3: var(--color-text-muted);
   --sb-line: var(--color-border);
-  --sb-active-bg: var(--color-primary);
-  --sb-active-text: var(--color-white);
+  --sb-hover-bg: var(--color-primary-soft);
+  --sb-active-bg: #EAD8BC;
+  --sb-active-text: var(--color-text-primary);
+  --sb-active-bar: var(--color-primary);
   --sb-gold: var(--color-primary);
   --sb-gold-bg: var(--color-primary-soft);
 
@@ -281,23 +283,26 @@
   gap: 2px;
 }
 .studio-root .sidebar .group-label {
-  font-size: 10px;
-  letter-spacing: 0.24em;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--sb-text3);
-  padding: 8px 10px 4px;
+  padding: 8px 12px 4px;
   font-weight: 600;
 }
 .studio-root .sidebar .nav-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 10px;
-  border-radius: 10px;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   font-weight: 500;
-  color: var(--sb-text);
-  transition: background 0.15s ease, color 0.15s ease;
+  color: var(--sb-text2);
+  transition: background var(--motion-base), color var(--motion-base);
   text-decoration: none;
   background: none;
   border: 0;
@@ -321,7 +326,8 @@
   color: var(--sb-text2);
 }
 .studio-root .sidebar .nav-item:hover {
-  background: rgba(176, 134, 92, 0.06);
+  background: var(--sb-hover-bg);
+  color: var(--sb-text);
 }
 .studio-root .sidebar .nav-item:hover svg {
   color: var(--sb-text);
@@ -331,8 +337,18 @@
   color: var(--sb-active-text);
   font-weight: 600;
 }
+.studio-root .sidebar .nav-item.is-active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+  background: var(--sb-active-bar);
+}
 .studio-root .sidebar .nav-item.is-active svg {
-  color: var(--sb-active-text);
+  color: var(--sb-active-bar);
 }
 
 .studio-root .sidebar .nav-sub {
@@ -357,12 +373,12 @@
   flex-shrink: 0;
 }
 .studio-root .sidebar .nav-item.is-sub.is-active {
-  color: #fff;
+  color: var(--sb-active-text);
   background: var(--sb-active-bg);
   font-weight: 600;
 }
 .studio-root .sidebar .nav-item.is-sub.is-active .dot {
-  background: #fff;
+  background: var(--sb-active-bar);
 }
 
 .studio-root .sidebar .designer-card {

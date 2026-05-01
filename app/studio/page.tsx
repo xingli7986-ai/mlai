@@ -16,7 +16,7 @@ interface Tool {
 
 const PATTERN_TOOLS: Tool[] = [
   { no: "01", name: "图案生成", desc: "文字描述生成原创印花", href: "/studio/pattern/generate", enabled: true, cover: ["#c7a677", "#7d5b6e"] },
-  { no: "02", name: "风格复刻", desc: "参考图片复刻新设计", href: "/studio/pattern/replicate", enabled: false, cover: ["#9aa08d", "#1e1e1e"] },
+  { no: "02", name: "风格复刻", desc: "参考图片复刻新设计", href: "/studio/pattern/style-clone", enabled: false, cover: ["#9aa08d", "#1e1e1e"] },
   { no: "03", name: "四方连续", desc: "生成无缝平铺图案", href: "/studio/pattern/seamless", enabled: false, cover: ["#f7d4cf", "#c68a44"] },
   { no: "04", name: "图案融合", desc: "两个图案融合为新设计", href: "/studio/pattern/fusion", enabled: false, cover: ["#7d5b6e", "#0f0f10"] },
   { no: "05", name: "工艺融合", desc: "刺绣 · 蜡染 · 烫金", href: "/studio/pattern/craft", enabled: false, cover: ["#b8b176", "#c68a44"] },
@@ -29,8 +29,8 @@ const FASHION_TOOLS: Tool[] = [
   { no: "09", name: "效果渲染", desc: "线稿变写实渲染", href: "/studio/fashion/render", enabled: false, cover: ["#c68a44", "#f7d4cf"] },
   { no: "10", name: "局部改款", desc: "标记区域改款", href: "/studio/fashion/modify", enabled: true, cover: ["#9aa08d", "#7d5b6e"] },
   { no: "11", name: "灵感发散", desc: "AI 创意全新款式", href: "/studio/fashion/innovate", enabled: false, cover: ["#c7a677", "#f7d4cf"] },
-  { no: "12", name: "款式融合", desc: "两款式融合为新设计", href: "/studio/fashion/style-mix", enabled: false, cover: ["#7d5b6e", "#c68a44"] },
-  { no: "13", name: "配色系列", desc: "同款多配色方案", href: "/studio/fashion/colors", enabled: false, cover: ["#f7d4cf", "#9aa08d"] },
+  { no: "12", name: "款式融合", desc: "两款式融合为新设计", href: "/studio/fashion/style-fusion", enabled: false, cover: ["#7d5b6e", "#c68a44"] },
+  { no: "13", name: "配色系列", desc: "同款多配色方案", href: "/studio/fashion/color", enabled: false, cover: ["#f7d4cf", "#9aa08d"] },
   { no: "14", name: "精准换色", desc: "指定区域精准换色", href: "/studio/fashion/recolor", enabled: false, cover: ["#c68a44", "#0f0f10"] },
   { no: "15", name: "面料贴图", desc: "面料贴到服装上", href: "/studio/fashion/fabric", enabled: false, cover: ["#b8b176", "#7d5b6e"] },
   { no: "16", name: "图案上身", desc: "印花穿在衣服上", href: "/studio/fashion/pattern", enabled: true, cover: ["#9aa08d", "#c7a677"] },

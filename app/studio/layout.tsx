@@ -192,12 +192,12 @@ const NAV_GROUPS: NavGroup[] = [
 
 const PATTERN_SUB: NavItem[] = [
   { label: "图案生成", href: "/studio/pattern/generate", icon: "pattern", match: (p) => p === "/studio/pattern/generate" },
-  { label: "画风复刻", href: "/studio/pattern/style", icon: "pattern", match: (p) => p === "/studio/pattern/style" },
+  { label: "画风复刻", href: "/studio/pattern/style-clone", icon: "pattern", match: (p) => p === "/studio/pattern/style-clone" },
   { label: "四方连续", href: "/studio/pattern/seamless", icon: "pattern", match: (p) => p === "/studio/pattern/seamless" },
   { label: "图案融合", href: "/studio/pattern/fusion", icon: "pattern", match: (p) => p === "/studio/pattern/fusion" },
   { label: "工艺融合", href: "/studio/pattern/craft", icon: "pattern", match: (p) => p === "/studio/pattern/craft" },
   { label: "图案涂改", href: "/studio/pattern/edit", icon: "pattern", match: (p) => p === "/studio/pattern/edit" },
-  { label: "图案变清晰", href: "/studio/pattern/upscale", icon: "pattern", match: (p) => p === "/studio/pattern/upscale" },
+  { label: "图案变清晰", href: "/studio/pattern/enhance", icon: "pattern", match: (p) => p === "/studio/pattern/enhance" },
 ];
 
 const FASHION_SUB: NavItem[] = [
@@ -206,7 +206,7 @@ const FASHION_SUB: NavItem[] = [
   { label: "局部改款", href: "/studio/fashion/modify", icon: "shirt", match: (p) => p === "/studio/fashion/modify" },
   { label: "款式创新", href: "/studio/fashion/innovate", icon: "shirt", match: (p) => p === "/studio/fashion/innovate" },
   { label: "风格融合", href: "/studio/fashion/style-fusion", icon: "shirt", match: (p) => p === "/studio/fashion/style-fusion" },
-  { label: "系列配色", href: "/studio/fashion/colorway", icon: "shirt", match: (p) => p === "/studio/fashion/colorway" },
+  { label: "系列配色", href: "/studio/fashion/color", icon: "shirt", match: (p) => p === "/studio/fashion/color" },
   { label: "定向换色", href: "/studio/fashion/recolor", icon: "shirt", match: (p) => p === "/studio/fashion/recolor" },
   { label: "面料上身", href: "/studio/fashion/fabric", icon: "shirt", match: (p) => p === "/studio/fashion/fabric" },
   { label: "图案上身", href: "/studio/fashion/pattern", icon: "shirt", match: (p) => p === "/studio/fashion/pattern" },

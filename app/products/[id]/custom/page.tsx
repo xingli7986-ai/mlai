@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import "./custom.css";
 
 type Props = {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ id: string }>;
 };
 
 interface DesignDetail {
@@ -29,7 +29,7 @@ function fmtPrice(cents: number): string {
 }
 
 export default function CustomOrderPage({ params }: Props) {
-  const { slug } = use(params);
+  const { id } = use(params);
   const router = useRouter();
 
   const [detail, setDetail] = useState<DesignDetail | null>(null);
@@ -50,7 +50,7 @@ export default function CustomOrderPage({ params }: Props) {
     let alive = true;
     (async () => {
       try {
-        const res = await fetch(`/api/designs/${slug}`, { cache: "no-store" });
+        const res = await fetch(`/api/designs/${id}`, { cache: "no-store" });
         const data = await res.json();
         if (!alive) return;
         if (!res.ok) throw new Error(data.error || "加载失败");
@@ -64,7 +64,7 @@ export default function CustomOrderPage({ params }: Props) {
     return () => {
       alive = false;
     };
-  }, [slug]);
+  }, [id]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -88,7 +88,7 @@ export default function CustomOrderPage({ params }: Props) {
       const orderData = await orderRes.json();
       if (!orderRes.ok) {
         if (orderRes.status === 401) {
-          router.push(`/login?redirect=/products/${slug}/custom`);
+          router.push(`/login?redirect=/products/${id}/custom`);
           return;
         }
         throw new Error(orderData.error || "下单失败");
