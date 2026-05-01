@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { isAdmin } from "@/lib/admin";
+import RouteGuard from "@/components/auth/RouteGuard";
 
 type Section = "designs" | "group-buys" | "withdrawals";
 
@@ -52,6 +53,14 @@ function fmtDate(iso: string): string {
 }
 
 export default function AdminManagePage() {
+  return (
+    <RouteGuard allow={["admin"]}>
+      <AdminManagePageInner />
+    </RouteGuard>
+  );
+}
+
+function AdminManagePageInner() {
   const { data: session, status: authStatus } = useSession();
   const router = useRouter();
   const phone = (session?.user as { phone?: string } | undefined)?.phone;

@@ -4,6 +4,7 @@ import Link from "next/link";
 import AssetImage from "@/components/AssetImage";
 import { products } from "@/lib/home-consumer-data";
 import { Badge, Button, Input, Select, Textarea } from "@/components/ui";
+import RouteGuard from "@/components/auth/RouteGuard";
 import "../studio-home.css";
 import "./publish.css";
 
@@ -19,6 +20,14 @@ const PUBLISHED = products.slice(0, 4).map((p, i) => ({
 }));
 
 export default function PublishPage() {
+  return (
+    <RouteGuard allow={["designer", "admin"]}>
+      <PublishPageInner />
+    </RouteGuard>
+  );
+}
+
+function PublishPageInner() {
   return (
     <div className="pb-root">
       <div className="st-tabs">

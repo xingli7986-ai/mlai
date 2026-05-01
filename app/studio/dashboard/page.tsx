@@ -5,6 +5,7 @@ import Link from "next/link";
 import AssetImage from "@/components/AssetImage";
 import { products } from "@/lib/home-consumer-data";
 import { Badge, Button } from "@/components/ui";
+import RouteGuard from "@/components/auth/RouteGuard";
 import "../designer-center.css";
 import "../studio-home.css";
 
@@ -111,6 +112,14 @@ function RevenueChart() {
 }
 
 export default function DesignerCenterPage() {
+  return (
+    <RouteGuard allow={["designer", "designer_pending", "admin"]}>
+      <DesignerCenterPageInner />
+    </RouteGuard>
+  );
+}
+
+function DesignerCenterPageInner() {
   const [data, setData] = useState<DesignerDashboard | null>(null);
   const [error, setError] = useState<string | null>(null);
 
