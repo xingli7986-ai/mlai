@@ -34,6 +34,32 @@ export async function POST(req: NextRequest) {
       outTradeNo &&
       (tradeStatus === "TRADE_SUCCESS" || tradeStatus === "TRADE_FINISHED")
     ) {
+      // Prompt unlock(灵感广场 prompt 解锁)— 前缀 pu_,优先处理。
+      if (outTradeNo.startsWith("pu_")) {
+        const unlockId = outTradeNo.slice(3);
+        const unlock = await prisma.promptUnlock.findUnique({
+          where: { id: unlockId },
+          select: { id: true, status: true, inspirationWorkId: true },
+        });
+        if (unlock && unlock.status === "pending") {
+          await prisma.$transaction([
+            prisma.promptUnlock.update({
+              where: { id: unlock.id },
+              data: { status: "paid", paymentId: tradeNo },
+            }),
+            prisma.inspirationWork.update({
+              where: { id: unlock.inspirationWorkId },
+              data: { unlockCount: { increment: 1 } },
+            }),
+          ]);
+          console.log(`PromptUnlock ${unlock.id} paid, alipay trade: ${tradeNo}`);
+        }
+        return new NextResponse("success", {
+          status: 200,
+          headers: { "Content-Type": "text/plain" },
+        });
+      }
+
       // Try GroupBuyOrder first — if it matches, mark paid and activate
       // any pending invitation reward.
       const gbOrder = await prisma.groupBuyOrder.findUnique({

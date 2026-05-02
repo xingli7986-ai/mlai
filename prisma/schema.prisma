@@ -24,6 +24,12 @@ model User {
   comments      Comment[]
   invitationsSent     Invitation[] @relation("InviterUser")
   invitationsReceived Invitation[] @relation("InviteeUser")
+  inspirationWorks InspirationWork[]
+  inspirationLikes InspirationLike[]
+  inspirationFavorites InspirationFavorite[]
+  inspirationComments InspirationComment[]
+  promptUnlocks    PromptUnlock[]
+  points           UserPoints?
 }
 
 model Design {
@@ -228,6 +234,119 @@ model VerificationCode {
   createdAt DateTime @default(now())
 
   @@index([phone, code])
+}
+
+// ============================================================
+// 灵感广场(/inspiration)
+// PRD v1.2 §2.2-2.3,Sitemap v1.2 §四
+// ============================================================
+
+model InspirationWork {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id])
+  // creatorType:designer / user / brand;镜像 designer 表的 isCertified 决定视觉
+  creatorType        String   @default("user")
+  title              String
+  description        String?
+  coverImage         String
+  images             String[]
+  // 公开元数据
+  prompt             String?
+  params             Json?
+  // promptVisibility: free / paid / private
+  promptVisibility   String   @default("free")
+  unlockPrice        Int      @default(0)  // 单位:分
+  // toolType: print / repeat / tryon / fitting(对应 §1.7.1)
+  toolType           String   @default("print")
+  styleTags          String[]
+  // 商业化关联
+  isListed           Boolean  @default(false)
+  listedProductId    String?
+  // 计数 / 数据
+  likeCount          Int      @default(0)
+  favoriteCount      Int      @default(0)
+  viewCount          Int      @default(0)
+  unlockCount        Int      @default(0)
+  commentCount       Int      @default(0)
+  // 审核
+  status             String   @default("approved") // pending / approved / rejected
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  likes              InspirationLike[]
+  favorites          InspirationFavorite[]
+  comments           InspirationComment[]
+  unlocks            PromptUnlock[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([toolType])
+  @@index([promptVisibility])
+}
+
+model PromptUnlock {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id])
+  inspirationWorkId  String
+  inspirationWork    InspirationWork @relation(fields: [inspirationWorkId], references: [id])
+  paymentMethod      String   // cash / points
+  amount             Int      // 单位:分
+  platformFee        Int      @default(0) // 平台 30% 抽成
+  creatorEarning     Int      @default(0) // 创作者 70%
+  paymentId          String?
+  status             String   @default("paid") // paid / refunded
+  createdAt          DateTime @default(now())
+
+  @@unique([userId, inspirationWorkId])
+  @@index([userId])
+  @@index([inspirationWorkId])
+}
+
+model UserPoints {
+  userId       String   @id
+  user         User     @relation(fields: [userId], references: [id])
+  balance      Int      @default(0)
+  totalEarned  Int      @default(0)
+  totalSpent   Int      @default(0)
+  updatedAt    DateTime @updatedAt
+}
+
+model InspirationLike {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  inspirationWorkId String
+  inspirationWork   InspirationWork @relation(fields: [inspirationWorkId], references: [id])
+  createdAt         DateTime @default(now())
+
+  @@unique([userId, inspirationWorkId])
+  @@index([inspirationWorkId])
+}
+
+model InspirationFavorite {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  inspirationWorkId String
+  inspirationWork   InspirationWork @relation(fields: [inspirationWorkId], references: [id])
+  createdAt         DateTime @default(now())
+
+  @@unique([userId, inspirationWorkId])
+  @@index([inspirationWorkId])
+}
+
+model InspirationComment {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id])
+  inspirationWorkId String
+  inspirationWork   InspirationWork @relation(fields: [inspirationWorkId], references: [id])
+  content           String
+  createdAt         DateTime @default(now())
+
+  @@index([inspirationWorkId])
+  @@index([userId])
 }
 
 model Order {

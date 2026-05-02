@@ -7,11 +7,10 @@ import { useEffect, useState } from "react";
 type NavLink = { href: string; label: string };
 
 const NAV_LINKS: NavLink[] = [
+  // IA v1.2 §1.1 新顺序:印花衣橱 → 灵感广场 → 我的设计工作室 → 热拼专区
+  // /my-studio 留批次 2,本轮不放入 nav,避免点击 404
   { href: "/products", label: "印花衣橱" },
-  // 个性定制 → /products?intent=custom 让用户在 /products 上点击时
-  // URL 真的变化、页面 effect 重跑，并触发 hero 引导提示。
-  // IA §2.1 字面规定的目标也是 /products（"选款后进定制页"）。
-  { href: "/products?intent=custom", label: "个性定制" },
+  { href: "/inspiration", label: "灵感广场" },
   { href: "/products?sort=hot-group", label: "热拼专区" },
 ];
 

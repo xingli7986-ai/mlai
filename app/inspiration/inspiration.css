@@ -1,0 +1,298 @@
+/* 灵感广场 /inspiration —— 1:1 对照 design/high-fidelity-v2/01_inspiration_灵感广场.png
+   主配色:Porcelain Cyan + Smoked Rose;真 md §02 + §7.1 */
+@import "../home-consumer.css";
+
+.inspirationPage {
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  padding-bottom: 96px;
+  font-family: var(--font-sans);
+}
+
+.inspirationPage .container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--gutter-desktop);
+}
+@media (max-width: 767px) {
+  .inspirationPage .container { padding: 0 var(--gutter-mobile); }
+}
+
+/* === Hero === */
+.inspHero {
+  width: 100%;
+  margin-top: var(--space-10);
+}
+.inspHero__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-7);
+  align-items: end;
+}
+.inspHero__copy { min-width: 0; }
+.inspHero__eyebrow {
+  margin: 0 0 var(--space-2);
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.inspHero h1 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: var(--text-h1-size);
+  line-height: var(--text-h1-line);
+  font-weight: var(--text-h1-weight);
+  letter-spacing: var(--text-h1-tracking);
+  color: var(--color-text-primary);
+  max-width: 720px;
+}
+.inspHero__lead {
+  margin: var(--space-4) 0 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 22px;
+  max-width: 580px;
+}
+.inspHero__stats {
+  display: flex;
+  gap: var(--space-8);
+  align-items: end;
+}
+.inspHero__stat { text-align: right; }
+.inspHero__stat b {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 40px;
+  line-height: 48px;
+  font-weight: 400;
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+.inspHero__stat small {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+.inspHero__cta {
+  margin-top: var(--space-4);
+}
+
+/* === Tool / Sort tabs === */
+.inspTabs {
+  margin-top: var(--space-10);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.inspTabRow {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  flex-wrap: wrap;
+}
+.inspTab {
+  height: 36px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-elevated);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--motion-base), color var(--motion-base), border-color var(--motion-base);
+}
+.inspTab:hover { color: var(--color-primary); border-color: var(--color-primary); }
+.inspTab.is-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white);
+}
+.inspTabRow__sep { flex: 1; }
+
+/* === Layout: grid + side === */
+.inspGridSection {
+  margin-top: var(--space-8);
+}
+.inspWithSide {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: var(--space-6);
+}
+@media (max-width: 1199px) {
+  .inspWithSide { grid-template-columns: 1fr; }
+}
+.inspSide {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+  position: sticky;
+  top: 88px;
+}
+@media (max-width: 1199px) {
+  .inspSide { position: relative; top: auto; grid-template-columns: repeat(2, 1fr); }
+}
+.inspSideCard {
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-l);
+  background: var(--color-surface);
+}
+.inspSideCard__head {
+  margin-bottom: var(--space-3);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.inspSideTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.inspSideTags span {
+  height: 24px;
+  padding: 0 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-subtle);
+  border: 1px solid var(--color-divider);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+.inspSideTags span:hover { color: var(--color-primary); border-color: var(--color-primary); }
+.inspSideRanges {
+  display: grid;
+  gap: var(--space-2);
+}
+.inspSideRange {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: var(--radius-m);
+  background: var(--color-subtle);
+  border: 1px solid var(--color-divider);
+  font-size: 12px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+.inspSideRange:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.inspSideRange em { color: var(--color-text-tertiary); font-style: normal; }
+
+.inspSideJoin {
+  background: var(--color-accent-subtle);
+  border-color: rgba(186, 94, 112, 0.24);
+}
+.inspSideJoin b {
+  display: block;
+  margin-bottom: var(--space-1);
+  color: var(--color-text-primary);
+}
+.inspSideJoin p {
+  margin: 0 0 var(--space-2);
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+.inspSideJoin a {
+  color: var(--color-accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* === Card === */
+.inspCard {
+  display: flex;
+  flex-direction: column;
+  overflow: visible;
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+.inspCard__media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: var(--color-subtle);
+  border-radius: var(--radius-l);
+  overflow: hidden;
+}
+.ui-certified-frame.is-certified .inspCard__media {
+  border-radius: calc(var(--radius-l) - 1.5px);
+}
+.inspCard__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--motion-base);
+}
+.inspCard:hover .inspCard__img { transform: scale(1.03); }
+.inspCard__placeholder {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #2F5A5D 0%, #234A50 100%);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+}
+.inspCard__lockBadge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  height: 22px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  z-index: 2;
+}
+.inspCard__lockBadge--free {
+  background: rgba(47, 125, 104, 0.12);
+  color: var(--color-success);
+}
+.inspCard__lockBadge--paid {
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+}
+.inspCard__lockBadge--private {
+  background: var(--color-subtle);
+  color: var(--color-text-tertiary);
+}
+.inspCard__body {
+  padding: var(--space-3) var(--space-3) var(--space-4);
+}
+.inspCard__title {
+  margin: 0 0 var(--space-2);
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.inspCard__metaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-2);
+}
+.inspCard__metaRow .ic { margin-right: 2px; }
+
+/* Badge corner-fill 修正:认证卡内圆角与外框衔接 */
+.ui-certified-frame.is-certified .inspCard__body { padding: var(--space-3) var(--space-4) var(--space-4); }

@@ -633,3 +633,237 @@
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+/* ============== VerifiedBadge(认证 chip,真 md §6.3 / §2.3)============== */
+.ui-verified {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-certified-gold);
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  border-radius: var(--radius-full);
+  vertical-align: middle;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.ui-verified--xs { height: 16px; padding: 0 6px; font-size: 10px; line-height: 12px; margin-left: 4px; }
+.ui-verified--sm { height: 20px; padding: 0 8px; font-size: 12px; line-height: 16px; margin-left: 6px; }
+.ui-verified--md { height: 24px; padding: 0 10px; font-size: 12px; line-height: 16px; margin-left: 8px; }
+
+/* ============== CertifiedCardFrame(真 md §2.2 / §6.4)============== */
+.ui-certified-frame {
+  position: relative;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-l);
+  background: var(--color-surface);
+  transition: border-color var(--motion-base), box-shadow var(--motion-base), transform var(--motion-base);
+}
+.ui-certified-frame:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.ui-certified-frame.is-certified {
+  border-width: 1.5px;
+  border-color: var(--color-certified-gold);
+  box-shadow: var(--shadow-certified);
+}
+.ui-certified-frame.is-certified:hover {
+  box-shadow: 0 8px 24px rgba(200, 168, 117, 0.28);
+}
+/* 角标 — 通过 data-ribbon 注入文字,允许 "认证" 或自定义 */
+.ui-certified-frame.is-certified[data-ribbon]::before {
+  content: attr(data-ribbon);
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 24px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-certified-gold);
+  color: #FFFFFF;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  border-bottom-left-radius: var(--radius-m);
+  border-top-right-radius: calc(var(--radius-l) - 1.5px);
+  z-index: 2;
+  pointer-events: none;
+}
+@media (max-width: 767px) {
+  .ui-certified-frame.is-certified[data-ribbon]::before {
+    height: 22px;
+    padding: 0 6px;
+    font-size: 11px;
+  }
+}
+
+/* ============== AuthorSignature(真 md §2.4 / §8.5)============== */
+.ui-author {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  color: var(--color-text-secondary);
+}
+.ui-author__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-subtle);
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+}
+.ui-author__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ui-author__ph {
+  font-weight: 500;
+  font-size: 12px;
+}
+.ui-author--sm .ui-author__avatar { width: 24px; height: 24px; }
+.ui-author--md .ui-author__avatar { width: 36px; height: 36px; }
+.ui-author--lg .ui-author__avatar { width: 56px; height: 56px; }
+@media (min-width: 768px) {
+  .ui-author--md .ui-author__avatar { width: 40px; height: 40px; }
+}
+.ui-author__body {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.ui-author__prefix {
+  color: var(--color-text-tertiary);
+  margin-right: 2px;
+}
+.ui-author__name {
+  color: var(--color-text-primary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+.ui-author--sm .ui-author__name { font-size: 13px; line-height: 20px; }
+.ui-author--md .ui-author__name { font-size: 14px; line-height: 22px; }
+.ui-author--lg .ui-author__name { font-size: 16px; line-height: 24px; font-weight: 600; }
+
+/* ============== MasonryGrid(/inspiration / 任意 grid)============== */
+.ui-masonry {
+  display: grid;
+  grid-template-columns: repeat(var(--ui-masonry-cols-desktop, 4), minmax(0, 1fr));
+  gap: var(--ui-masonry-gap, 24px);
+  width: 100%;
+}
+@media (max-width: 1199px) {
+  .ui-masonry {
+    grid-template-columns: repeat(var(--ui-masonry-cols-tablet, 3), minmax(0, 1fr));
+  }
+}
+@media (max-width: 767px) {
+  .ui-masonry {
+    grid-template-columns: repeat(var(--ui-masonry-cols-mobile, 2), minmax(0, 1fr));
+    gap: var(--ui-masonry-gap-mobile, 12px);
+  }
+}
+
+/* ============== PromptLockOverlay(真 md §6.5)============== */
+.ui-prompt-lock {
+  position: relative;
+  border: 1px solid var(--color-divider);
+  border-radius: var(--radius-l);
+  background: #F8FAFA;
+  overflow: hidden;
+  font-family: var(--font-sans);
+}
+.ui-prompt-lock--unlocked,
+.ui-prompt-lock--free {
+  padding: 16px 20px;
+  color: var(--color-text-primary);
+  font-size: 14px;
+  line-height: 22px;
+}
+.ui-prompt-lock--private {
+  padding: 32px 20px;
+  text-align: center;
+  background: #F1F5F6;
+}
+.ui-prompt-lock--private .ui-prompt-lock__icon {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-subtle);
+  color: var(--color-text-tertiary);
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-bottom: 12px;
+}
+.ui-prompt-lock--private .ui-prompt-lock__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.ui-prompt-lock--private .ui-prompt-lock__hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}
+
+.ui-prompt-lock--paid {
+  padding: 0;
+  min-height: 220px;
+}
+.ui-prompt-lock__blur {
+  filter: blur(12px);
+  padding: 16px 20px;
+  color: var(--color-text-tertiary);
+  font-size: 13px;
+  line-height: 20px;
+  user-select: none;
+  pointer-events: none;
+  /* 让模糊后的内容也保留可见性,文字看起来像被打码 */
+  word-break: break-all;
+}
+.ui-prompt-lock__veil {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.78);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  text-align: center;
+}
+.ui-prompt-lock--paid .ui-prompt-lock__icon {
+  font-size: 22px;
+  color: var(--color-text-primary);
+}
+.ui-prompt-lock--paid .ui-prompt-lock__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.ui-prompt-lock--paid .ui-prompt-lock__hint {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+}

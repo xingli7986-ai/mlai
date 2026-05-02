@@ -33,3 +33,16 @@ export type { ToastTone } from "./Toast";
 export { default as EmptyState } from "./EmptyState";
 
 export { default as Skeleton } from "./Skeleton";
+
+export { default as VerifiedBadge } from "./VerifiedBadge";
+export type { VerifiedBadgeSize } from "./VerifiedBadge";
+
+export { default as CertifiedCardFrame } from "./CertifiedCardFrame";
+
+export { default as AuthorSignature } from "./AuthorSignature";
+export type { AuthorSignatureSize } from "./AuthorSignature";
+
+export { default as MasonryGrid } from "./MasonryGrid";
+
+export { default as PromptLockOverlay } from "./PromptLockOverlay";
+export type { PromptVisibility } from "./PromptLockOverlay";
