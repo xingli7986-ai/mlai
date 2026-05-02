@@ -49,8 +49,19 @@
   }
 }
 
-/* Image col */
-.inspGallery { display: grid; gap: var(--space-3); }
+/* Image col — 桌面:左竖排缩略 + 主图右(对照稿 03 布局)
+   移动:主图上 + 缩略下横排 */
+.inspGallery {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: start;
+}
+@media (max-width: 767px) {
+  .inspGallery {
+    grid-template-columns: 1fr;
+  }
+}
 .inspGallery__main {
   width: 100%;
   aspect-ratio: 4 / 5;
@@ -59,6 +70,11 @@
   border: 1px solid var(--color-border);
   overflow: hidden;
   position: relative;
+  grid-column: 2;
+  grid-row: 1;
+}
+@media (max-width: 767px) {
+  .inspGallery__main { grid-column: 1; grid-row: 1; }
 }
 .inspGallery__main img {
   width: 100%;
@@ -76,8 +92,18 @@
 }
 .inspGallery__thumbs {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: 1fr;
   gap: var(--space-2);
+  grid-column: 1;
+  grid-row: 1;
+}
+@media (max-width: 767px) {
+  .inspGallery__thumbs {
+    grid-template-columns: repeat(4, 1fr);
+    grid-column: 1;
+    grid-row: 2;
+    margin-top: var(--space-2);
+  }
 }
 .inspGallery__thumb {
   aspect-ratio: 1;

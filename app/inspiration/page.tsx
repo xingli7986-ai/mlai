@@ -161,7 +161,10 @@ function InspirationBody() {
           <div className="inspHero__overlay" aria-hidden />
           <div className="inspHero__inner">
             <div className="inspHero__copy">
-              <p className="inspHero__eyebrow">INSPIRATION SQUARE · 灵感广场</p>
+              <p className="inspHero__eyebrow">
+                灵感广场<span className="slash"> / </span>inspiration
+              </p>
+              <p className="inspHero__display">Fashion For You</p>
               <h1>每一朵印花,都由你绽放</h1>
               <p className="inspHero__lead">
                 展示创作过程 · 解锁 prompt · 基于喜欢的款式继续创作。
@@ -280,6 +283,18 @@ function InspirationBody() {
                         ) : (
                           <div className="inspCard__placeholder">{w.title.slice(0, 4)}</div>
                         )}
+                        <button
+                          type="button"
+                          className="inspCard__like"
+                          aria-label="收藏"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // 收藏交互留批次 2 接 InspirationFavorite API;此处仅 UI 占位
+                          }}
+                        >
+                          ♡
+                        </button>
                         {lockBadgeForCard(w)}
                       </div>
                       <div className="inspCard__body">
