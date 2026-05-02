@@ -41,24 +41,18 @@ const STYLE_TAGS = [
   "极简",
 ];
 
-// 真实模特图本地路径 — 见 public/assets/images/home/* (28 张)。
-// URL 路径含空格,需要 URL 编码;Next.js 自动处理 %20。
-// 选 14 张分给 14 条 InspirationWork。
+// 占位 URL —— 不要把 public/assets/images/home/ 的图当作品封面用,那是首页占位图,
+// 不是创作者作品。等 GPT(或真实创作者)提供作品图后再替换。
+// 当前 URL 在测试环境不可达,前端 <img> 走 onError 路径,呈现纯色 / 渐变占位。
 const SAMPLE_COVERS = [
-  "/assets/images/home/02-featured-designs/dresses-summer/01-ink-garden-knit-wrap-dress.png",
-  "/assets/images/home/02-featured-designs/dresses-summer/02-camellia-ink-v-neck-dress.png",
-  "/assets/images/home/02-featured-designs/dresses-summer/03-black-white-abstract-wrap-dress.png",
-  "/assets/images/home/02-featured-designs/dresses-summer/04-wine-rose-waist-tie-dress.png",
-  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_22_48 PM.png",
-  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_27_48 PM.png",
-  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_27_57 PM.png",
-  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_28_33 PM.png",
-  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_28_45 PM.png",
-  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_28_53 PM.png",
-  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_29_02 PM.png",
-  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_29_09 PM.png",
-  "/assets/images/home/03-scenes/commute-knit-print-dress.png",
-  "/assets/images/home/03-scenes/date-floral-wrap-dress.png",
+  "https://maxlulu-assets.r2.dev/inspiration/work-01.jpg",
+  "https://maxlulu-assets.r2.dev/inspiration/work-02.jpg",
+  "https://maxlulu-assets.r2.dev/inspiration/work-03.jpg",
+  "https://maxlulu-assets.r2.dev/inspiration/work-04.jpg",
+  "https://maxlulu-assets.r2.dev/inspiration/work-05.jpg",
+  "https://maxlulu-assets.r2.dev/inspiration/work-06.jpg",
+  "https://maxlulu-assets.r2.dev/inspiration/work-07.jpg",
+  "https://maxlulu-assets.r2.dev/inspiration/work-08.jpg",
 ];
 
 interface Spec {

@@ -156,12 +156,8 @@ function InspirationBody() {
 
       <div className="container">
         <section className="inspHero">
-          <div className="inspHero__bg" aria-hidden>
-            <img
-              src="/assets/images/home/01-hero/ChatGPT Image Apr 26, 2026, 02_09_53 PM.png"
-              alt=""
-            />
-          </div>
+          {/* 等待 GPT 提供 hero banner 图 — 当前用 CSS 渐变占位,布局保留 480px(移动 380px) */}
+          <div className="inspHero__bg inspHero__bg--placeholder" aria-hidden />
           <div className="inspHero__overlay" aria-hidden />
           <div className="inspHero__inner">
             <div className="inspHero__copy">

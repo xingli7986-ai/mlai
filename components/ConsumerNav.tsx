@@ -6,19 +6,13 @@ import { useEffect, useState } from "react";
 
 type NavLink = { href: string; label: string };
 
-// 真版 01 稿顶栏 4 项:工作室 / 设计师 / 趋势 / 定价
-// 这与 IA v1.2 §1.1 文字版本(印花衣橱 / 灵感广场 / 我的设计工作室 / 热拼专区)
-// 不一致 — 以稿为准(用户:稿件没画的元素严禁发挥,有的元素严禁删除)。
-// 路由映射(尽量落到现有路径,不新建 placeholder):
-//   工作室   → /my-studio   (批次 2 上线;暂时 404)
-//   设计师   → /studio       (existing 设计师入驻 / 列表)
-//   趋势     → /inspiration  (灵感广场就是趋势汇)
-//   定价     → /studio/join  (existing 设计师分润页)
+// IA v1.2 §1.1 — 顶栏 4 项,顺序 + 文字以 IA 文档为准。
+// /my-studio 在批次 2 上线前为 404,但 IA 已定义,导航项保留。
 const NAV_LINKS: NavLink[] = [
-  { href: "/my-studio", label: "工作室" },
-  { href: "/studio", label: "设计师" },
-  { href: "/inspiration", label: "趋势" },
-  { href: "/studio/join", label: "定价" },
+  { href: "/products", label: "印花衣橱" },
+  { href: "/inspiration", label: "灵感广场" },
+  { href: "/my-studio", label: "我的设计工作室" },
+  { href: "/products?sort=hot-group", label: "热拼专区" },
 ];
 
 export default function ConsumerNav({
