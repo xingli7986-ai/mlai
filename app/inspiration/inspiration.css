@@ -40,13 +40,12 @@
   object-fit: cover;
   object-position: center 18%;
 }
-/* 占位:等 GPT 提供 hero banner 图(对照 01_inspiration_灵感广场.png 模特大图区);
-   暂用低对比的瓷青 → 烟粉对角渐变,与品牌主配色一致,不喧宾夺主。 */
+/* Hero banner — public/seed-images/inspiration/...06_17_43 PM (9).png(模特半身横幅) */
 .inspHero__bg--placeholder {
-  background:
-    radial-gradient(ellipse at 78% 50%, rgba(186, 94, 112, 0.22) 0%, transparent 55%),
-    radial-gradient(ellipse at 30% 80%, rgba(47, 90, 93, 0.16) 0%, transparent 55%),
-    linear-gradient(135deg, var(--color-bg) 0%, var(--color-subtle) 100%);
+  background-image: url('/seed-images/inspiration/ChatGPT Image May 2, 2026, 06_17_43 PM (9).png');
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
 }
 /* 左侧米色渐变,与右侧模特图过渡 — 模仿稿 01 hero 文字浮在浅色一侧 */
 .inspHero__overlay {

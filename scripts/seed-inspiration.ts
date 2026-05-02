@@ -41,19 +41,54 @@ const STYLE_TAGS = [
   "极简",
 ];
 
-// 占位 URL —— 不要把 public/assets/images/home/ 的图当作品封面用,那是首页占位图,
-// 不是创作者作品。等 GPT(或真实创作者)提供作品图后再替换。
-// 当前 URL 在测试环境不可达,前端 <img> 走 onError 路径,呈现纯色 / 渐变占位。
-const SAMPLE_COVERS = [
-  "https://maxlulu-assets.r2.dev/inspiration/work-01.jpg",
-  "https://maxlulu-assets.r2.dev/inspiration/work-02.jpg",
-  "https://maxlulu-assets.r2.dev/inspiration/work-03.jpg",
-  "https://maxlulu-assets.r2.dev/inspiration/work-04.jpg",
-  "https://maxlulu-assets.r2.dev/inspiration/work-05.jpg",
-  "https://maxlulu-assets.r2.dev/inspiration/work-06.jpg",
-  "https://maxlulu-assets.r2.dev/inspiration/work-07.jpg",
-  "https://maxlulu-assets.r2.dev/inspiration/work-08.jpg",
+// 真实素材 — public/seed-images/inspiration/ 8 张模特卡图。
+// 文件名保留原样(含空格 / 括号),Next.js 静态资源会自动 URL-encode。
+const CARD_IMAGES = [
+  "/seed-images/inspiration/ChatGPT Image May 2, 2026, 06_17_37 PM (1).png", // 0
+  "/seed-images/inspiration/ChatGPT Image May 2, 2026, 06_17_38 PM (2).png", // 1
+  "/seed-images/inspiration/ChatGPT Image May 2, 2026, 06_17_38 PM (3).png", // 2
+  "/seed-images/inspiration/ChatGPT Image May 2, 2026, 06_17_39 PM (4).png", // 3
+  "/seed-images/inspiration/ChatGPT Image May 2, 2026, 06_17_40 PM (5).png", // 4
+  "/seed-images/inspiration/ChatGPT Image May 2, 2026, 06_17_41 PM (6).png", // 5
+  "/seed-images/inspiration/ChatGPT Image May 2, 2026, 06_17_42 PM (7).png", // 6
+  "/seed-images/inspiration/ChatGPT Image May 2, 2026, 06_17_43 PM (8).png", // 7
 ];
+
+// 14 条作品 → 8 张图配对(主图 + 详情页缩略 1-2 张,允许复用)。
+// 配图基于 title.colors 的视觉协调判断:
+//   深色调(墨/工笔/扎染晚霞):2 / 7  — 06_17_38 (3) 和 06_17_43 (8) 偏暗
+//   浅瓷青(瓷/海风/鸢尾/薄荷/极简):4 / 6 — 06_17_40 (5) 和 06_17_42 (7) 偏浅
+//   暖金(鎏金/Art Deco):3   — 06_17_39 (4) 阳光暖调
+//   雾紫/烟粉(雾紫扎染/普通用户):5  — 06_17_41 (6) 雾紫粉调最重
+//   深绿+鎏金(热带花鸟):0    — 06_17_37 (1) 深底花卉最饱满
+//   栗子单独取 1            — 06_17_38 (2) 中性较浅
+const COVER_MAP: Record<string, { primary: number; thumbs: number[] }> = {
+  "墨韵山茶 · 灵感线稿":     { primary: 2, thumbs: [7, 0] },
+  "海风蓝调 · 几何瓷青":     { primary: 4, thumbs: [6, 1] },
+  "鎏金落日 · 法式中长":     { primary: 3, thumbs: [0, 5] },
+  "工笔牡丹 · 不公开私稿":   { primary: 7, thumbs: [2] },
+  "鸢尾蓝 · 法式中袖灵感":   { primary: 6, thumbs: [4, 5] },
+  "薄荷晨露 · 四方连续":     { primary: 4, thumbs: [6] },
+  "Art Deco 黄金分割":     { primary: 3, thumbs: [0] },
+  "极简白噪 · 几何拼接稿":   { primary: 6, thumbs: [4] },
+  "雾紫扎染 · A 字试衣":     { primary: 5, thumbs: [1, 4] },
+  "热带花鸟 · 印花生成":     { primary: 0, thumbs: [3, 7] },
+  "扎染晚霞":               { primary: 7, thumbs: [2] },
+  "桃子的第一件创作":         { primary: 5, thumbs: [1] },
+  "栗子的几何小试":           { primary: 1, thumbs: [4] },
+  "桃子的扎染私稿":           { primary: 5, thumbs: [2] },
+};
+
+function coverFor(title: string): { primary: string; images: string[] } {
+  const m = COVER_MAP[title];
+  if (!m) {
+    // 未定义 → fallback 到 CARD_IMAGES[0]
+    return { primary: CARD_IMAGES[0], images: [CARD_IMAGES[0]] };
+  }
+  const primary = CARD_IMAGES[m.primary];
+  const thumbs = m.thumbs.map((i) => CARD_IMAGES[i]);
+  return { primary, images: [primary, ...thumbs] };
+}
 
 interface Spec {
   title: string;
@@ -104,10 +139,6 @@ async function ensureConsumerUser(spec: typeof CONSUMER_USERS[number]) {
     update: { name: spec.name, avatar: spec.avatar },
     create: { phone: spec.phone, name: spec.name, avatar: spec.avatar, isDesigner: false },
   });
-}
-
-function pickCover(i: number): string {
-  return SAMPLE_COVERS[i % SAMPLE_COVERS.length];
 }
 
 /**
@@ -209,8 +240,7 @@ async function main() {
       continue;
     }
 
-    const cover = pickCover(i);
-    const second = pickCover(i + 2);
+    const cover = coverFor(spec.title);
 
     const existing = await prisma.inspirationWork.findFirst({
       where: { title: spec.title },
@@ -222,7 +252,7 @@ async function main() {
     if (existing) {
       await prisma.inspirationWork.update({
         where: { id: existing.id },
-        data: { coverImage: cover, images: [cover, second], params },
+        data: { coverImage: cover.primary, images: cover.images, params },
       });
       updated++;
       continue;
@@ -234,8 +264,8 @@ async function main() {
         creatorType: spec.creatorType,
         title: spec.title,
         description: spec.description,
-        coverImage: cover,
-        images: [cover, second],
+        coverImage: cover.primary,
+        images: cover.images,
         prompt: spec.promptVisibility === "private" ? null : spec.prompt,
         params,
         promptVisibility: spec.promptVisibility,

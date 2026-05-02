@@ -674,34 +674,26 @@
 .ui-certified-frame.is-certified:hover {
   box-shadow: 0 8px 24px rgba(200, 168, 117, 0.28);
 }
-/* 角标 — 通过 data-ribbon 注入文字,允许 "认证" 或自定义 */
+/* 角标 — 三角金丝带,真图(seed-images/inspiration/...05_57_48 PM (10).png)
+   按真 md §02 + 99_开发注意事项汇总:右上角,56×56px(移动 44×44px) */
 .ui-certified-frame.is-certified[data-ribbon]::before {
-  content: attr(data-ribbon);
+  content: "";
   position: absolute;
   top: 0;
   right: 0;
-  height: 24px;
-  padding: 0 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-certified-gold);
-  color: #FFFFFF;
-  font-family: var(--font-sans);
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  border-bottom-left-radius: var(--radius-m);
-  border-top-right-radius: calc(var(--radius-l) - 1.5px);
+  width: 56px;
+  height: 56px;
+  background-image: url('/seed-images/inspiration/ChatGPT Image May 2, 2026, 05_57_48 PM (10).png');
+  background-size: contain;
+  background-position: top right;
+  background-repeat: no-repeat;
   z-index: 2;
   pointer-events: none;
 }
 @media (max-width: 767px) {
   .ui-certified-frame.is-certified[data-ribbon]::before {
-    height: 22px;
-    padding: 0 6px;
-    font-size: 11px;
+    width: 44px;
+    height: 44px;
   }
 }
 
