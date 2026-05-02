@@ -160,10 +160,28 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  /* Inter / 思源黑体 / 思源宋体 都自带 tabular figures — 全局开启等宽数字
+     与衬线对齐数字（lining），让价格 / 统计 / 点赞数等数字在中英混排里
+     与中文基线对齐，并在不同字号下保持等宽，避免回退到 system-ui 后
+     出现高度 / 宽度突兀的问题。
+     "tnum" = tabular numerals;
+     "lnum" = lining numerals (与 oldstyle 区分，所有数字与大写 X 等高)。 */
+  font-feature-settings: "tnum" on, "lnum" on;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-serif);
+}
+
+/* 显式声明数字内容的元素：价格 / 统计值 / 倒计时 / ID / 编号。
+   .num-display = 数字应当继承等宽特性的兜底类，必要时可加在元素上。
+   Already inherited from body — these styles ensure no descendant rule
+   accidentally turns the feature off. */
+.num-display,
+.num-tabular {
+  font-feature-settings: "tnum" on, "lnum" on;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 /* Homepage animations */
