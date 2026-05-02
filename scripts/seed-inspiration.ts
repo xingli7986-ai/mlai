@@ -110,6 +110,67 @@ function pickCover(i: number): string {
   return SAMPLE_COVERS[i % SAMPLE_COVERS.length];
 }
 
+/**
+ * 根据 title + prompt + creatorType 推导 params。规则:
+ *   - 普通用户(桃子/栗子):colors = ["#BA5E70", "#6B767D"]
+ *   - 标题含"墨" / "工笔" / "扎染晚霞":colors = ["#2B2F33", "#BA5E70"]
+ *   - 标题含"瓷" / "海风" / "蓝调" / "鸢尾" / "瓷青":colors = ["#2F5A5D", "#FFFFFF"]
+ *   - 标题含"鎏金" / "Art Deco" / "金":colors = ["#C8A875", "#2B2F33"]
+ *   - 标题含"薄荷" / "白噪" / "极简":colors = ["#A3CACE", "#F8F3EC"]
+ *   - 标题含"雾紫" / "扎染"(且非"扎染晚霞"):colors = ["#7D5B6E", "#BA5E70"]
+ *   - 标题含"热带花鸟":colors = ["#2F5A5D", "#C8A875"]
+ *
+ *   fabric:prompt 含 silk / 真丝 → silk;含 linen / 亚麻 → linen;否则 knit
+ */
+function derivedParams(spec: Spec): { colors: string[]; fabric: "silk" | "knit" | "linen" } {
+  const t = spec.title;
+  const p = spec.prompt.toLowerCase();
+  const lower = t.toLowerCase();
+
+  // fabric 推断
+  let fabric: "silk" | "knit" | "linen" = "knit";
+  if (/silk|真丝/.test(p) || /silk|真丝/.test(t)) fabric = "silk";
+  else if (/linen|亚麻/.test(p) || /linen|亚麻/.test(t)) fabric = "linen";
+
+  // 普通用户优先级最高
+  if (spec.creatorType === "user") {
+    return { colors: ["#BA5E70", "#6B767D"], fabric };
+  }
+
+  // 1. 墨 / 工笔 / 扎染晚霞 — 注意"扎染晚霞"是字面量整体匹配,优先于纯"扎染"
+  if (t.includes("墨") || t.includes("工笔") || t.includes("扎染晚霞")) {
+    return { colors: ["#2B2F33", "#BA5E70"], fabric };
+  }
+
+  // 2. 瓷 / 海风 / 蓝调 / 鸢尾 / 瓷青
+  if (t.includes("瓷") || t.includes("海风") || t.includes("蓝调") || t.includes("鸢尾")) {
+    return { colors: ["#2F5A5D", "#FFFFFF"], fabric };
+  }
+
+  // 3. 鎏金 / Art Deco / 金 (注意:Art Deco 不区分大小写)
+  if (t.includes("鎏金") || lower.includes("art deco") || t.includes("金")) {
+    return { colors: ["#C8A875", "#2B2F33"], fabric };
+  }
+
+  // 4. 薄荷 / 白噪 / 极简
+  if (t.includes("薄荷") || t.includes("白噪") || t.includes("极简")) {
+    return { colors: ["#A3CACE", "#F8F3EC"], fabric };
+  }
+
+  // 5. 热带花鸟(放在"扎染"前,虽然不冲突,但语义优先)
+  if (t.includes("热带花鸟")) {
+    return { colors: ["#2F5A5D", "#C8A875"], fabric };
+  }
+
+  // 6. 雾紫 / 扎染(此时已经过滤掉"扎染晚霞")
+  if (t.includes("雾紫") || t.includes("扎染")) {
+    return { colors: ["#7D5B6E", "#BA5E70"], fabric };
+  }
+
+  // fallback:维持旧默认(理论上 14 条全覆盖,这条不会命中)
+  return { colors: ["#2F5A5D", "#BA5E70"], fabric };
+}
+
 async function main() {
   console.log("Seeding 14 InspirationWork…");
 
@@ -156,10 +217,12 @@ async function main() {
       select: { id: true },
     });
 
+    const params = derivedParams(spec);
+
     if (existing) {
       await prisma.inspirationWork.update({
         where: { id: existing.id },
-        data: { coverImage: cover, images: [cover, second] },
+        data: { coverImage: cover, images: [cover, second], params },
       });
       updated++;
       continue;
@@ -174,7 +237,7 @@ async function main() {
         coverImage: cover,
         images: [cover, second],
         prompt: spec.promptVisibility === "private" ? null : spec.prompt,
-        params: { fabric: "knit", colors: ["#2F5A5D", "#BA5E70"] },
+        params,
         promptVisibility: spec.promptVisibility,
         unlockPrice: spec.unlockPrice,
         toolType: spec.toolType,
