@@ -24,14 +24,14 @@
 .st-root h1, .st-root h2, .st-root h3, .st-root h4 {
   margin: 0;
   color: var(--st-text);
-  font-family: "Noto Serif SC", Georgia, serif;
+  font-family: var(--font-serif);
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 .st-root .eyebrow {
   margin: 0 0 6px;
   color: var(--st-gold);
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-size: 11px;
   letter-spacing: 0.22em;
 }
@@ -198,7 +198,7 @@
   position: absolute;
   top: 8px;
   left: 10px;
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-weight: 700;
   font-size: 14px;
   color: rgba(255,255,255,0.78);

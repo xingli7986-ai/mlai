@@ -19,8 +19,8 @@
   --shadow: 0 22px 70px rgba(33, 25, 18, 0.12);
   --radius: 20px;
   --radius-sm: 12px;
-  --serif: var(--font-display), "Noto Serif SC", "Songti SC", "SimSun", serif;
-  --sans: var(--font-body), "PingFang SC", "Microsoft YaHei", Inter, Arial, sans-serif;
+  --serif: var(--font-serif);
+  --sans: var(--font-sans);
   background: var(--ivory);
   color: var(--charcoal);
   font-family: var(--sans);

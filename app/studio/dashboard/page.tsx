@@ -214,7 +214,7 @@ function DesignerCenterPageInner() {
           <div className="dc-card" style={{ background: "linear-gradient(135deg, var(--dc-gold-bg), rgba(176,134,92,0.02))" }}>
             <div style={{ display: "grid", gap: 4, marginBottom: 14 }}>
               <small style={{ fontSize: 12, color: "var(--dc-text2)" }}>本月可提现</small>
-              <b style={{ fontFamily: 'var(--font-display, "Cormorant Garamond"), serif', fontSize: 32, color: "var(--dc-gold)", lineHeight: 1, fontWeight: 700 }}>¥6,582.40</b>
+              <b style={{ fontFamily: "var(--font-serif)", fontSize: 32, color: "var(--dc-gold)", lineHeight: 1, fontWeight: 700 }}>¥6,582.40</b>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <Button variant="primary" block>立即提现</Button>

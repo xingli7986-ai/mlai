@@ -27,7 +27,7 @@
   margin: 0;
   padding: 32px clamp(16px, 3vw, 36px) 80px;
   min-height: calc(100vh - var(--header-height));
-  font-family: var(--sans, "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif);
+  font-family: var(--font-sans);
 }
 
 .dl-root h1,
@@ -36,7 +36,7 @@
 .dl-root h4 {
   margin: 0;
   color: var(--dl-text);
-  font-family: "Noto Serif SC", Georgia, serif;
+  font-family: var(--font-serif);
   font-weight: 700;
   letter-spacing: -0.01em;
 }
@@ -44,7 +44,7 @@
 .dl-root .eyebrow {
   margin: 0 0 10px;
   color: var(--dl-gold);
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.24em;
@@ -100,7 +100,7 @@
 }
 
 .dl-hero__stat b {
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-size: 32px;
   font-weight: 700;
   color: var(--dl-gold);
@@ -353,7 +353,7 @@
   background: var(--dl-card);
   border: 2px solid var(--dl-gold);
   color: var(--dl-gold);
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-size: 22px;
   font-weight: 700;
   display: inline-flex;
@@ -419,7 +419,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-size: 20px;
   font-weight: 700;
   border: 1px solid var(--dl-gold-line);
@@ -458,7 +458,7 @@
 }
 
 .dl-case__stats b {
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-size: 20px;
   color: var(--dl-gold);
   font-weight: 700;

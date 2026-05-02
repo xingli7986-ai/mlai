@@ -296,7 +296,7 @@ export default function PatternSeamlessPage() {
                   <circle cx="50" cy="50" r="42" stroke="var(--ft-gold)" strokeWidth="8" fill="none" strokeLinecap="round" strokeDasharray={`${0.96 * 264} 264`} transform="rotate(-90 50 50)" />
                 </svg>
                 <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                  <b style={{ fontFamily: "var(--font-display, Georgia)", fontSize: 22, color: "var(--ft-gold)", lineHeight: 1, fontWeight: 700 }}>96%</b>
+                  <b style={{ fontFamily: "var(--font-serif)", fontSize: 22, color: "var(--ft-gold)", lineHeight: 1, fontWeight: 700 }}>96%</b>
                   <small style={{ fontSize: 10, color: "var(--ft-text2)" }}>无缝度</small>
                 </div>
               </div>

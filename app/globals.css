@@ -94,9 +94,44 @@
   --background: var(--warm-ivory);
   --foreground: var(--deep-noir);
 
-  /* Typography */
-  --font-display: var(--font-playfair), "Noto Serif SC", "Songti SC", "SimSun", serif;
-  --font-body: var(--font-cormorant), "Noto Serif SC", "Songti SC", "SimSun", serif;
+  /* ==========================================================================
+     Typography — canonical font tokens (2026-05-01 font scheme update)
+
+     Title  → Playfair Display + Noto Serif SC (思源宋体) + serif fallbacks
+     Body   → Inter + Noto Sans SC (思源黑体) + system-ui fallbacks
+
+     The next/font/google variables (--font-playfair, --font-inter,
+     --font-noto-serif-sc, --font-noto-sans-sc) are declared on <html> in
+     app/layout.tsx and inherit down. The --font-display / --font-body
+     names are kept as aliases so existing CSS continues to resolve.
+     ========================================================================== */
+  --font-serif:
+    var(--font-playfair),
+    var(--font-noto-serif-sc),
+    "Noto Serif SC",
+    "Songti SC",
+    "SimSun",
+    Georgia,
+    serif;
+  --font-sans:
+    var(--font-inter),
+    var(--font-noto-sans-sc),
+    "Noto Sans SC",
+    "PingFang SC",
+    "Microsoft YaHei",
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+
+  /* Legacy aliases — DO NOT introduce in new code. Kept so page-scoped
+     aliases like `.studio-root { --serif: var(--font-display); }` keep
+     resolving after the rename. */
+  --font-display: var(--font-serif);
+  --font-body: var(--font-sans);
 }
 
 @theme inline {
@@ -117,17 +152,18 @@
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);
-  --font-sans: var(--font-body);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-body);
+  font-family: var(--font-sans);
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
+  font-family: var(--font-serif);
 }
 
 /* Homepage animations */

@@ -33,9 +33,9 @@
   --container: 1200px;
   --shadow-soft: 0 18px 50px rgba(80, 55, 35, 0.08);
   --shadow-card: 0 12px 30px rgba(60, 40, 25, 0.07);
-  --serif: "Noto Serif SC", "Songti SC", "SimSun", Georgia, serif;
-  --sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
-  --display: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+  --serif: var(--font-serif);
+  --sans: var(--font-sans);
+  --display: var(--font-serif);
 }
 
 * { box-sizing: border-box; }

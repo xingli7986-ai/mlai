@@ -22,7 +22,7 @@
 
 .dc-root h1, .dc-root h2, .dc-root h3, .dc-root h4 {
   color: var(--dc-text);
-  font-family: "Noto Serif SC", var(--serif), Georgia, serif;
+  font-family: var(--font-serif);
   font-weight: 700;
   letter-spacing: -0.01em;
   margin: 0;
@@ -38,7 +38,7 @@
 .dc-greet .eyebrow {
   margin: 0 0 6px;
   color: var(--dc-gold);
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-size: 12px;
   letter-spacing: 0.2em;
 }
@@ -118,7 +118,7 @@
   gap: 4px;
 }
 .dc-stat__num b {
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-size: 28px;
   font-weight: 700;
   color: var(--dc-text);
@@ -335,7 +335,7 @@
   margin-top: 6px;
 }
 .dc-work__price {
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-weight: 700;
   font-size: 16px;
   color: var(--dc-gold);
@@ -369,7 +369,7 @@
 .dc-table .col-id { color: var(--dc-text3); font-family: monospace; }
 .dc-table .col-amount {
   text-align: right;
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-weight: 700;
   color: var(--dc-gold);
 }
@@ -450,7 +450,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-size: 24px;
   font-weight: 700;
   border: 1px solid var(--dc-border);
@@ -496,7 +496,7 @@
 .dc-mini-stat b {
   display: block;
   margin-top: 4px;
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-weight: 700;
   font-size: 18px;
   color: var(--dc-text);

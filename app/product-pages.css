@@ -32,7 +32,7 @@
 }
 
 .productBrand span {
-  font-family: "Cormorant Garamond", "Noto Serif SC", Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 28px;
   letter-spacing: -.03em;
 }
@@ -81,7 +81,7 @@
 .detailSection h2,
 .storyPanel h2 {
   margin: 0;
-  font-family: "Noto Serif SC", "Songti SC", "SimSun", Georgia, serif;
+  font-family: var(--font-serif);
   font-weight: 400;
   letter-spacing: -.055em;
   color: var(--text-main);
@@ -200,7 +200,7 @@
   position: absolute;
   right: 20px;
   top: -21px;
-  font-family: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-serif);
   color: rgba(255,250,245,.9);
   font-size: 48px;
   line-height: 1;
@@ -250,7 +250,7 @@
 }
 
 .collectionCard__meta strong {
-  font-family: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 25px;
 }
 
@@ -366,7 +366,7 @@
 }
 
 .detailPriceRow strong {
-  font-family: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 42px;
   line-height: 1;
 }
@@ -587,7 +587,7 @@
 
 .timelineGrid span {
   color: var(--gold);
-  font-family: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 28px;
 }
 
@@ -609,7 +609,7 @@
 }
 
 .productNotFound h1 {
-  font-family: "Noto Serif SC", "Songti SC", Georgia, serif;
+  font-family: var(--font-serif);
   font-weight: 400;
   font-size: 48px;
 }

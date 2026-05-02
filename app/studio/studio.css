@@ -12,8 +12,8 @@
   --studio-rose: #c98586;
   --studio-rose-dark: #a55f62;
   --studio-sage: #9aa08d;
-  --serif: var(--font-display);
-  --sans: var(--font-body);
+  --serif: var(--font-serif);
+  --sans: var(--font-sans);
   background: var(--studio-noir);
   color: var(--studio-text);
   min-height: 100vh;

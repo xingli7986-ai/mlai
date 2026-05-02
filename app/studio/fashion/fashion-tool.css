@@ -20,14 +20,14 @@
 .ft-root h1, .ft-root h2 {
   margin: 0;
   color: var(--ft-text);
-  font-family: "Noto Serif SC", Georgia, serif;
+  font-family: var(--font-serif);
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 .ft-root .eyebrow {
   margin: 0 0 6px;
   color: var(--ft-gold);
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-size: 12px;
   letter-spacing: 0.22em;
 }

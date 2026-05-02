@@ -42,11 +42,11 @@ function PdfCover() {
         <span>TP-2604 · v3.2</span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", textAlign: "center", gap: 8 }}>
-        <div style={{ fontFamily: "var(--font-display, Georgia)", fontSize: 32, fontWeight: 700, color: "var(--ft-text)", letterSpacing: "0.08em" }}>
+        <div style={{ fontFamily: "var(--font-serif)", fontSize: 32, fontWeight: 700, color: "var(--ft-text)", letterSpacing: "0.08em" }}>
           MaxLuLu
         </div>
         <div style={{ fontSize: 10, color: "var(--ft-gold)", letterSpacing: "0.3em" }}>TECH PACK</div>
-        <div style={{ marginTop: 18, fontSize: 11, color: "var(--ft-text)", fontFamily: "Noto Serif SC, serif" }}>
+        <div style={{ marginTop: 18, fontSize: 11, color: "var(--ft-text)", fontFamily: "var(--font-serif)" }}>
           墨影花园针织印花裹身裙
         </div>
         <div style={{ fontSize: 9, color: "var(--ft-text3)" }}>SS 26 · CR-2604</div>
@@ -393,7 +393,7 @@ export default function TechPackExportPage() {
               {HISTORY.map((h, i) => (
                 <div key={h.id} className="ft-history__item">
                   <div className="ft-history__media" style={{ background: "#fdfaf4", padding: 4, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontFamily: "var(--font-display, Georgia)", fontWeight: 700, fontSize: 10, color: "var(--ft-gold)" }}>PDF</span>
+                    <span style={{ fontFamily: "var(--font-serif)", fontWeight: 700, fontSize: 10, color: "var(--ft-gold)" }}>PDF</span>
                   </div>
                   <div>
                     <b>{h.id} · {h.v}</b>

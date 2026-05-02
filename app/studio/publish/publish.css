@@ -20,7 +20,7 @@
 .pb-root h1, .pb-root h2 {
   margin: 0;
   color: var(--pb-text);
-  font-family: "Noto Serif SC", Georgia, serif;
+  font-family: var(--font-serif);
   font-weight: 700;
   letter-spacing: -0.01em;
 }
@@ -35,7 +35,7 @@
 .pb-header .eyebrow {
   margin: 0 0 6px;
   color: var(--pb-gold);
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-size: 12px;
   letter-spacing: 0.22em;
 }
@@ -82,7 +82,7 @@
   background: var(--pb-card);
 }
 .pb-aside b {
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-size: 13px;
   letter-spacing: 0.04em;
   color: var(--pb-text);
@@ -114,7 +114,7 @@
 }
 .pb-card h2 {
   margin: 0 0 14px;
-  font-family: "Noto Serif SC", Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 16px;
   font-weight: 700;
   color: var(--pb-text);
@@ -298,7 +298,7 @@
 }
 .pb-priceBox small { font-size: 11px; color: var(--pb-text2); }
 .pb-priceBox b {
-  font-family: var(--font-display, "Cormorant Garamond"), serif;
+  font-family: var(--font-serif);
   font-size: 22px;
   color: var(--pb-gold);
   font-weight: 700;
