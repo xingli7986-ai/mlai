@@ -48,7 +48,7 @@
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  background: var(--gold);
+  background: var(--color-primary);
   color: #fff;
   font-size: 12px;
 }
@@ -130,7 +130,7 @@
   font-family: var(--display);
   font-size: 26px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--color-primary);
   line-height: 1;
 }
 .gbpRing__center small {
@@ -145,7 +145,7 @@
   gap: 12px;
   padding: 14px 16px;
   border-radius: 12px;
-  border: 1px dashed var(--gold);
+  border: 1px dashed var(--color-primary);
   background: var(--gold-bg);
 }
 .gbpCountdown > span {
@@ -207,7 +207,7 @@
   align-items: center;
   justify-content: center;
   background: var(--gold-bg);
-  color: var(--gold);
+  color: var(--color-primary);
   font-size: 16px;
 }
 .gbpAction b {
@@ -287,7 +287,7 @@
 }
 .gbpMini__head b {
   font-family: var(--display);
-  color: var(--gold);
+  color: var(--color-primary);
   font-size: 14px;
 }
 .gbpMini__bar {
@@ -299,7 +299,7 @@
 .gbpMini__bar em {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--gold-light), var(--gold));
+  background: linear-gradient(90deg, var(--gold-light), var(--color-primary));
 }
 
 .gbpSide__cta {
@@ -338,7 +338,7 @@
   height: 28px;
   border-radius: 50%;
   background: var(--gold-bg);
-  color: var(--gold);
+  color: var(--color-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -401,14 +401,14 @@
   margin-bottom: 4px;
 }
 .gbpStep.is-done .gbpStep__dot {
-  background: var(--gold);
+  background: var(--color-primary);
   color: #fff;
-  border-color: var(--gold);
+  border-color: var(--color-primary);
 }
 .gbpStep.is-current .gbpStep__dot {
   background: #fff;
-  color: var(--gold);
-  border-color: var(--gold);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 4px rgba(176,134,92,0.18);
 }
 .gbpStep b {
@@ -426,7 +426,7 @@
   font-size: 11px;
   color: var(--text3);
 }
-.gbpStep.is-current b { color: var(--gold); }
+.gbpStep.is-current b { color: var(--color-primary); }
 
 .gbpFaq {
   margin-top: 22px;

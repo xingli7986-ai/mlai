@@ -466,7 +466,7 @@
 /* ===== Studio home shell ===== */
 .studio-root .studio-shell {
   background: #111;
-  border-radius: 24px;
+  border-radius: var(--radius-xl);
   padding: 12px;
   border: 1px solid var(--studio-border);
 }

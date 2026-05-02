@@ -15,7 +15,7 @@
   gap: 8px;
 }
 .cstCrumbs a { color: var(--text2); }
-.cstCrumbs a:hover { color: var(--gold); }
+.cstCrumbs a:hover { color: var(--color-primary); }
 .cstCrumbs .sep { color: var(--text3); }
 .cstCrumbs .current { color: var(--text); font-weight: 500; }
 
@@ -28,7 +28,7 @@
 }
 .cstHeader__title .eyebrow {
   margin: 0 0 6px;
-  color: var(--gold);
+  color: var(--color-primary);
   font-family: var(--display);
   font-size: 11px;
   letter-spacing: 0.22em;
@@ -66,9 +66,9 @@
   color: var(--text2);
 }
 .cstStep.is-current b, .cstStep.is-done b {
-  background: var(--gold);
+  background: var(--color-primary);
   color: #fff;
-  border-color: var(--gold);
+  border-color: var(--color-primary);
 }
 
 .cstGrid {
@@ -108,7 +108,7 @@
 }
 .cstAside a:hover { background: var(--bg-soft); color: var(--text); }
 .cstAside a.is-active {
-  background: var(--gold);
+  background: var(--color-primary);
   color: #fff;
   font-weight: 600;
 }
@@ -144,7 +144,7 @@
 }
 .cstCard__head .more, .cstCard__head a {
   font-size: 12px;
-  color: var(--gold);
+  color: var(--color-primary);
 }
 
 .cstPreview {
@@ -223,7 +223,7 @@
 }
 .cstSwatch:hover { transform: translateY(-2px); border-color: var(--gold-border); }
 .cstSwatch.is-active {
-  border-color: var(--gold);
+  border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(176,134,92,0.12);
 }
 .cstSwatch__label {
@@ -266,7 +266,7 @@
 }
 .cstFabric:hover { border-color: var(--gold-border); }
 .cstFabric.is-active {
-  border-color: var(--gold);
+  border-color: var(--color-primary);
   background: var(--gold-bg);
 }
 .cstFabric__sample {
@@ -293,7 +293,7 @@
 .cstFabric em {
   font-style: normal;
   font-size: 11px;
-  color: var(--gold);
+  color: var(--color-primary);
 }
 
 .cstSizes {
@@ -314,10 +314,10 @@
   cursor: pointer;
   transition: border-color 180ms;
 }
-.cstSize:hover { border-color: var(--gold); color: var(--gold); }
+.cstSize:hover { border-color: var(--color-primary); color: var(--color-primary); }
 .cstSize.is-active {
-  border-color: var(--gold);
-  background: var(--gold);
+  border-color: var(--color-primary);
+  background: var(--color-primary);
   color: #fff;
 }
 
@@ -336,7 +336,7 @@
   gap: 4px;
 }
 .cstCraft.is-active {
-  border-color: var(--gold);
+  border-color: var(--color-primary);
   background: var(--gold-bg);
 }
 .cstCraft b { font-size: 13px; color: var(--text); }
@@ -387,7 +387,7 @@
   justify-content: space-between;
 }
 .cstSummary__priceRow .row b { color: var(--text); }
-.cstSummary__priceRow .row .gold { color: var(--gold); }
+.cstSummary__priceRow .row .gold { color: var(--color-primary); }
 .cstSummary__divider {
   height: 1px;
   background: var(--border);
@@ -402,12 +402,12 @@
   font-family: var(--display);
   font-size: 28px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--color-primary);
 }
 .cstCta {
   height: 46px;
   border-radius: 12px;
-  background: var(--gold);
+  background: var(--color-primary);
   color: #fff;
   border: none;
   font-size: 14px;
@@ -426,7 +426,7 @@
   font-weight: 500;
   cursor: pointer;
 }
-.cstCtaGhost:hover { border-color: var(--gold); color: var(--gold); }
+.cstCtaGhost:hover { border-color: var(--color-primary); color: var(--color-primary); }
 
 .cstReassure {
   display: grid;
@@ -436,7 +436,7 @@
 }
 .cstReassure span::before {
   content: "✓ ";
-  color: var(--gold);
+  color: var(--color-primary);
   font-weight: 700;
 }
 

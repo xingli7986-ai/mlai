@@ -39,7 +39,7 @@
 
 .productBrand small {
   margin-top: 6px;
-  color: var(--gold);
+  color: var(--color-primary);
   font-size: 10px;
   letter-spacing: .3em;
 }
@@ -306,7 +306,7 @@
   width: 100%;
   object-fit: cover;
   object-position: center top;
-  border-radius: 24px;
+  border-radius: var(--radius-xl);
   border: 1px solid var(--border);
   background: var(--bg-deep);
   box-shadow: var(--shadow-card);
@@ -491,7 +491,7 @@
 
 .benefitCards span {
   display: block;
-  color: var(--gold);
+  color: var(--color-primary);
   font-size: 20px;
 }
 
@@ -586,7 +586,7 @@
 }
 
 .timelineGrid span {
-  color: var(--gold);
+  color: var(--color-primary);
   font-family: var(--font-serif);
   font-size: 28px;
 }
@@ -728,7 +728,7 @@
 
 /* Reuse homepage .nav. Add active link style + search box. */
 .galleryPage .nav-center a.is-active {
-  color: var(--gold);
+  color: var(--color-primary);
   font-weight: 600;
 }
 .galleryPage .nav-center a.is-active::after { width: 100%; }
@@ -747,7 +747,7 @@
   transition: border-color 200ms ease-out, background 200ms ease-out;
 }
 .gallerySearch:focus-within {
-  border-color: var(--gold);
+  border-color: var(--color-primary);
   background: var(--white);
 }
 .gallerySearch span {
@@ -804,7 +804,7 @@
   padding: 0 18px;
   border-radius: var(--radius-full, 999px);
   border: 0;
-  background: var(--gold);
+  background: var(--color-primary);
   color: #fff;
   font-size: 13px;
   font-weight: 500;
@@ -869,12 +869,12 @@
   transition: background 180ms ease-out, color 180ms ease-out, border-color 180ms ease-out;
 }
 .chip:hover {
-  border-color: var(--gold);
-  color: var(--gold);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 .chip.is-active {
-  background: var(--gold);
-  border-color: var(--gold);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
   color: var(--white);
 }
 .chipDivider {
@@ -924,7 +924,7 @@
 }
 .hotGroupHead .more {
   font-size: 13px;
-  color: var(--gold);
+  color: var(--color-primary);
 }
 .hotGroupRow {
   display: grid;
@@ -983,7 +983,7 @@
 .hotMiniPrice {
   font-size: 14px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--color-primary);
 }
 .hotMiniProgress {
   color: var(--text2);
@@ -1080,7 +1080,7 @@
   transform: translateX(0);
 }
 .iconBtn:hover {
-  color: var(--gold);
+  color: var(--color-primary);
   background: var(--white);
 }
 .galleryCard__body {
@@ -1098,7 +1098,7 @@
 .galleryCard__price {
   font-size: 18px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--color-primary);
   line-height: 1;
   margin-bottom: 6px;
 }
@@ -1135,7 +1135,7 @@
   gap: 8px;
 }
 .pdpCrumbs a { color: var(--text2); }
-.pdpCrumbs a:hover { color: var(--gold); }
+.pdpCrumbs a:hover { color: var(--color-primary); }
 .pdpCrumbs .sep { color: var(--text3); }
 .pdpCrumbs .current { color: var(--text); font-weight: 500; }
 
@@ -1164,7 +1164,7 @@
   transition: border-color 180ms ease-out;
 }
 .pdpThumb:hover { border-color: var(--gold-border); }
-.pdpThumb.is-active { border-color: var(--gold); }
+.pdpThumb.is-active { border-color: var(--color-primary); }
 .pdpThumb.tone-ink      { background: linear-gradient(135deg, #2b241f 0%, #4a3f36 100%); }
 .pdpThumb.tone-camellia { background: linear-gradient(135deg, #b94a3a 0%, #6b2820 100%); }
 .pdpThumb.tone-blue     { background: linear-gradient(135deg, #4a6a88 0%, #2c4258 100%); }
@@ -1234,7 +1234,7 @@
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  background: var(--gold);
+  background: var(--color-primary);
   color: #fff;
   font-size: 12px;
   letter-spacing: 0.04em;
@@ -1288,7 +1288,7 @@
   letter-spacing: 0.04em;
 }
 .pdpTag--gold {
-  background: var(--gold);
+  background: var(--color-primary);
   color: #fff;
 }
 .pdpIcons {
@@ -1306,15 +1306,15 @@
   cursor: pointer;
   transition: color 180ms ease-out, border-color 180ms ease-out;
 }
-.pdpIcons button:hover { color: var(--gold); border-color: var(--gold); }
+.pdpIcons button:hover { color: var(--color-primary); border-color: var(--color-primary); }
 .pdpIcons button.is-on--like {
   color: #7f1f2b;
   border-color: rgba(127, 31, 43, 0.4);
   background: rgba(127, 31, 43, 0.08);
 }
 .pdpIcons button.is-on--fav {
-  color: var(--gold);
-  border-color: var(--gold);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
   background: var(--gold-bg);
 }
 
@@ -1356,7 +1356,7 @@
   cursor: pointer;
 }
 .pdpPriceCard.is-active {
-  border-color: var(--gold);
+  border-color: var(--color-primary);
   background: rgba(176,134,92,0.06);
 }
 .pdpPriceCard small {
@@ -1367,7 +1367,7 @@
   font-family: var(--display);
   font-size: 22px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--color-primary);
   line-height: 1;
 }
 .pdpPriceCard span {
@@ -1393,7 +1393,7 @@
 .pdpProgress__head b {
   font-family: var(--display);
   font-size: 16px;
-  color: var(--gold);
+  color: var(--color-primary);
 }
 .pdpProgress__bar {
   height: 6px;
@@ -1404,7 +1404,7 @@
 .pdpProgress__bar em {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--gold-light), var(--gold));
+  background: linear-gradient(90deg, var(--gold-light), var(--color-primary));
 }
 .pdpProgress__meta {
   display: flex;
@@ -1476,15 +1476,15 @@
   height: 28px;
   padding: 0 12px;
   border-radius: 999px;
-  border: 1px solid var(--gold);
+  border: 1px solid var(--color-primary);
   background: transparent;
-  color: var(--gold);
+  color: var(--color-primary);
   font-size: 12px;
   cursor: pointer;
   transition: background 180ms;
 }
 .pdpDesigner__follow:hover {
-  background: var(--gold);
+  background: var(--color-primary);
   color: #fff;
 }
 
@@ -1525,10 +1525,10 @@
   cursor: pointer;
   transition: border-color 180ms;
 }
-.pdpChip:hover { border-color: var(--gold); color: var(--gold); }
+.pdpChip:hover { border-color: var(--color-primary); color: var(--color-primary); }
 .pdpChip.is-active {
-  border-color: var(--gold);
-  background: var(--gold);
+  border-color: var(--color-primary);
+  background: var(--color-primary);
   color: #fff;
 }
 
@@ -1548,7 +1548,7 @@
   transition: outline-color 180ms;
 }
 .pdpSwatch.is-active {
-  outline-color: var(--gold);
+  outline-color: var(--color-primary);
   outline-offset: 2px;
 }
 
@@ -1563,7 +1563,7 @@
 .pdpCtaPrimary {
   height: 46px;
   border-radius: 10px;
-  background: var(--gold);
+  background: var(--color-primary);
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -1576,8 +1576,8 @@
 .pdpCtaSecondary {
   height: 46px;
   border-radius: 10px;
-  border: 1.5px solid var(--gold);
-  color: var(--gold);
+  border: 1.5px solid var(--color-primary);
+  color: var(--color-primary);
   background: transparent;
   font-size: 14px;
   font-weight: 600;
@@ -1598,12 +1598,12 @@
   cursor: pointer;
   transition: color 180ms, border-color 180ms;
 }
-.pdpCtaIcon:hover { color: var(--gold); border-color: var(--gold); }
+.pdpCtaIcon:hover { color: var(--color-primary); border-color: var(--color-primary); }
 .pdpCtaGhost {
   height: 44px;
   border-radius: 10px;
-  border: 1px solid var(--gold);
-  color: var(--gold);
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
   font-size: 13px;
   font-weight: 600;
   background: transparent;
@@ -1644,8 +1644,8 @@
   position: relative;
   transition: color 180ms;
 }
-.pdpTabBtn:hover { color: var(--gold); }
-.pdpTabBtn.is-active { color: var(--gold); }
+.pdpTabBtn:hover { color: var(--color-primary); }
+.pdpTabBtn.is-active { color: var(--color-primary); }
 .pdpTabBtn.is-active::after {
   content: "";
   position: absolute;
@@ -1653,7 +1653,7 @@
   right: 18px;
   bottom: -1px;
   height: 2px;
-  background: var(--gold);
+  background: var(--color-primary);
 }
 .pdpTabPanel {
   padding: 24px 0;
@@ -1671,7 +1671,7 @@
 }
 .pdpStory .eyebrow {
   margin: 0 0 8px;
-  color: var(--gold);
+  color: var(--color-primary);
   font-family: var(--display);
   font-size: 11px;
   letter-spacing: 0.18em;
@@ -1738,7 +1738,7 @@
   font-family: var(--display);
   font-size: 11px;
   letter-spacing: 0.2em;
-  color: var(--gold);
+  color: var(--color-primary);
 }
 .pdpRelated__head h2 {
   margin: 0;
@@ -1749,7 +1749,7 @@
 }
 .pdpRelated__head a {
   font-size: 13px;
-  color: var(--gold);
+  color: var(--color-primary);
 }
 
 .pdpRelatedGrid {
@@ -1812,7 +1812,7 @@
   font-family: var(--display);
   font-size: 15px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--color-primary);
 }
 
 .pdpReviews {
@@ -1830,7 +1830,7 @@
   font-family: var(--display);
   font-size: 11px;
   letter-spacing: 0.2em;
-  color: var(--gold);
+  color: var(--color-primary);
 }
 .pdpReviews__head h2 {
   margin: 0;
@@ -1861,7 +1861,7 @@
 .pdpRating em {
   display: block;
   height: 100%;
-  background: var(--gold);
+  background: var(--color-primary);
 }
 .pdpRating b {
   font-size: 12px;
@@ -1891,14 +1891,14 @@
   height: 36px;
   border-radius: 50%;
   background: var(--gold-bg);
-  color: var(--gold);
+  color: var(--color-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
 }
 .pdpReview__head b { font-size: 13px; color: var(--text); }
-.pdpReview__head small { font-size: 11px; color: var(--gold); }
+.pdpReview__head small { font-size: 11px; color: var(--color-primary); }
 .pdpReview p {
   margin: 0;
   font-size: 13px;
@@ -1920,7 +1920,7 @@
   font-family: var(--display);
   font-size: 11px;
   letter-spacing: 0.2em;
-  color: var(--gold);
+  color: var(--color-primary);
 }
 .pdpStorySection__head h2,
 .pdpSpecSection__head h2 {
@@ -2046,7 +2046,7 @@
   outline: none;
   transition: border-color 180ms;
 }
-.pdpComposer__input:focus { border-color: var(--gold); }
+.pdpComposer__input:focus { border-color: var(--color-primary); }
 .pdpComposer__foot {
   display: flex;
   justify-content: space-between;
@@ -2113,7 +2113,7 @@
   font-family: var(--display);
   font-size: 26px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--color-primary);
   line-height: 1;
 }
 .pdpSticky__price span {
@@ -2141,12 +2141,12 @@
   transition: color 180ms, border-color 180ms, background 180ms;
 }
 .pdpSticky__fav:hover {
-  color: var(--gold);
-  border-color: var(--gold);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 .pdpSticky__fav.is-on {
-  color: var(--gold);
-  border-color: var(--gold);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
   background: var(--gold-bg);
 }
 .pdpSticky__fav span { font-size: 12px; }
@@ -2162,13 +2162,13 @@
   transition: background 180ms, color 180ms, border-color 180ms;
 }
 .pdpSticky__btn--primary {
-  background: var(--gold);
+  background: var(--color-primary);
   color: #fff;
 }
 .pdpSticky__btn--primary:hover { background: var(--gold-hover); }
 .pdpSticky__btn--ghost {
-  border: 1.5px solid var(--gold);
-  color: var(--gold);
+  border: 1.5px solid var(--color-primary);
+  color: var(--color-primary);
   background: transparent;
 }
 .pdpSticky__btn--ghost:hover { background: var(--gold-bg); }
@@ -2188,7 +2188,7 @@
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
 }
 .pdpToast--error { background: #7f1f2b; color: #fff; }
-.pdpToast--success { background: var(--gold); color: #fff; }
+.pdpToast--success { background: var(--color-primary); color: #fff; }
 
 @media (max-width: 1199px) {
   .pdpHero {
@@ -2251,7 +2251,7 @@
 }
 .galleryHero .eyebrow {
   margin: 0 0 8px;
-  color: var(--gold);
+  color: var(--color-primary);
   font-family: var(--display);
   font-size: 12px;
   letter-spacing: 0.22em;
@@ -2286,7 +2286,7 @@
   font-family: var(--display);
   font-size: 26px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--color-primary);
   line-height: 1;
 }
 .galleryHero__stats small {
@@ -2328,7 +2328,7 @@
 }
 .gallerySideCard__head a {
   font-size: 12px;
-  color: var(--gold);
+  color: var(--color-primary);
 }
 
 .gallerySideDesigners {
@@ -2346,7 +2346,7 @@
   height: 36px;
   border-radius: 50%;
   background: var(--gold-bg);
-  color: var(--gold);
+  color: var(--color-primary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2372,7 +2372,7 @@
 .gallerySideDesigner em {
   font-style: normal;
   font-size: 11px;
-  color: var(--gold);
+  color: var(--color-primary);
   height: 24px;
   padding: 0 10px;
   border-radius: 999px;
@@ -2401,8 +2401,8 @@
   cursor: pointer;
 }
 .gallerySideTags span:hover {
-  border-color: var(--gold);
-  color: var(--gold);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .gallerySideRanges {
@@ -2422,7 +2422,7 @@
   cursor: pointer;
   transition: border-color 180ms;
 }
-.gallerySideRange:hover { border-color: var(--gold); color: var(--gold); }
+.gallerySideRange:hover { border-color: var(--color-primary); color: var(--color-primary); }
 .gallerySideRange em {
   font-style: normal;
   color: var(--text3);
@@ -2447,7 +2447,7 @@
 }
 .galleryJoinCta a {
   font-size: 12px;
-  color: var(--gold);
+  color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -2549,7 +2549,7 @@
 }
 
 /* /products 的搜索 / 主 CTA 用 Smoked Rose(真 md §6.1 Primary)
-   注意:.gallerySearchSubmit 之前使用 var(--gold) → 现在变成 cyan;
+   注意:.gallerySearchSubmit 之前使用 var(--color-primary) → 现在变成 cyan;
    按真 md 它应该是 Accent rose,这里覆盖。 */
 .gallerySearchSubmit {
   background: var(--color-accent, #BA5E70);

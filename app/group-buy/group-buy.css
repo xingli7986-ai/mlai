@@ -16,7 +16,7 @@
   gap: 8px;
 }
 .gbCrumbs a { color: var(--text2); }
-.gbCrumbs a:hover { color: var(--gold); }
+.gbCrumbs a:hover { color: var(--color-primary); }
 .gbCrumbs .sep { color: var(--text3); }
 .gbCrumbs .current { color: var(--text); font-weight: 500; }
 
@@ -32,7 +32,7 @@
   font-family: var(--display);
   font-size: 11px;
   letter-spacing: 0.2em;
-  color: var(--gold);
+  color: var(--color-primary);
 }
 .gbHeader__title h1 {
   margin: 0;
@@ -67,9 +67,9 @@
 }
 .gbStep.is-done b,
 .gbStep.is-current b {
-  background: var(--gold);
+  background: var(--color-primary);
   color: #fff;
-  border-color: var(--gold);
+  border-color: var(--color-primary);
 }
 .gbStep.is-current span { color: var(--text); font-weight: 600; }
 .gbStep__sep {
@@ -115,7 +115,7 @@
   color: var(--text);
 }
 .gbAside a.is-active {
-  background: var(--gold);
+  background: var(--color-primary);
   color: #fff;
   font-weight: 600;
 }
@@ -147,7 +147,7 @@
 .gbCard__head a,
 .gbCard__head .more {
   font-size: 12px;
-  color: var(--gold);
+  color: var(--color-primary);
 }
 
 .gbProduct {
@@ -215,7 +215,7 @@
 .gbProduct__price b {
   font-family: var(--display);
   font-size: 18px;
-  color: var(--gold);
+  color: var(--color-primary);
   font-weight: 700;
 }
 .gbProduct__price small {
@@ -262,7 +262,7 @@
 .gbProgressCard__bar em {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--gold-light), var(--gold));
+  background: linear-gradient(90deg, var(--gold-light), var(--color-primary));
 }
 .gbProgressCard__meta {
   display: flex;
@@ -274,14 +274,14 @@
   text-align: center;
   padding: 14px;
   border-radius: 14px;
-  border: 1px dashed var(--gold);
+  border: 1px dashed var(--color-primary);
   background: var(--gold-bg);
 }
 .gbProgressCard__pill b {
   display: block;
   font-family: var(--display);
   font-size: 26px;
-  color: var(--gold);
+  color: var(--color-primary);
   line-height: 1;
 }
 .gbProgressCard__pill small {
@@ -326,7 +326,7 @@
   transition: border-color 180ms;
 }
 .gbAddr:hover { border-color: var(--gold-border); }
-.gbAddr.is-selected { border-color: var(--gold); background: var(--gold-bg); }
+.gbAddr.is-selected { border-color: var(--color-primary); background: var(--gold-bg); }
 .gbAddr__radio {
   width: 16px;
   height: 16px;
@@ -335,14 +335,14 @@
   position: relative;
 }
 .gbAddr.is-selected .gbAddr__radio {
-  border-color: var(--gold);
+  border-color: var(--color-primary);
 }
 .gbAddr.is-selected .gbAddr__radio::after {
   content: "";
   position: absolute;
   inset: 3px;
   border-radius: 50%;
-  background: var(--gold);
+  background: var(--color-primary);
 }
 .gbAddr__body b {
   font-size: 13px;
@@ -361,7 +361,7 @@
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
-  background: var(--gold);
+  background: var(--color-primary);
   color: #fff;
   font-size: 11px;
 }
@@ -383,7 +383,7 @@
 }
 .gbPayOption:hover { border-color: var(--gold-border); }
 .gbPayOption.is-selected {
-  border-color: var(--gold);
+  border-color: var(--color-primary);
   background: var(--gold-bg);
 }
 .gbPayOption b {
@@ -412,16 +412,16 @@
 }
 .gbCouponRow input:focus {
   outline: none;
-  border-color: var(--gold);
+  border-color: var(--color-primary);
   background: var(--card);
 }
 .gbCouponRow button {
   height: 40px;
   padding: 0 18px;
   border-radius: 10px;
-  border: 1px solid var(--gold);
+  border: 1px solid var(--color-primary);
   background: transparent;
-  color: var(--gold);
+  color: var(--color-primary);
   font-weight: 600;
   cursor: pointer;
 }
@@ -445,7 +445,7 @@
 .gbCoupon b {
   font-family: var(--display);
   font-size: 22px;
-  color: var(--gold);
+  color: var(--color-primary);
   line-height: 1;
 }
 .gbCoupon b small {
@@ -472,13 +472,13 @@
   position: relative;
 }
 .gbCoupon.is-selected { border-style: solid; background: var(--gold-bg); }
-.gbCoupon.is-selected .gbCoupon__pick { border-color: var(--gold); }
+.gbCoupon.is-selected .gbCoupon__pick { border-color: var(--color-primary); }
 .gbCoupon.is-selected .gbCoupon__pick::after {
   content: "";
   position: absolute;
   inset: 3px;
   border-radius: 50%;
-  background: var(--gold);
+  background: var(--color-primary);
 }
 
 .gbNote {
@@ -495,7 +495,7 @@
 }
 .gbNote:focus {
   outline: none;
-  border-color: var(--gold);
+  border-color: var(--color-primary);
   background: var(--card);
 }
 
@@ -528,7 +528,7 @@
   align-items: center;
 }
 .gbSummary__rows .row b { color: var(--text); }
-.gbSummary__rows .row .gold { color: var(--gold); }
+.gbSummary__rows .row .gold { color: var(--color-primary); }
 .gbSummary__divider {
   height: 1px;
   background: var(--border);
@@ -546,13 +546,13 @@
   font-family: var(--display);
   font-size: 28px;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--color-primary);
 }
 .gbCta {
   height: 48px;
   border: none;
   border-radius: 12px;
-  background: var(--gold);
+  background: var(--color-primary);
   color: #fff;
   font-size: 15px;
   font-weight: 600;
@@ -562,9 +562,9 @@
 .gbCta:hover { background: var(--gold-hover); }
 .gbCtaGhost {
   height: 40px;
-  border: 1px solid var(--gold);
+  border: 1px solid var(--color-primary);
   background: transparent;
-  color: var(--gold);
+  color: var(--color-primary);
   border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
@@ -579,7 +579,7 @@
 }
 .gbReassure span::before {
   content: "✓ ";
-  color: var(--gold);
+  color: var(--color-primary);
   font-weight: 700;
 }
 
@@ -598,7 +598,7 @@
   align-items: center;
   justify-content: center;
   font-size: 10px;
-  color: var(--gold);
+  color: var(--color-primary);
   font-weight: 600;
 }
 .gbAvatars span:first-child { margin-left: 0; }
