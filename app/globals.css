@@ -282,6 +282,30 @@
   --font-body: var(--font-sans);
 }
 
+/* ==========================================================================
+   响应式大屏适配 — :root 内 --container-max 按视口宽度阶梯式放大,
+   让用 var(--container-max) 的页面在 1920 / 2560 自动撑开,避免左右大块留白。
+   断点遵循真 md §4.1 + 大屏扩展。
+   ========================================================================== */
+@media (min-width: 1440px) {
+  :root {
+    --container-max:    1280px;
+    --container-max-lg: 1280px;
+  }
+}
+@media (min-width: 1920px) {
+  :root {
+    --container-max:    1600px;
+    --container-max-lg: 1600px;
+  }
+}
+@media (min-width: 2560px) {
+  :root {
+    --container-max:    1920px;
+    --container-max-lg: 1920px;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
