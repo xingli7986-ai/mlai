@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Badge, Button } from "@/components/ui";
+import ConsumerNav from "@/components/ConsumerNav";
 import "./home-consumer.css";
 
 const HERO_IMG = "/assets/images/home/01-hero/ChatGPT Image Apr 26, 2026, 02_09_53 PM.png";
@@ -117,7 +118,6 @@ interface HomeApiPopular {
 }
 
 export default function HomePage() {
-  const [scrolled, setScrolled] = useState(false);
   const [hotCards, setHotCards] = useState<HotCard[]>(HOT_CARDS);
   const [hotLinks, setHotLinks] = useState<string[]>(HOT_CARDS.map(() => "#hot"));
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(GALLERY_ITEMS);
@@ -125,13 +125,6 @@ export default function HomePage() {
   const [countdowns, setCountdowns] = useState<number[]>(() =>
     HOT_CARDS.map((c) => c.countdown)
   );
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -198,26 +191,7 @@ export default function HomePage() {
 
   return (
     <div className="page-wrap">
-      <nav className={`nav${scrolled ? " scrolled" : ""}`}>
-        <div className="container inner">
-          <Link href="/" className="nav-logo">
-            MaxLuLu <span className="ai">AI</span>
-          </Link>
-          <div className="nav-center">
-            <Link href="/products">印花衣橱</Link>
-            <a href="#custom">个性定制</a>
-            <a href="#hot">热拼专区</a>
-          </div>
-          <div className="nav-right">
-            <Link href="/my">会员</Link>
-            <Link href="/my">我的衣橱</Link>
-            <span className="nav-divider" />
-            <Link href="/studio/join" className="designer-btn">
-              设计师入驻
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <ConsumerNav variant="transparent" />
 
       <section className="hero">
         <div className="hero-bg">

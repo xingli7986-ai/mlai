@@ -8,7 +8,10 @@ type NavLink = { href: string; label: string };
 
 const NAV_LINKS: NavLink[] = [
   { href: "/products", label: "印花衣橱" },
-  { href: "/products", label: "个性定制" },
+  // 个性定制 → /products?intent=custom 让用户在 /products 上点击时
+  // URL 真的变化、页面 effect 重跑，并触发 hero 引导提示。
+  // IA §2.1 字面规定的目标也是 /products（"选款后进定制页"）。
+  { href: "/products?intent=custom", label: "个性定制" },
   { href: "/products?sort=hot-group", label: "热拼专区" },
 ];
 
@@ -31,8 +34,18 @@ export default function ConsumerNav({
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     if (href.startsWith("/#")) return pathname === "/";
-    const path = href.split("?")[0];
-    return pathname === path || pathname.startsWith(path + "/");
+    const [path, query = ""] = href.split("?");
+    if (pathname !== path && !pathname.startsWith(path + "/")) return false;
+    // When two nav items share a path (e.g. /products vs /products?intent=custom),
+    // disambiguate via the query string so the right item highlights.
+    if (!query) return true;
+    if (typeof window === "undefined") return true;
+    const params = new URLSearchParams(window.location.search);
+    const expected = new URLSearchParams(query);
+    for (const [k, v] of expected) {
+      if (params.get(k) !== v) return false;
+    }
+    return true;
   };
 
   return (

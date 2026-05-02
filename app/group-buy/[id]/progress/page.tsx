@@ -2,6 +2,7 @@ import Link from "next/link";
 import AssetImage from "@/components/AssetImage";
 import { getProductDetail } from "@/lib/product-detail-data";
 import { Badge, Button, EmptyState } from "@/components/ui";
+import ConsumerNav from "@/components/ConsumerNav";
 import "../../group-buy.css";
 import "./progress.css";
 
@@ -54,21 +55,7 @@ export default async function GroupBuyProgressPage({ params }: Props) {
 
   return (
     <main className="page-wrap gbPage gbProgressPage">
-      <nav className="nav">
-        <div className="container inner">
-          <Link href="/" className="nav-logo">MaxLuLu <span className="ai">AI</span></Link>
-          <div className="nav-center">
-            <Link href="/products">印花衣橱</Link>
-            <Link href="/products">个性定制</Link>
-            <Link href="/products?sort=hot-group">热拼专区</Link>
-            <Link href="/my">我的衣橱</Link>
-          </div>
-          <div className="nav-right">
-            <a href="#share">分享</a>
-            <Link href="/my">会员</Link>
-          </div>
-        </div>
-      </nav>
+      <ConsumerNav variant="solid" />
 
       <div className="container">
         <div className="gbCrumbs">

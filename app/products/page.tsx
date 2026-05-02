@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { Button, EmptyState, Skeleton } from "@/components/ui";
+import { Badge, Button, EmptyState, Skeleton } from "@/components/ui";
+import ConsumerNav from "@/components/ConsumerNav";
 import "../product-pages.css";
 
 interface DesignerLite {
@@ -74,6 +75,7 @@ function CollectionBody() {
   const sort =
     (searchParams.get("sort") as "hot" | "new" | "price" | "hot-group") || "hot";
   const search = searchParams.get("search") || "";
+  const intent = searchParams.get("intent") || "";
 
   const [data, setData] = useState<DesignListResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -138,31 +140,7 @@ function CollectionBody() {
 
   return (
     <div className="page-wrap galleryPage">
-      <nav className="nav">
-        <div className="container inner">
-          <Link href="/" className="nav-logo">
-            MaxLuLu <span className="ai">AI</span>
-          </Link>
-          <div className="nav-center">
-            <Link href="/products" className={sort === "hot-group" ? "" : "is-active"}>印花衣橱</Link>
-            <Link href="/products" className={sort === "hot-group" ? "" : ""}>个性定制</Link>
-            <Link href="/products?sort=hot-group" className={sort === "hot-group" ? "is-active" : ""}>热拼专区</Link>
-          </div>
-          <div className="nav-right">
-            <form className="gallerySearch" onSubmit={onSearchSubmit}>
-              <span aria-hidden>⌕</span>
-              <input
-                type="search"
-                placeholder="搜索设计、风格"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-              />
-            </form>
-            <Link href="/my">会员</Link>
-            <Link href="/my">我的衣橱</Link>
-          </div>
-        </div>
-      </nav>
+      <ConsumerNav variant="solid" />
 
       <section className="galleryHero">
         <div className="container galleryHero__inner">
@@ -170,12 +148,33 @@ function CollectionBody() {
             <p className="eyebrow">PRINT WARDROBE · 印花衣橱</p>
             <h1>从 1000+ 设计师原创印花裙中，挑出你的下一件</h1>
             <p className="lead">水墨、几何、花卉、扎染……每一件都来自真人设计师，参与众定即可锁定排产。</p>
+            {intent === "custom" && (
+              <div className="galleryIntent" role="status">
+                <Badge tone="gold">个性定制</Badge>
+                <span>挑一件喜欢的款式 → 进入个性定制流程</span>
+              </div>
+            )}
           </div>
           <div className="galleryHero__stats">
             <div><b>{data?.total ?? 0}</b><small>原创印花</small></div>
             <div><b>128</b><small>签约设计师</small></div>
             <div><b>56</b><small>正在众定</small></div>
           </div>
+        </div>
+      </section>
+
+      <section className="gallerySearchRow">
+        <div className="container">
+          <form className="gallerySearch gallerySearch--row" onSubmit={onSearchSubmit}>
+            <span aria-hidden>⌕</span>
+            <input
+              type="search"
+              placeholder="搜索设计、风格、面料"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            <button type="submit" className="gallerySearchSubmit">搜索</button>
+          </form>
         </div>
       </section>
 

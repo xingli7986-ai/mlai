@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import AssetImage from "@/components/AssetImage";
+import ConsumerNav from "@/components/ConsumerNav";
 import { products } from "@/lib/home-consumer-data";
 import "./my-center.css";
 
@@ -120,22 +121,7 @@ export default function MyCenterPage() {
 
   return (
     <main className="page-wrap mcPage">
-      <nav className="nav">
-        <div className="container inner">
-          <Link href="/" className="nav-logo">MaxLuLu <span className="ai">AI</span></Link>
-          <div className="nav-center">
-            <Link href="/products">印花衣橱</Link>
-            <Link href="/products">个性定制</Link>
-            <Link href="/products?sort=hot-group">热拼专区</Link>
-            <Link href="/my">我的衣橱</Link>
-          </div>
-          <div className="nav-right">
-            <button type="button" className="mcNavSearch" aria-label="搜索">⌕</button>
-            <button type="button" className="mcNavBell" aria-label="通知">⛉<span>3</span></button>
-            <Link href="/my" className="mcNavAvatar">L</Link>
-          </div>
-        </div>
-      </nav>
+      <ConsumerNav variant="solid" />
 
       <div className="container">
         <div className="mcCrumbs">

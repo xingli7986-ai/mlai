@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, use } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Button, EmptyState, Input, Skeleton, Textarea, useToast } from "@/components/ui";
+import ConsumerNav from "@/components/ConsumerNav";
 import "../group-buy.css";
 
 type Props = {
@@ -201,18 +202,7 @@ export default function GroupBuyCheckoutPage({ params }: Props) {
 
   return (
     <main className="page-wrap gbPage">
-      <nav className="nav">
-        <div className="container inner">
-          <Link href="/" className="nav-logo">MaxLuLu <span className="ai">AI</span></Link>
-          <div className="nav-center">
-            <Link href="/products">印花衣橱</Link>
-            <Link href="/my">我的衣橱</Link>
-          </div>
-          <div className="nav-right">
-            <Link href={`/products/${design.id}`}>← 返回详情</Link>
-          </div>
-        </div>
-      </nav>
+      <ConsumerNav variant="solid" />
 
       <div className="container" style={{ paddingTop: 24, paddingBottom: 80 }}>
         <h1 className="ml-h2" style={{ marginBottom: 18 }}>参团结算</h1>
