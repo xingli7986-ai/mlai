@@ -74,6 +74,7 @@ export async function GET(req: Request) {
               id: true,
               displayName: true,
               avatarUrl: true,
+              isCertified: true,
             },
           },
           groupBuys: isHotGroup
@@ -115,6 +116,7 @@ export async function GET(req: Request) {
         designer: {
           name: d.designer.displayName,
           avatar: d.designer.avatarUrl,
+          isCertified: d.designer.isCertified,
         },
         groupBuy: gb
           ? {

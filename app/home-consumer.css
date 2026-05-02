@@ -7,34 +7,38 @@
    ============================================================ */
 
 :root {
-  /* v1.2 高保真稿对齐(2026-05-02):legacy 别名保留,值对齐到 globals.css :root v2 token。
-     之后可逐步迁移到 --color-primary / --color-text-primary 等语义化命名。 */
-  --gold:        #B38A56;
-  --gold-hover:  #9C7443;
-  --gold-pressed: #82603A;
-  --gold-light:  #D8C4A4;
-  --gold-bg:     rgba(179, 138, 86, 0.08);
-  --gold-border: rgba(179, 138, 86, 0.32);
-  --gold-dark:   #9C7443;
-  --bg:          #F6F1E8;
-  --bg-main:     #F6F1E8;
-  --bg-soft:     #FBF7F0;
-  --bg-deep:     #EFE7DD;
-  --card:        #FFFDF9;
-  --card-hover:  #FBF7F0;
-  --text:        #1E1B18;
-  --text-main:   #1E1B18;
-  --text2:       #6F665E;
-  --text-sub:    #6F665E;
-  --text3:       #A39A91;
-  --border:      #E7DED2;
-  --border-light: #EFE7DD;
-  --dark:        #181512;
+  /* v1.2 真版高保真稿对齐(2026-05-02 第 2 轮):
+     主配色切换到 Porcelain Cyan #2F5A5D × Smoked Rose #BA5E70。
+     legacy "--gold" 命名保留(被多处引用),值切换到 Porcelain Cyan;
+     真正的金色 #C8A875 仅用于认证设计师,在 globals.css `--color-certified-gold` 引用。
+     注意:这意味着原本 var(--gold) 的"金色按钮"现在会渲染成瓷青蓝。这是真 md 明确要求的:
+     "金色仅用于「认证设计师」身份系统，不作为品牌主色"。 */
+  --gold:        #2F5A5D;  /* 实为 Porcelain Cyan,变量名沿用 */
+  --gold-hover:  #234A50;
+  --gold-pressed: #1C393D;
+  --gold-light:  #B8C7CA;  /* 浅色强调,实为 neutral-400 */
+  --gold-bg:     rgba(47, 90, 93, 0.08);
+  --gold-border: rgba(47, 90, 93, 0.28);
+  --gold-dark:   #234A50;
+  --bg:          #F3F6F6;
+  --bg-main:     #F3F6F6;
+  --bg-soft:     #F1F5F6;
+  --bg-deep:     #E6ECEC;
+  --card:        #FCFDFD;
+  --card-hover:  #F1F5F6;
+  --text:        #1E272B;
+  --text-main:   #1E272B;
+  --text2:       #566469;
+  --text-sub:    #566469;
+  --text3:       #879197;
+  --border:      #D2DEDF;
+  --border-light: #E1E8E8;
+  --dark:        #11191D;
   --white:       #FFFFFF;
-  --red:         #C84532;
+  --red:         #BA5E70;  /* Smoked Rose — 主 CTA 色 */
   --container:   1200px;
-  --shadow-soft: 0 1px 2px rgba(24, 21, 18, 0.04), 0 8px 24px rgba(24, 21, 18, 0.06);
-  --shadow-card: 0 1px 2px rgba(24, 21, 18, 0.04), 0 8px 24px rgba(24, 21, 18, 0.06);
+  --shadow-soft: 0 1px 2px rgba(17, 25, 29, 0.04);
+  --shadow-card: 0 1px 2px rgba(17, 25, 29, 0.04);
   --serif:       var(--font-serif);
   --sans:        var(--font-sans);
   --display:     var(--font-serif);

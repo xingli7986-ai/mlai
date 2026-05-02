@@ -18,6 +18,7 @@ const SYSTEM_DESIGNERS: {
   displayName: string;
   bio: string;
   avatarUrl: string;
+  isCertified: boolean;
 }[] = [
   {
     phone: "13800000001",
@@ -25,6 +26,7 @@ const SYSTEM_DESIGNERS: {
     displayName: "Luna · MaxLuLu Studio",
     bio: "巴黎驻地设计师，专注现代东方剪裁与原创印花。",
     avatarUrl: "https://maxlulu-assets.r2.dev/designers/luna.png",
+    isCertified: true,
   },
   {
     phone: "13800000002",
@@ -32,6 +34,7 @@ const SYSTEM_DESIGNERS: {
     displayName: "Yuki · Yuki Atelier",
     bio: "东京独立工作室，擅长几何拼接与简约廓形。",
     avatarUrl: "https://maxlulu-assets.r2.dev/designers/yuki.png",
+    isCertified: false,
   },
   {
     phone: "13800000003",
@@ -39,6 +42,7 @@ const SYSTEM_DESIGNERS: {
     displayName: "Reine · Atelier Reine",
     bio: "高级女装制版出身，作品兼顾礼服气质与日常穿着。",
     avatarUrl: "https://maxlulu-assets.r2.dev/designers/reine.png",
+    isCertified: true,
   },
   {
     phone: "13800000004",
@@ -46,6 +50,7 @@ const SYSTEM_DESIGNERS: {
     displayName: "Mei · Mei Botanical",
     bio: "植物题材插画师，擅长扎染和工笔花鸟在面料上的应用。",
     avatarUrl: "https://maxlulu-assets.r2.dev/designers/mei.png",
+    isCertified: false,
   },
 ];
 
@@ -147,12 +152,14 @@ async function upsertDesigner(spec: (typeof SYSTEM_DESIGNERS)[number]) {
       displayName: spec.displayName,
       bio: spec.bio,
       avatarUrl: spec.avatarUrl,
+      isCertified: spec.isCertified,
     },
     create: {
       userId: user.id,
       displayName: spec.displayName,
       bio: spec.bio,
       avatarUrl: spec.avatarUrl,
+      isCertified: spec.isCertified,
     },
   });
 

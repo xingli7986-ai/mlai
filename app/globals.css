@@ -3,82 +3,111 @@
 
 :root {
   /* ==========================================================================
-     Design System tokens — v1.2(2026-05-02 高保真稿对齐)
-     Source: design/v2-tokens-extracted.md (从 high-fidelity-v2 6 张稿 + 99 png + 05 GPT 需求清单 + Design System v1.1 主文档提取)
+     Design System tokens — v1.2 真版高保真稿对齐(2026-05-02 第 2 轮)
+     Source: design/high-fidelity-v2/99_开发注意事项汇总.md(真版,1118 行)
+     主配色:Porcelain Cyan #2F5A5D × Smoked Rose #BA5E70。
+     金色 #C8A875 仅用于「认证设计师」身份系统,不作为品牌主色。
      ========================================================================== */
 
   /* ---- Colors — Bg / Surface ---- */
-  --color-bg: #F6F1E8;
-  --color-surface: #FFFDF9;
-  --color-surface-soft: #FBF7F0;
+  --color-bg: #F3F6F6;
+  --color-surface: #FCFDFD;
+  --color-surface-elevated: #FFFFFF;
+  --color-subtle: #E6ECEC;
+  /* legacy 别名 */
+  --color-surface-soft: var(--color-subtle);
 
-  /* ---- Colors — Primary (主金色) ---- */
-  --color-primary: #B38A56;
-  --color-primary-hover: #9C7443;
-  --color-primary-soft: #EFE3D0;
-  --color-primary-strong: #D8C4A4;
+  /* ---- Colors — Primary (Porcelain Cyan 瓷青蓝) ---- */
+  --color-primary:        #2F5A5D;
+  --color-primary-hover:  #234A50;
+  --color-primary-pressed: #1C393D;
+  --color-primary-subtle: #E2EEF1;
+  /* legacy 别名(原"主金色"已退场,值切换到 cyan) */
+  --color-primary-soft:   var(--color-primary-subtle);
+  --color-primary-strong: var(--color-primary-hover);
 
-  /* ---- Colors — Accent / Designer Gold (认证设计师金) ---- */
-  --color-designer-gold: #C8A875;
-  --color-designer-gold-soft: #E8D9B8;
-  --color-designer-gold-strong: #A8884B;
-  /* Accent 别名,语义化 */
-  --color-accent: var(--color-designer-gold);
-  --color-accent-hover: var(--color-designer-gold-strong);
+  /* ---- Colors — Accent (Smoked Rose 烟粉玫瑰)— 主 CTA 用色 ---- */
+  --color-accent:        #BA5E70;
+  --color-accent-hover:  #A85060;
+  --color-accent-pressed: #8F4655;
+  --color-accent-subtle: #F4E5E7;
+
+  /* ---- Colors — Certified Gold(认证设计师专用)---- */
+  --color-certified-gold: #C8A875;
+  --color-certified-gold-hover:   #B89561;
+  --color-certified-gold-pressed: #9F7E4F;
+  --color-certified-gold-soft:    rgba(200, 168, 117, 0.16);
+  /* legacy 别名(上一轮命名,继续可用) */
+  --color-designer-gold:        var(--color-certified-gold);
+  --color-designer-gold-soft:   var(--color-certified-gold-soft);
+  --color-designer-gold-strong: var(--color-certified-gold-pressed);
 
   /* ---- Colors — Text ---- */
-  --color-text-primary: #1E1B18;
-  --color-text-secondary: #6F665E;
-  --color-text-tertiary: #A39A91;
-  --color-text-muted: #A39A91; /* legacy alias */
-  --color-text-on-dark: #FFFDF9;
+  --color-text-primary:   #1E272B;
+  --color-text-secondary: #566469;
+  --color-text-tertiary:  #879197;
+  --color-text-disabled:  #B7C2C8;
+  --color-text-inverse:   #FFFFFF;
+  /* legacy 别名 */
+  --color-text-muted:   var(--color-text-tertiary);
+  --color-text-on-dark: var(--color-text-inverse);
 
   /* ---- Colors — Border / Divider ---- */
-  --color-border: #E7DED2;
-  --color-border-strong: #D8C4A4;
-  --color-divider: #EFE7DD;
-
-  /* ---- Colors — Dark surfaces ---- */
-  --color-dark: #181512;
-  --color-dark-soft: #2A211B;
-  --color-white: #FFFFFF;
+  --color-border:        #D2DEDF;
+  --color-border-strong: #B8C7CA;
+  --color-divider:       #E1E8E8;
+  --color-divider-light: #ECEEEE;
 
   /* ---- Colors — Functional ---- */
-  --color-error: #C84532;
-  --color-success: #4F8A62;
-  --color-warning: #C9903D;
-  --color-info: #3E78B2;
+  --color-success: #2F7D68;
+  --color-warning: #E2A23A;
+  --color-error:   #E57373;
+  --color-info:    #4B8FE3;
 
-  /* ---- 9 阶中性灰 (9-step neutral grays) ---- */
-  --neutral-50:  #FAF7F3;
-  --neutral-100: #F2EEE9;
-  --neutral-200: #E6E1DA;
-  --neutral-300: #D1CBC2;
-  --neutral-400: #B8B0A4;
-  --neutral-500: #8A8278;
-  --neutral-600: #6F665E;
-  --neutral-700: #4D453E;
-  --neutral-800: #2A211B;
-  --neutral-900: #1E1B18;
+  /* ---- 9 阶中性灰(冷色阶,与瓷青背景体系一致)---- */
+  --neutral-50:  #F8FAFA;
+  --neutral-100: #F1F5F6;
+  --neutral-200: #E6ECEC;
+  --neutral-300: #D2DEDF;
+  --neutral-400: #B8C7CA;
+  --neutral-500: #879197;
+  --neutral-600: #566469;
+  --neutral-700: #34484D;
+  --neutral-800: #1E272B;
+  --neutral-900: #11191D;
 
-  /* ---- Radius ---- */
+  /* ---- Colors — Dark surfaces ---- */
+  --color-dark:      #11191D;
+  --color-dark-soft: #1E272B;
+  --color-white:     #FFFFFF;
+
+  /* ---- Radius (真 md §5.3) ---- */
   --radius-0:    0;
-  --radius-2:    2px;
-  --radius-sm:   8px;
-  --radius-md:   12px;
-  --radius-lg:   16px;
-  --radius-xl:   20px;
-  --radius-2xl:  24px;
+  --radius-xs:   2px;
+  --radius-s:    4px;
+  --radius-sm:   8px;   /* 别名:Radius M */
+  --radius-m:    8px;
+  --radius-md:   12px;  /* 别名:Radius L */
+  --radius-l:    12px;
+  --radius-lg:   16px;  /* 别名:Radius XL */
+  --radius-xl:   16px;
+  --radius-2xl:  16px;  /* 真 md 无 2xl;别名等同 xl 避免页面级硬编码失真 */
   --radius-full: 999px;
 
-  /* ---- Shadow ---- */
-  --shadow-card: 0 1px 2px rgba(24, 21, 18, 0.04), 0 8px 24px rgba(24, 21, 18, 0.06);
-  --shadow-hover: 0 12px 32px rgba(24, 21, 18, 0.10), 0 24px 64px rgba(24, 21, 18, 0.08);
-  --shadow-modal: 0 24px 80px rgba(24, 21, 18, 0.18);
-  /* 认证设计师卡片金光阴影 */
-  --shadow-designer: 0 0 0 1.5px rgba(200,168,117,0.55), 0 8px 24px rgba(168,136,75,0.18);
+  /* ---- Shadow (真 md §5.4) ---- */
+  --shadow-xs: 0 1px 2px rgba(17, 25, 29, 0.04);
+  --shadow-sm: 0 4px 12px rgba(17, 25, 29, 0.06);
+  --shadow-md: 0 8px 24px rgba(17, 25, 29, 0.08);
+  --shadow-lg: 0 16px 40px rgba(17, 25, 29, 0.12);
+  /* legacy 别名 */
+  --shadow-card:  var(--shadow-xs);
+  --shadow-hover: var(--shadow-md);
+  --shadow-modal: var(--shadow-lg);
+  /* 认证设计师徽章阴影(§2.1) */
+  --shadow-certified: 0 2px 6px rgba(200, 168, 117, 0.24);
+  --shadow-designer:  var(--shadow-certified);
 
-  /* ---- Spacing — 8pt grid (扩展到 96/112) ---- */
+  /* ---- Spacing(真 md §5.1)---- */
   --space-0:  0;
   --space-1:  4px;
   --space-2:  8px;
@@ -86,27 +115,28 @@
   --space-4:  16px;
   --space-5:  20px;
   --space-6:  24px;
+  --space-7:  28px;
   --space-8:  32px;
   --space-10: 40px;
   --space-12: 48px;
   --space-16: 64px;
-  --space-18: 72px;
+  --space-18: 72px;   /* 真 md 未列出,保留给 v1.1 fallback */
   --space-20: 80px;
   --space-24: 96px;
-  --space-28: 112px;
+  --space-28: 112px;  /* legacy fallback */
 
-  /* ---- Layout / Container ---- */
+  /* ---- Layout / Container(真 md §4.2)---- */
   --container-max:    1200px;
-  --container-max-lg: 1280px;
+  --container-max-lg: 1200px;
   --header-height:    72px;
-  --sidebar-width:    220px;
-  --gutter-desktop:   40px;
-  --gutter-mobile:    20px;
+  --sidebar-width:    280px;
+  --gutter-desktop:   40px;  /* 真 md 范围 40-64,默认 40 */
+  --gutter-mobile:    16px;
 
-  /* ---- Breakpoints (供 JS / Tailwind 参考,CSS 中通过 @media 直接写) ---- */
+  /* ---- Breakpoints(真 md §4.1)---- */
   --bp-mobile:     768px;
-  --bp-tablet:     1024px;
-  --bp-desktop:    1280px;
+  --bp-tablet:     1200px;
+  --bp-desktop:    1200px;
   --bp-desktop-xl: 1440px;
 
   /* ---- Motion ---- */
@@ -115,65 +145,83 @@
   --motion-page:  220ms cubic-bezier(0.4, 0, 0.2, 1);
 
   /* ==========================================================================
-     Typography 字号 / 行高 / 字重 / 字距(v2 抽取,与 Design System §4.2 一致)
+     Typography(真 md §1.7-1.8)
+     - 英文标题 Playfair Display + 中文标题 Noto Serif SC
+     - 英文正文 Inter + 中文正文 Noto Sans SC
+     - 数字 / 价格 Playfair Display + Tabular Lining
      ========================================================================== */
-  --text-display-size:    64px;
-  --text-display-line:    72px;
-  --text-display-weight:  700;
-  --text-display-tracking: -0.03em;
+  --text-display-size:    48px;
+  --text-display-line:    56px;
+  --text-display-weight:  400;
+  --text-display-tracking: -0.01em;
 
-  --text-h1-size:    56px;
-  --text-h1-line:    64px;
-  --text-h1-weight:  700;
-  --text-h1-tracking: -0.03em;
+  --text-h1-size:    40px;
+  --text-h1-line:    48px;
+  --text-h1-weight:  400;
+  --text-h1-tracking: -0.01em;
 
-  --text-h1-mobile-size: 38px;
-  --text-h1-mobile-line: 46px;
+  --text-h1-mobile-size: 28px;
+  --text-h1-mobile-line: 36px;
 
-  --text-h2-size:    36px;
-  --text-h2-line:    44px;
-  --text-h2-weight:  600;
-  --text-h2-tracking: -0.02em;
+  --text-h2-size:    28px;
+  --text-h2-line:    36px;
+  --text-h2-weight:  400;
+  --text-h2-tracking: -0.005em;
 
-  --text-h2-mobile-size: 28px;
-  --text-h2-mobile-line: 36px;
+  --text-h2-mobile-size: 24px;
+  --text-h2-mobile-line: 32px;
 
-  --text-h3-size:    24px;
-  --text-h3-line:    32px;
-  --text-h3-weight:  600;
-  --text-h3-tracking: -0.01em;
+  --text-h3-size:    20px;
+  --text-h3-line:    28px;
+  --text-h3-weight:  500;
+  --text-h3-tracking: 0;
 
+  --text-h3-mobile-size: 18px;
+  --text-h3-mobile-line: 26px;
+
+  /* H4 真 md 无独立条目;沿用 H3 用于 fallback */
   --text-h4-size:    20px;
   --text-h4-line:    28px;
-  --text-h4-weight:  600;
+  --text-h4-weight:  500;
 
-  --text-body-lg-size: 18px;
-  --text-body-lg-line: 30px;
-
-  --text-body-size:    16px;
-  --text-body-line:    28px;
+  /* Body / Body Small / Caption / Label */
+  --text-body-size:    14px;
+  --text-body-line:    22px;
   --text-body-weight:  400;
+  /* legacy "body-lg" — 真 md 无更大正文阶,保留 fallback 为标准 body */
+  --text-body-lg-size: 14px;
+  --text-body-lg-line: 22px;
 
-  --text-body-sm-size: 14px;
-  --text-body-sm-line: 22px;
+  --text-body-sm-size: 13px;
+  --text-body-sm-line: 20px;
 
   --text-sub-size:     13px;
   --text-sub-line:     20px;
 
-  --text-caption-size: 13px;
-  --text-caption-line: 20px;
+  --text-caption-size: 12px;
+  --text-caption-line: 18px;
 
-  --text-label-size:   14px;
-  --text-label-line:   20px;
+  --text-label-size:   12px;
+  --text-label-line:   16px;
   --text-label-weight: 500;
 
-  --text-button-size:  15px;
-  --text-button-line:  20px;
+  --text-button-size:  14px;
+  --text-button-line:  22px;
   --text-button-weight: 500;
 
   --text-nav-size:     14px;
-  --text-nav-line:     20px;
+  --text-nav-line:     22px;
   --text-nav-weight:   500;
+
+  /* Price 价格(真 md §1.8 / §6.6)—— Playfair Display tabular */
+  --text-price-size:        22px;
+  --text-price-line:        28px;
+  --text-price-mobile-size: 20px;
+  --text-price-mobile-line: 28px;
+  --text-price-small-size:  16px;
+  --text-price-small-line:  24px;
+  --text-price-small-mobile-size: 14px;
+  --text-price-small-mobile-line: 20px;
 
   /* ==========================================================================
      Legacy palette tokens — kept so existing pages keep working.
@@ -315,78 +363,106 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ==========================================================================
-   认证设计师视觉系统(v2 新增)
-   来源:design/v2-tokens-extracted.md §7
-   规则(GPT 高保真稿需求清单 §通用视觉要求 + 02 印花衣橱 + 06 商品详情):
-   1. 金色描边 1.5px solid #C8A875,圆角与卡片半径一致
-   2. 右上角金丝带角标(corner ribbon),内嵌"认证"白字
-   3. 微金光阴影
-   4. 在 inspiration 卡片 / products 卡片 / 详情页作者署名 / 评论区头像 四处统一
+   认证设计师视觉系统 — 真版 99 md §02 一致性规则
+   - 金 #C8A875 仅用于身份识别,不作为品牌主色,不做促销色
+   - 必须在 4 处保持一致:灵感广场卡片 / 印花衣橱卡片 / 详情页作者署名 / 评论区头像
+   - 移动端认证角标不可隐藏
+   - 不只依赖颜色:同时显示文字 "认证"(§8.7 可访问性)
    ========================================================================== */
 
+/* 卡片金描边 + 阴影(真 md §2.1 / §6.4) */
 .is-certified-card {
   position: relative;
-  border: 1.5px solid var(--color-designer-gold);
-  /* 圆角与所属卡片继承一致;调用方负责 border-radius 时,这里不强行覆盖 */
-  box-shadow: var(--shadow-designer);
+  border: 1.5px solid var(--color-certified-gold);
+  box-shadow: var(--shadow-certified);
 }
 
+/* 右上角"认证"角标(真 md §2.2 / §2.3)
+   规格:高 24px,内边距 0 8px,文字 "认证" 12/16 #FFFFFF,背景 #C8A875 */
 .is-certified-card::before {
-  /* 右上角金丝带角标 — 桌面 32×32 */
   content: "认证";
   position: absolute;
   top: 0;
   right: 0;
-  width: 56px;
   height: 24px;
+  padding: 0 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding-right: 6px;
-  background: var(--color-designer-gold);
+  background: var(--color-certified-gold);
   color: #FFFFFF;
   font-family: var(--font-sans);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  border-bottom-left-radius: 8px;
-  /* 圆角与卡片右上角一致 — 当卡片 radius 为 var(--radius-lg)(16px)时,
-     角标右上角不出血,左下角内倾形成丝带视觉。 */
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  border-bottom-left-radius: var(--radius-m);
   z-index: 2;
   pointer-events: none;
 }
 
+/* 移动端尺寸保持(真 md §2.6:不可隐藏) */
 @media (max-width: 767px) {
   .is-certified-card::before {
-    width: 44px;
-    height: 20px;
-    font-size: 9px;
+    height: 22px;
+    padding: 0 6px;
+    font-size: 11px;
+    line-height: 14px;
   }
 }
 
-/* 头像金圈 — 用于详情页作者署名 / 评论区头像 */
-.is-certified-avatar {
-  box-shadow: 0 0 0 2px var(--color-designer-gold);
+/* 详情页作者信息卡(真 md §2.4):非默认描边 #D2DEDF,认证用 #C8A875 1px */
+.is-certified-author-card {
+  border: 1px solid var(--color-certified-gold);
 }
 
-/* "认证设计师"文字 chip — 跟在名字后 */
+/* 头像金圈 — 详情页 / 评论区头像复用同套(真 md §2.4 / §2.5) */
+.is-certified-avatar {
+  box-shadow: 0 0 0 2px var(--color-certified-gold);
+}
+
+/* 评论区头像右下角小金章(真 md §2.5):12×12,1px 白边 */
+.is-certified-avatar--comment {
+  position: relative;
+}
+.is-certified-avatar--comment::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-certified-gold);
+  border: 1px solid #FFFFFF;
+  box-shadow: var(--shadow-certified);
+}
+
+/* "认证设计师"文字 chip — 跟在名字后(真 md §6.3 Badge) */
 .is-certified-chip {
   display: inline-flex;
   align-items: center;
   height: 20px;
   padding: 0 8px;
-  margin-left: 6px;
-  background: var(--color-designer-gold-soft);
-  color: var(--color-designer-gold-strong);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  margin-left: 8px;
+  background: var(--color-certified-gold);
+  color: #FFFFFF;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
   border-radius: var(--radius-full);
   vertical-align: middle;
 }
 
-.is-certified-chip::before {
-  content: "✦";
-  margin-right: 4px;
-  color: var(--color-designer-gold);
+/* 作者名旁的小金章(真 md §2.3):14px 圆 */
+.is-certified-mark {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  margin-left: 4px;
+  border-radius: 50%;
+  background: var(--color-certified-gold);
+  vertical-align: middle;
+  box-shadow: var(--shadow-certified);
 }

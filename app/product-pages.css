@@ -2478,65 +2478,122 @@
 }
 
 /* ============================================================
-   v1.2 高保真稿对齐(2026-05-02)
-   - /products(02_products_印花衣橱.png)
-   - /products/[id](06_product-detail_商品详情.png)
-   稿要求:
-   1. 桌面 5 列 / 平板 3 列 / 移动 2 列(已在上方就位)
-   2. 字体字号对齐 globals.css :root v2 token
-   3. 卡片底"by 作者署名 + 认证设计师角标"
-   4. 商品详情作者署名头像金圈 + "认证"chip
+   v1.2 真版高保真稿对齐(2026-05-02 第 2 轮)
+   主配色:Porcelain Cyan #2F5A5D × Smoked Rose #BA5E70。
+   金 #C8A875 仅认证设计师。
+   - /products(02 稿)
+   - /products/[id](06 稿)
    ============================================================ */
 
-/* Hero h1 字号对齐 v2 token: H1 = 56/64/700, mobile = 38/46 */
+/* Hero h1 字号(真 md §1.8):桌面 H1 40/48 Regular,移动 28/36 */
 .galleryHero h1 {
-  font-size: clamp(var(--text-h1-mobile-size, 38px), 4vw, var(--text-h1-size, 56px));
-  line-height: 1.14;
-  letter-spacing: var(--text-h1-tracking, -0.03em);
+  font-size: clamp(var(--text-h1-mobile-size, 28px), 3vw, var(--text-h1-size, 40px));
+  line-height: var(--text-h1-line, 48px);
+  font-weight: var(--text-h1-weight, 400);
+  letter-spacing: var(--text-h1-tracking, -0.01em);
 }
 
-/* 卡片底署名 — 与 02 稿一致(text-secondary 灰 + 认证 chip 内联) */
+/* 卡片署名(真 md §2.3):"by [名字]" + 14px 小金章
+   认证 chip 显示文字 "认证设计师" */
 .galleryCard__designer {
   display: inline-flex;
   align-items: center;
   flex-wrap: wrap;
-  font-size: var(--text-body-sm-size, 14px);
-  line-height: var(--text-body-sm-line, 22px);
+  font-size: var(--text-body-sm-size, 13px);
+  line-height: var(--text-body-sm-line, 20px);
   color: var(--color-text-secondary, var(--text2));
   letter-spacing: 0;
 }
 
-/* 认证设计师卡片 — 接入 globals.css .is-certified-card 工具类 */
+/* 商品卡比例(真 md §8.1):4:5 */
+.galleryCard__media {
+  aspect-ratio: 4 / 5;
+}
+
+/* 卡片价格(真 md §1.8 / §6.6):Price Small 16/24 Playfair Regular */
+.galleryCard__price {
+  font-family: var(--font-serif);
+  font-size: var(--text-price-small-size, 16px);
+  line-height: var(--text-price-small-line, 24px);
+  letter-spacing: 0.01em;
+  font-weight: 400;
+  color: var(--color-text-primary, var(--text-main));
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+@media (max-width: 767px) {
+  .galleryCard__price {
+    font-size: var(--text-price-small-mobile-size, 14px);
+    line-height: var(--text-price-small-mobile-line, 20px);
+  }
+}
+
+/* 商品详情价格(真 md §6.6):Price 22/28 Playfair Regular,移动 20/28 */
+.detailPriceRow strong,
+.pdpPriceCard strong {
+  font-family: var(--font-serif);
+  font-size: var(--text-price-size, 22px);
+  line-height: var(--text-price-line, 28px);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+@media (max-width: 767px) {
+  .detailPriceRow strong,
+  .pdpPriceCard strong {
+    font-size: var(--text-price-mobile-size, 20px);
+    line-height: var(--text-price-mobile-line, 28px);
+  }
+}
+
+/* /products 的搜索 / 主 CTA 用 Smoked Rose(真 md §6.1 Primary)
+   注意:.gallerySearchSubmit 之前使用 var(--gold) → 现在变成 cyan;
+   按真 md 它应该是 Accent rose,这里覆盖。 */
+.gallerySearchSubmit {
+  background: var(--color-accent, #BA5E70);
+  color: #FFFFFF;
+}
+.gallerySearchSubmit:hover {
+  background: var(--color-accent-hover, #A85060);
+}
+
+/* 认证设计师卡片(真 md §2.3) */
 .galleryCard.is-certified {
-  border-color: var(--color-designer-gold, #C8A875);
-  border-radius: var(--radius-lg, 16px);
-  /* overflow:hidden 会裁掉角标 → 改 visible,保留 media 内圆角靠 media 自身 */
+  border-color: var(--color-certified-gold, #C8A875);
+  border-radius: var(--radius-l, 12px);
   overflow: visible;
   isolation: isolate;
 }
 .galleryCard.is-certified .galleryCard__media {
-  border-top-left-radius: calc(var(--radius-lg, 16px) - 1.5px);
-  border-top-right-radius: calc(var(--radius-lg, 16px) - 1.5px);
+  border-top-left-radius: calc(var(--radius-l, 12px) - 1.5px);
+  border-top-right-radius: calc(var(--radius-l, 12px) - 1.5px);
   overflow: hidden;
 }
-/* 角标在 globals.css .is-certified-card::before 中已定义,这里只调圆角与卡片右上角对齐 */
 .galleryCard.is-certified::before {
-  border-top-right-radius: calc(var(--radius-lg, 16px) - 1.5px);
+  border-top-right-radius: calc(var(--radius-l, 12px) - 1.5px);
 }
 
-/* 商品详情:认证设计师署名 chip 高度 / 间距对齐 06 稿 */
+/* 商品详情:认证设计师作者卡(真 md §2.4):border 切到金色 1px */
+.pdpDesigner.is-certified {
+  border: 1px solid var(--color-certified-gold, #C8A875);
+}
 .pdpDesigner.is-certified small {
-  color: var(--color-designer-gold-strong, #A8884B);
-  letter-spacing: 0.06em;
-  font-weight: 600;
+  color: var(--color-certified-gold-pressed, #9F7E4F);
+  letter-spacing: 0.04em;
+  font-weight: 500;
 }
 
-/* 价格行字号对齐 06 稿:groupPrice ¥X 用 H2 衬线,customPrice 用 H4 */
-.galleryCard__price {
-  font-family: var(--font-serif);
-  font-size: var(--text-h4-size, 20px);
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-  font-weight: 600;
-  color: var(--color-text-primary, var(--text-main));
+/* 价格区主 CTA "立即开团" → Accent Rose(GroupBuyCta 内部样式由组件控制) */
+.pdpCtaRow .pdpCta--primary,
+.pdpCtaRow [data-primary="true"] {
+  background: var(--color-accent, #BA5E70);
+  color: #FFFFFF;
+  border-color: var(--color-accent, #BA5E70);
+}
+.pdpCtaRow .pdpCta--primary:hover,
+.pdpCtaRow [data-primary="true"]:hover {
+  background: var(--color-accent-hover, #A85060);
+  border-color: var(--color-accent-hover, #A85060);
 }

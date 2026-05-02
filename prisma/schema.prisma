@@ -56,6 +56,7 @@ model Designer {
   displayName     String
   bio             String?
   avatarUrl       String?
+  isCertified     Boolean  @default(false)
   totalEarnings   Int      @default(0)
   withdrawable    Int      @default(0)
   createdAt       DateTime @default(now())
