@@ -10,6 +10,9 @@ import "../product-pages.css";
 interface DesignerLite {
   name: string | null;
   avatar: string | null;
+  /** v1.2: API 暂未返回该字段时为 undefined,视为非认证。
+   * 视觉系统在认证为 true 时启用金色描边 + 角标(globals.css .is-certified-card)。 */
+  isCertified?: boolean;
 }
 interface DesignListItem {
   id: string;
@@ -293,8 +296,13 @@ function CollectionBody() {
             ) : (
               items.map((p, i) => {
                 const tone = SAMPLE_TONES[i % SAMPLE_TONES.length];
+                const certified = p.designer.isCertified === true;
                 return (
-                  <Link className="galleryCard" href={`/products/${p.id}`} key={p.id}>
+                  <Link
+                    className={`galleryCard${certified ? " is-certified is-certified-card" : ""}`}
+                    href={`/products/${p.id}`}
+                    key={p.id}
+                  >
                     <div className={`galleryCard__media tone-${tone}`}>
                       {p.images[0] ? (
                         <img src={p.images[0]} alt={p.title} className="galleryCard__image" />
@@ -311,7 +319,10 @@ function CollectionBody() {
                     <div className="galleryCard__body">
                       <div className="galleryCard__name">{p.title}</div>
                       <div className="galleryCard__price">{fmtPrice(p.groupPrice)}</div>
-                      <div className="galleryCard__designer">{p.designer.name ?? "MaxLuLu Studio"}</div>
+                      <div className="galleryCard__designer">
+                        by {p.designer.name ?? "MaxLuLu Studio"}
+                        {certified && <span className="is-certified-chip" aria-label="认证设计师">认证</span>}
+                      </div>
                     </div>
                   </Link>
                 );

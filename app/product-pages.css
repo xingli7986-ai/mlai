@@ -2476,3 +2476,67 @@
   .hotGroupRow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hotMiniCard:nth-child(n+3) { display: none; }
 }
+
+/* ============================================================
+   v1.2 高保真稿对齐(2026-05-02)
+   - /products(02_products_印花衣橱.png)
+   - /products/[id](06_product-detail_商品详情.png)
+   稿要求:
+   1. 桌面 5 列 / 平板 3 列 / 移动 2 列(已在上方就位)
+   2. 字体字号对齐 globals.css :root v2 token
+   3. 卡片底"by 作者署名 + 认证设计师角标"
+   4. 商品详情作者署名头像金圈 + "认证"chip
+   ============================================================ */
+
+/* Hero h1 字号对齐 v2 token: H1 = 56/64/700, mobile = 38/46 */
+.galleryHero h1 {
+  font-size: clamp(var(--text-h1-mobile-size, 38px), 4vw, var(--text-h1-size, 56px));
+  line-height: 1.14;
+  letter-spacing: var(--text-h1-tracking, -0.03em);
+}
+
+/* 卡片底署名 — 与 02 稿一致(text-secondary 灰 + 认证 chip 内联) */
+.galleryCard__designer {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: var(--text-body-sm-size, 14px);
+  line-height: var(--text-body-sm-line, 22px);
+  color: var(--color-text-secondary, var(--text2));
+  letter-spacing: 0;
+}
+
+/* 认证设计师卡片 — 接入 globals.css .is-certified-card 工具类 */
+.galleryCard.is-certified {
+  border-color: var(--color-designer-gold, #C8A875);
+  border-radius: var(--radius-lg, 16px);
+  /* overflow:hidden 会裁掉角标 → 改 visible,保留 media 内圆角靠 media 自身 */
+  overflow: visible;
+  isolation: isolate;
+}
+.galleryCard.is-certified .galleryCard__media {
+  border-top-left-radius: calc(var(--radius-lg, 16px) - 1.5px);
+  border-top-right-radius: calc(var(--radius-lg, 16px) - 1.5px);
+  overflow: hidden;
+}
+/* 角标在 globals.css .is-certified-card::before 中已定义,这里只调圆角与卡片右上角对齐 */
+.galleryCard.is-certified::before {
+  border-top-right-radius: calc(var(--radius-lg, 16px) - 1.5px);
+}
+
+/* 商品详情:认证设计师署名 chip 高度 / 间距对齐 06 稿 */
+.pdpDesigner.is-certified small {
+  color: var(--color-designer-gold-strong, #A8884B);
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+/* 价格行字号对齐 06 稿:groupPrice ¥X 用 H2 衬线,customPrice 用 H4 */
+.galleryCard__price {
+  font-family: var(--font-serif);
+  font-size: var(--text-h4-size, 20px);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+  color: var(--color-text-primary, var(--text-main));
+}

@@ -7,35 +7,37 @@
    ============================================================ */
 
 :root {
-  --gold: #B0865C;
-  --gold-hover: #9A7448;
+  /* v1.2 高保真稿对齐(2026-05-02):legacy 别名保留,值对齐到 globals.css :root v2 token。
+     之后可逐步迁移到 --color-primary / --color-text-primary 等语义化命名。 */
+  --gold:        #B38A56;
+  --gold-hover:  #9C7443;
   --gold-pressed: #82603A;
-  --gold-light: #C8A57F;
-  --gold-bg: rgba(176, 134, 92, 0.06);
-  --gold-border: rgba(176, 134, 92, 0.3);
-  --gold-dark: #82603A;
-  --bg: #F5EFE5;
-  --bg-main: #F5EFE5;
-  --bg-soft: #FAF6F5;
-  --bg-deep: #E5E2DB;
-  --card: #FAF6F5;
-  --card-hover: #F5EFE5;
-  --text: #2B241F;
-  --text-main: #2B241F;
-  --text2: #7A7A6F;
-  --text-sub: #7A7A6F;
-  --text3: #A09A92;
-  --border: #E5E2DB;
-  --border-light: #EFEBE5;
-  --dark: #111111;
-  --white: #FFFFFF;
-  --red: #D95D4F;
-  --container: 1200px;
-  --shadow-soft: 0 18px 50px rgba(80, 55, 35, 0.08);
-  --shadow-card: 0 12px 30px rgba(60, 40, 25, 0.07);
-  --serif: var(--font-serif);
-  --sans: var(--font-sans);
-  --display: var(--font-serif);
+  --gold-light:  #D8C4A4;
+  --gold-bg:     rgba(179, 138, 86, 0.08);
+  --gold-border: rgba(179, 138, 86, 0.32);
+  --gold-dark:   #9C7443;
+  --bg:          #F6F1E8;
+  --bg-main:     #F6F1E8;
+  --bg-soft:     #FBF7F0;
+  --bg-deep:     #EFE7DD;
+  --card:        #FFFDF9;
+  --card-hover:  #FBF7F0;
+  --text:        #1E1B18;
+  --text-main:   #1E1B18;
+  --text2:       #6F665E;
+  --text-sub:    #6F665E;
+  --text3:       #A39A91;
+  --border:      #E7DED2;
+  --border-light: #EFE7DD;
+  --dark:        #181512;
+  --white:       #FFFFFF;
+  --red:         #C84532;
+  --container:   1200px;
+  --shadow-soft: 0 1px 2px rgba(24, 21, 18, 0.04), 0 8px 24px rgba(24, 21, 18, 0.06);
+  --shadow-card: 0 1px 2px rgba(24, 21, 18, 0.04), 0 8px 24px rgba(24, 21, 18, 0.06);
+  --serif:       var(--font-serif);
+  --sans:        var(--font-sans);
+  --display:     var(--font-serif);
 }
 
 * { box-sizing: border-box; }

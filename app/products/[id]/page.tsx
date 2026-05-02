@@ -25,6 +25,9 @@ interface DesignerInfo {
   name: string | null;
   avatar: string | null;
   bio: string | null;
+  /** v1.2: 认证设计师视觉系统(globals.css .is-certified-* 工具类)。
+   * API 未返回该字段时按 false 处理,不绘制金色描边 / 角标。 */
+  isCertified?: boolean;
 }
 
 interface DesignDetail {
@@ -207,8 +210,11 @@ export default async function ProductDetailPage({ params }: Props) {
             </div>
           </div>
 
-          <div className="pdpDesigner">
-            <div className={`pdpDesigner__avatar tone-${tone}`} aria-hidden>
+          <div className={`pdpDesigner${detail.designer.isCertified ? " is-certified" : ""}`}>
+            <div
+              className={`pdpDesigner__avatar tone-${tone}${detail.designer.isCertified ? " is-certified-avatar" : ""}`}
+              aria-hidden
+            >
               {detail.designer.avatar ? (
                 <img src={detail.designer.avatar} alt={detail.designer.name ?? ""} className="pdpDesigner__img" />
               ) : (
@@ -216,8 +222,13 @@ export default async function ProductDetailPage({ params }: Props) {
               )}
             </div>
             <div className="pdpDesigner__body">
-              <small>设计师</small>
-              <b>{detail.designer.name ?? "MaxLuLu Studio"}</b>
+              <small>{detail.designer.isCertified ? "认证设计师" : "设计师"}</small>
+              <b>
+                {detail.designer.name ?? "MaxLuLu Studio"}
+                {detail.designer.isCertified && (
+                  <span className="is-certified-chip" aria-label="认证设计师">认证</span>
+                )}
+              </b>
               {detail.designer.bio && <span>{detail.designer.bio}</span>}
             </div>
             <button type="button" className="pdpDesigner__follow">+ 关注</button>
