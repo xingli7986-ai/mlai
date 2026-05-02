@@ -41,15 +41,24 @@ const STYLE_TAGS = [
   "极简",
 ];
 
+// 真实模特图本地路径 — 见 public/assets/images/home/* (28 张)。
+// URL 路径含空格,需要 URL 编码;Next.js 自动处理 %20。
+// 选 14 张分给 14 条 InspirationWork。
 const SAMPLE_COVERS = [
-  "https://maxlulu-assets.r2.dev/inspiration/work-01.jpg",
-  "https://maxlulu-assets.r2.dev/inspiration/work-02.jpg",
-  "https://maxlulu-assets.r2.dev/inspiration/work-03.jpg",
-  "https://maxlulu-assets.r2.dev/inspiration/work-04.jpg",
-  "https://maxlulu-assets.r2.dev/inspiration/work-05.jpg",
-  "https://maxlulu-assets.r2.dev/inspiration/work-06.jpg",
-  "https://maxlulu-assets.r2.dev/inspiration/work-07.jpg",
-  "https://maxlulu-assets.r2.dev/inspiration/work-08.jpg",
+  "/assets/images/home/02-featured-designs/dresses-summer/01-ink-garden-knit-wrap-dress.png",
+  "/assets/images/home/02-featured-designs/dresses-summer/02-camellia-ink-v-neck-dress.png",
+  "/assets/images/home/02-featured-designs/dresses-summer/03-black-white-abstract-wrap-dress.png",
+  "/assets/images/home/02-featured-designs/dresses-summer/04-wine-rose-waist-tie-dress.png",
+  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_22_48 PM.png",
+  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_27_48 PM.png",
+  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_27_57 PM.png",
+  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_28_33 PM.png",
+  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_28_45 PM.png",
+  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_28_53 PM.png",
+  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_29_02 PM.png",
+  "/assets/images/home/03-gallery/ChatGPT Image Apr 26, 2026, 02_29_09 PM.png",
+  "/assets/images/home/03-scenes/commute-knit-print-dress.png",
+  "/assets/images/home/03-scenes/date-floral-wrap-dress.png",
 ];
 
 interface Spec {
@@ -128,19 +137,11 @@ async function main() {
   const consumerByPhone = new Map<string, string>();
   for (const c of consumers) consumerByPhone.set(c.phone, c.id);
 
-  // 4. 检查已有数据,做幂等
-  const existing = await prisma.inspirationWork.findMany({ select: { title: true } });
-  const existingTitles = new Set(existing.map((e) => e.title));
-  if (existing.length >= WORKS.length) {
-    console.log(`  already has ${existing.length} works — skipping seed.`);
-    await prisma.$disconnect();
-    return;
-  }
-
+  // 4. upsert by title — 既能首次插入,也能在 cover 路径变化时更新
   let created = 0;
+  let updated = 0;
   for (let i = 0; i < WORKS.length; i++) {
     const spec = WORKS[i];
-    if (existingTitles.has(spec.title)) continue;
 
     let userId: string | undefined;
     if (spec.creatorType === "designer") {
@@ -154,6 +155,22 @@ async function main() {
     }
 
     const cover = pickCover(i);
+    const second = pickCover(i + 2);
+
+    const existing = await prisma.inspirationWork.findFirst({
+      where: { title: spec.title },
+      select: { id: true },
+    });
+
+    if (existing) {
+      await prisma.inspirationWork.update({
+        where: { id: existing.id },
+        data: { coverImage: cover, images: [cover, second] },
+      });
+      updated++;
+      continue;
+    }
+
     await prisma.inspirationWork.create({
       data: {
         userId,
@@ -161,7 +178,7 @@ async function main() {
         title: spec.title,
         description: spec.description,
         coverImage: cover,
-        images: [cover, pickCover(i + 2)],
+        images: [cover, second],
         prompt: spec.promptVisibility === "private" ? null : spec.prompt,
         params: { fabric: "knit", colors: ["#2F5A5D", "#BA5E70"] },
         promptVisibility: spec.promptVisibility,
@@ -180,7 +197,7 @@ async function main() {
     created++;
   }
 
-  console.log(`  created ${created} InspirationWorks.`);
+  console.log(`  created ${created} new, updated ${updated} existing InspirationWorks.`);
   console.log("Done.");
   await prisma.$disconnect();
 }

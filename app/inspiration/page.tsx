@@ -154,37 +154,46 @@ function InspirationBody() {
     <div className="page-wrap inspirationPage">
       <ConsumerNav variant="solid" />
 
-      <section className="inspHero">
-        <div className="container inspHero__inner">
-          <div className="inspHero__copy">
-            <p className="inspHero__eyebrow">INSPIRATION SQUARE · 灵感广场</p>
-            <h1>每一朵印花,都由你绽放</h1>
-            <p className="inspHero__lead">
-              展示创作过程 · 解锁 prompt · 基于喜欢的款式继续创作。
-              所有作品来自真实创作者。
-            </p>
-            <div className="inspHero__cta">
-              <Button as="a" href="/products?intent=custom" variant="primary" size="md">
-                成为创作者 → 进入工作室
-              </Button>
+      <div className="container">
+        <section className="inspHero">
+          <div className="inspHero__bg" aria-hidden>
+            <img
+              src="/assets/images/home/01-hero/ChatGPT Image Apr 26, 2026, 02_09_53 PM.png"
+              alt=""
+            />
+          </div>
+          <div className="inspHero__overlay" aria-hidden />
+          <div className="inspHero__inner">
+            <div className="inspHero__copy">
+              <p className="inspHero__eyebrow">INSPIRATION SQUARE · 灵感广场</p>
+              <h1>每一朵印花,都由你绽放</h1>
+              <p className="inspHero__lead">
+                展示创作过程 · 解锁 prompt · 基于喜欢的款式继续创作。
+                所有作品来自真实创作者。
+              </p>
+              <div className="inspHero__cta">
+                <Button as="a" href="/my-studio" variant="primary" size="md">
+                  成为创作者 → 进入工作室
+                </Button>
+              </div>
+            </div>
+            <div className="inspHero__stats">
+              <div className="inspHero__stat">
+                <b>{stats.totalWorks}</b>
+                <small>总作品</small>
+              </div>
+              <div className="inspHero__stat">
+                <b>{stats.activeCreators}</b>
+                <small>活跃创作者</small>
+              </div>
+              <div className="inspHero__stat">
+                <b>{stats.weeklyNew}</b>
+                <small>本周新增</small>
+              </div>
             </div>
           </div>
-          <div className="inspHero__stats">
-            <div className="inspHero__stat">
-              <b>{stats.totalWorks}</b>
-              <small>总作品</small>
-            </div>
-            <div className="inspHero__stat">
-              <b>{stats.activeCreators}</b>
-              <small>活跃创作者</small>
-            </div>
-            <div className="inspHero__stat">
-              <b>{stats.weeklyNew}</b>
-              <small>本周新增</small>
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <section className="inspTabs container">
         <div className="inspTabRow">
