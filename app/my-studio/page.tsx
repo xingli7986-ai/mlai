@@ -55,7 +55,7 @@ const TOOLS: {
 const STATS = [
   {
     label: "我的作品",
-    value: 0,
+    value: 28,
     icon: (
       <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="4" y="6" width="20" height="16" rx="2" />
@@ -66,7 +66,7 @@ const STATS = [
   },
   {
     label: "已定制",
-    value: 0,
+    value: 6,
     icon: (
       <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M5 8h18l-2 13H7z" />
@@ -76,7 +76,7 @@ const STATS = [
   },
   {
     label: "已发布",
-    value: 0,
+    value: 8,
     icon: (
       <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 4l16 16-7 1-1 7-8-8" />
@@ -86,8 +86,49 @@ const STATS = [
   },
 ];
 
-const HERO_BG = "/assets/images/my-studio/hero/maxlulu-my-studio-hero-fashion-illustration-1200x900.png";
+const WORK_IMG = {
+  rose: "/assets/images/my-studio/works/maxlulu-my-studio-work-rose-vine-print-1080x1440.png",
+  blue: "/assets/images/my-studio/works/maxlulu-my-studio-work-blue-floral-print-1080x1440.png",
+  garden: "/assets/images/my-studio/works/maxlulu-my-studio-work-summer-garden-dress-1080x1440.png",
+};
+
+const MOCK_WORKS = [
+  { id: "w1", title: "玫瑰藤蔓印花", time: "2026-05-03 14:32", img: WORK_IMG.rose },
+  { id: "w2", title: "蓝韵繁花", time: "2026-05-03 11:15", img: WORK_IMG.blue },
+  { id: "w3", title: "夏日花园连衣裙", time: "2026-05-02 22:08", img: WORK_IMG.garden },
+  { id: "w4", title: "扎染晚霞", time: "2026-05-02 16:40", img: WORK_IMG.rose },
+  { id: "w5", title: "工笔白描", time: "2026-05-01 21:12", img: WORK_IMG.blue },
+  { id: "w6", title: "印象繁星", time: "2026-04-30 13:55", img: WORK_IMG.garden },
+];
+
+const HERO_FIGURE = "/assets/images/my-studio/hero/maxlulu-my-studio-hero-fashion-illustration-1200x900.png";
+const HERO_FLORAL = "/assets/images/my-studio/hero/maxlulu-my-studio-hero-floral-bg-desktop-1920x600.png";
 const EMPTY_ILLUSTRATION = "/assets/images/my-studio/empty-state/maxlulu-my-studio-empty-state-fashion-illustration-900x1200.png";
+
+function ActionIcon({ kind }: { kind: "save" | "buy" | "publish" }) {
+  if (kind === "save") {
+    return (
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M7 2v8M3.5 6.5L7 10l3.5-3.5" />
+        <path d="M2 12h10" />
+      </svg>
+    );
+  }
+  if (kind === "buy") {
+    return (
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M2 4h10l-1 8H3z" />
+        <path d="M5 4V2.5a2 2 0 0 1 4 0V4" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 2v8M4 5l3-3 3 3" />
+      <path d="M2 11h10" />
+    </svg>
+  );
+}
 
 export default function MyStudioPage() {
   return (
@@ -96,17 +137,14 @@ export default function MyStudioPage() {
 
       <div className="container">
         <section className="msHero">
-          <div className="msHero__bg" aria-hidden>
-            <img src={HERO_BG} alt="" />
-          </div>
-          <div className="msHero__overlay" aria-hidden />
+          <div className="msHero__floral" aria-hidden style={{ backgroundImage: `url(${HERO_FLORAL})` }} />
           <div className="msHero__inner">
-            <p className="msHero__crumb">
-              我的设计工作室
-              <span className="slash"> / </span>
-              my-studio
-            </p>
             <div className="msHero__copy">
+              <p className="msHero__crumb">
+                我的设计工作室
+                <span className="slash"> / </span>
+                my-studio
+              </p>
               <h1>我的设计工作室</h1>
               <p className="msHero__display">My Design Studio</p>
               <p className="msHero__lead">
@@ -123,6 +161,9 @@ export default function MyStudioPage() {
                   </div>
                 ))}
               </div>
+            </div>
+            <div className="msHero__figure" aria-hidden>
+              <img src={HERO_FIGURE} alt="" />
             </div>
           </div>
         </section>
@@ -161,6 +202,33 @@ export default function MyStudioPage() {
             查看全部作品 →
           </Link>
         </header>
+
+        <div className="msWorksGrid" role="list">
+          {MOCK_WORKS.map((w) => (
+            <article key={w.id} className="msWork" role="listitem">
+              <div className="msWork__media">
+                <img src={w.img} alt={w.title} />
+              </div>
+              <h3 className="msWork__title">{w.title}</h3>
+              <p className="msWork__time">{w.time}</p>
+              <div className="msWork__divider" />
+              <div className="msWork__actions">
+                <button type="button" className="msWork__action">
+                  <ActionIcon kind="save" />
+                  保存到相册
+                </button>
+                <button type="button" className="msWork__action msWork__action--accent">
+                  <ActionIcon kind="buy" />
+                  定制下单
+                </button>
+                <button type="button" className="msWork__action">
+                  <ActionIcon kind="publish" />
+                  发布到灵感广场
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
 
         <EmptyState
           className="msEmpty"
