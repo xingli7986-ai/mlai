@@ -70,11 +70,12 @@
   inset: 0;
   z-index: 1;
   pointer-events: none;
+  /* 减弱遮罩,让背景花卉氛围淡铺全幅;文字区只做轻 wash */
   background: linear-gradient(
     90deg,
-    rgba(252, 253, 253, 0.96) 0%,
-    rgba(252, 253, 253, 0.72) 48%,
-    rgba(252, 253, 253, 0.12) 100%
+    rgba(252, 253, 253, 0.78) 0%,
+    rgba(252, 253, 253, 0.42) 48%,
+    rgba(252, 253, 253, 0) 100%
   );
 }
 .my-studio-page .msHero__inner {
@@ -86,32 +87,25 @@
   justify-content: center;
   min-height: 320px;
 }
+/* 面包屑(Hero 面板最顶部小灰字) */
+.my-studio-page .msHero__crumb {
+  margin: 0 0 24px;
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: 0.04em;
+}
+.my-studio-page .msHero__crumb .slash {
+  color: var(--color-border-strong);
+  margin: 0 4px;
+}
+
 .my-studio-page .msHero__copy {
-  max-width: 50%;
+  max-width: 56%;
   min-width: 0;
 }
 
-.my-studio-page .msHero__eyebrow {
-  margin: 0 0 12px;
-  color: var(--color-text-secondary);
-  font-size: 13px;
-  letter-spacing: 0.18em;
-  font-weight: 500;
-}
-.my-studio-page .msHero__eyebrow .slash {
-  color: var(--color-border-strong);
-  margin: 0 6px;
-}
-.my-studio-page .msHero__display {
-  margin: 0 0 8px;               /* spec §三 标题与副标题 8px */
-  font-family: var(--font-serif);
-  font-size: 28px;               /* spec §二 英文副标题 */
-  line-height: 36px;
-  font-weight: 400;
-  font-style: italic;
-  color: var(--color-accent);    /* spec §一 英文副标题色 */
-  letter-spacing: -0.005em;
-}
+/* H1 在前,英文 italic 副标题在后(spec §二 + 设计稿) */
 .my-studio-page .msHero h1 {
   margin: 0;
   font-family: var(--font-serif);
@@ -121,23 +115,27 @@
   letter-spacing: -0.01em;
   color: var(--color-text-primary);
 }
+.my-studio-page .msHero__display {
+  margin: 8px 0 0;               /* spec §三 标题与副标题 8px */
+  font-family: var(--font-serif);
+  font-size: 28px;               /* spec §二 英文副标题 */
+  line-height: 36px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--color-accent);    /* spec §一 英文副标题色 */
+  letter-spacing: -0.005em;
+}
 .my-studio-page .msHero__lead {
-  margin: 16px 0 0;              /* spec §三 标题与正文 / 正文与按钮 16 */
+  margin: 16px 0 0;
   color: var(--color-text-secondary);
   font-size: 14px;
   line-height: 22px;
   max-width: 460px;
 }
-.my-studio-page .msHero__cta {
-  margin-top: 24px;
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
 
 @media (max-width: 1023px) {
   .my-studio-page .msHero__inner { padding: 40px; }
-  .my-studio-page .msHero__copy { max-width: 60%; }
+  .my-studio-page .msHero__copy { max-width: 64%; }
 }
 @media (max-width: 767px) {
   .my-studio-page .msHero {
@@ -149,9 +147,9 @@
   .my-studio-page .msHero__overlay {
     background: linear-gradient(
       to top,
-      rgba(252, 253, 253, 0.96) 0%,
-      rgba(252, 253, 253, 0.72) 48%,
-      rgba(252, 253, 253, 0.12) 100%
+      rgba(252, 253, 253, 0.85) 0%,
+      rgba(252, 253, 253, 0.55) 48%,
+      rgba(252, 253, 253, 0.05) 100%
     );
   }
   .my-studio-page .msHero__inner {
@@ -159,33 +157,32 @@
     justify-content: flex-end;
     min-height: 220px;
   }
+  .my-studio-page .msHero__crumb { margin-bottom: 12px; }
   .my-studio-page .msHero__copy { max-width: 100%; }
-  .my-studio-page .msHero__display { font-size: 20px; line-height: 28px; }
   .my-studio-page .msHero h1 { font-size: 28px; line-height: 36px; }
+  .my-studio-page .msHero__display { font-size: 20px; line-height: 28px; }
   .my-studio-page .msHero__lead { font-size: 13px; line-height: 20px; max-width: none; }
-  .my-studio-page .msHero__cta { margin-top: 16px; }
-  .my-studio-page .msHero__cta .ui-btn { width: 100%; }
 }
 
 /* ============================================================
-   D. Stats —— spec §四 统计卡 / §五 序号 3
+   D. Stats —— 嵌入 Hero 内左下,轻量内联(无边框无独立卡片)
+   spec §五 序号 3 + 设计稿:与 H1 共享背景
    ============================================================ */
-.my-studio-page .msStats {
-  margin-top: 40px;              /* spec §三 模块间距 desktop */
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;                     /* spec §三 统计卡间距 */
+.my-studio-page .msHero__stats {
+  margin-top: 24px;
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;                     /* 单元间距,与 spec §二 / 设计稿留白接近 */
+  flex-wrap: wrap;
 }
 .my-studio-page .msStat {
-  height: 64px;                  /* spec §四 stat desktop 高度 */
-  display: grid;
-  grid-template-columns: 28px 1fr;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
+  gap: 10px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  min-width: 0;
 }
 .my-studio-page .msStat__icon {
   width: 28px;
@@ -194,9 +191,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 .my-studio-page .msStat__icon svg { width: 100%; height: 100%; }
-.my-studio-page .msStat__body { display: grid; gap: 4px; min-width: 0; }
+.my-studio-page .msStat__body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
 .my-studio-page .msStat b {
   font-family: var(--font-sans);
   font-size: 32px;               /* spec §二 统计数字 desktop */
@@ -214,20 +216,15 @@
 }
 
 @media (max-width: 767px) {
-  .my-studio-page .msStats { gap: 8px; margin-top: 24px; }
-  .my-studio-page .msStat {
-    height: 56px;                /* spec §四 mobile 高度 */
-    padding: 10px 12px;
-    grid-template-columns: 24px 1fr;
-    gap: 8px;
-  }
-  .my-studio-page .msStat__icon { width: 24px; height: 24px; }
+  .my-studio-page .msHero__stats { gap: 20px; margin-top: 16px; }
+  .my-studio-page .msStat__icon { width: 22px; height: 22px; }
   .my-studio-page .msStat b { font-size: 22px; line-height: 28px; }
   .my-studio-page .msStat small { font-size: 11px; }
 }
 
 /* ============================================================
    E. Tool hint —— spec §五 序号 4
+   hint 与上方 Hero 间距 40px,与下方 tools 间距 24px(清晰分块)
    ============================================================ */
 .my-studio-page .msHint {
   margin-top: 40px;
@@ -259,7 +256,7 @@
    4 卡:图案生成 / 四方连续 / 上身试穿 / 线稿生成
    ============================================================ */
 .my-studio-page .msTools {
-  margin-top: 16px;              /* 紧贴 hint */
+  margin-top: 24px;              /* hint→tools 24px(分块清晰) */
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 24px;
@@ -287,18 +284,23 @@
   box-shadow: 0 8px 24px 0 rgba(30, 39, 43, 0.08);
   transform: translateY(-2px);
 }
-/* 主色浅底 — 图案生成 / 上身试穿 (spec §一 工具卡浅底用法) */
-.my-studio-page .msTool--primary {
-  background: color-mix(in srgb, var(--color-primary-subtle) 70%, var(--color-surface) 30%);
+/* 工具卡背景按设计稿映射 (spec §一):
+   rose=粉(F4E5E7)→ 图案生成 / 线稿生成
+   blue=浅蓝(E2EEF1)→ 四方连续
+   neutral=白(FCFDFD)→ 上身试穿 */
+.my-studio-page .msTool--rose {
+  background: var(--color-accent-subtle);
 }
-/* 强调色浅底 — 四方连续 / 线稿生成 */
-.my-studio-page .msTool--accent {
-  background: color-mix(in srgb, var(--color-accent-subtle) 60%, var(--color-surface) 40%);
+.my-studio-page .msTool--blue {
+  background: var(--color-primary-subtle);
+}
+.my-studio-page .msTool--neutral {
+  background: var(--color-surface);
 }
 
 .my-studio-page .msTool__icon {
-  width: 64px;
-  height: 64px;
+  width: 56px;                   /* 设计稿 ≈50-56,spec §四 写 48,折中 56 给富插画一点空间 */
+  height: 56px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -317,15 +319,15 @@
   font-size: 20px;               /* spec §二 工具卡标题 */
   line-height: 28px;
   font-weight: 500;
-  color: var(--color-primary);
+  color: var(--color-primary);   /* spec §二 工具卡标题色 #234A58 */
 }
-.my-studio-page .msTool--accent h3 { color: var(--color-accent); }
 .my-studio-page .msTool p {
   margin: 0;
   color: var(--color-text-secondary);
   font-size: 14px;
   line-height: 22px;
 }
+/* CTA 全部统一为 Accent rose,与设计稿一致 */
 .my-studio-page .msTool__cta {
   margin-top: auto;
   align-self: flex-start;
@@ -334,19 +336,13 @@
   height: 32px;
   padding: 0 16px;
   border-radius: 999px;
-  background: var(--color-primary);
+  background: var(--color-accent);
   color: #FFFFFF;
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.02em;
 }
-.my-studio-page .msTool--accent .msTool__cta {
-  background: var(--color-accent);
-}
 .my-studio-page .msTool:hover .msTool__cta {
-  background: var(--color-primary-hover);
-}
-.my-studio-page .msTool--accent:hover .msTool__cta {
   background: var(--color-accent-hover);
 }
 
@@ -363,7 +359,7 @@
     min-height: 124px;
     gap: 8px;
   }
-  .my-studio-page .msTool__icon { width: 48px; height: 48px; }
+  .my-studio-page .msTool__icon { width: 40px; height: 40px; }
   .my-studio-page .msTool h3 { font-size: 16px; line-height: 24px; }
   .my-studio-page .msTool p { font-size: 12px; line-height: 18px; }
   .my-studio-page .msTool__cta { height: 28px; padding: 0 12px; font-size: 12px; }
@@ -392,12 +388,12 @@
   color: var(--color-text-primary);
 }
 .my-studio-page .msWorks__more {
-  color: var(--color-accent);
+  color: var(--color-text-tertiary);  /* 次级浅灰链接,非粉色强调 */
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   text-decoration: none;
 }
-.my-studio-page .msWorks__more:hover { color: var(--color-accent-hover); }
+.my-studio-page .msWorks__more:hover { color: var(--color-text-secondary); }
 
 @media (max-width: 767px) {
   .my-studio-page .msWorks { margin-top: 24px; }
