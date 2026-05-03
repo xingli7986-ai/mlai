@@ -14,7 +14,7 @@ const TOOLS: {
   title: string;
   desc: string;
   variant: "primary" | "accent";
-  icon: React.ReactNode;
+  icon: string;
 }[] = [
   {
     id: "pattern",
@@ -22,19 +22,7 @@ const TOOLS: {
     title: "图案生成",
     desc: "用一句话生成专属印花,适合从零开始创作。",
     variant: "primary",
-    icon: (
-      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="24" cy="24" r="6" />
-        <circle cx="14" cy="14" r="4" />
-        <circle cx="34" cy="14" r="4" />
-        <circle cx="14" cy="34" r="4" />
-        <circle cx="34" cy="34" r="4" />
-        <path d="M14 18v8" />
-        <path d="M34 18v8" />
-        <path d="M18 14h8" />
-        <path d="M18 34h8" />
-      </svg>
-    ),
+    icon: "/assets/images/my-studio/tools/maxlulu-my-studio-tool-pattern-generation-512x512.png",
   },
   {
     id: "seamless",
@@ -42,15 +30,7 @@ const TOOLS: {
     title: "四方连续",
     desc: "把单元图案扩展为可无缝循环的面料底图。",
     variant: "accent",
-    icon: (
-      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="6" y="6" width="14" height="14" rx="2" />
-        <rect x="28" y="6" width="14" height="14" rx="2" />
-        <rect x="6" y="28" width="14" height="14" rx="2" />
-        <rect x="28" y="28" width="14" height="14" rx="2" />
-        <path d="M20 13h8M20 35h8M13 20v8M35 20v8" />
-      </svg>
-    ),
+    icon: "/assets/images/my-studio/tools/maxlulu-my-studio-tool-seamless-repeat-512x512.png",
   },
   {
     id: "fabric",
@@ -58,12 +38,7 @@ const TOOLS: {
     title: "上身试穿",
     desc: "把印花贴到模特版型,一秒预览成衣效果。",
     variant: "primary",
-    icon: (
-      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="24" cy="11" r="5" />
-        <path d="M14 22l6-4h8l6 4-3 5-3-2v17H20V25l-3 2z" />
-      </svg>
-    ),
+    icon: "/assets/images/my-studio/tools/maxlulu-my-studio-tool-try-on-512x512.png",
   },
   {
     id: "sketch",
@@ -71,13 +46,7 @@ const TOOLS: {
     title: "线稿生成",
     desc: "AI 帮你出连衣裙款式线稿,直接进入打版。",
     variant: "accent",
-    icon: (
-      <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 35l24-24 4 4-24 24-6 2z" />
-        <path d="M29 15l4 4" />
-        <path d="M9 41h30" />
-      </svg>
-    ),
+    icon: "/assets/images/my-studio/tools/maxlulu-my-studio-tool-line-sketch-512x512.png",
   },
 ];
 
@@ -115,7 +84,8 @@ const STATS = [
   },
 ];
 
-const HERO_BG = "/seed-images/inspiration/ChatGPT Image May 2, 2026, 06_17_43 PM (9).png";
+const HERO_BG = "/assets/images/my-studio/hero/maxlulu-my-studio-hero-fashion-illustration-1200x900.png";
+const EMPTY_ILLUSTRATION = "/assets/images/my-studio/empty-state/maxlulu-my-studio-empty-state-fashion-illustration-900x1200.png";
 
 export default function MyStudioPage() {
   return (
@@ -181,7 +151,9 @@ export default function MyStudioPage() {
             href={t.href}
             className={`msTool msTool--${t.variant}`}
           >
-            <span className="msTool__icon" aria-hidden>{t.icon}</span>
+            <span className="msTool__icon" aria-hidden>
+              <img src={t.icon} alt="" />
+            </span>
             <h3>{t.title}</h3>
             <p>{t.desc}</p>
             <span className="msTool__cta">开始创作</span>
@@ -199,14 +171,7 @@ export default function MyStudioPage() {
 
         <EmptyState
           className="msEmpty"
-          icon={
-            <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M10 14h28v22a2 2 0 0 1-2 2H12a2 2 0 0 1-2-2V14z" />
-              <path d="M16 14V9a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v5" />
-              <path d="M24 22v10" />
-              <path d="M19 27h10" />
-            </svg>
-          }
+          icon={<img src={EMPTY_ILLUSTRATION} alt="" />}
           title="还没有作品"
           description="从第一朵花开始创作吧,完成一次生成后,你的作品会出现在这里。"
           action={
