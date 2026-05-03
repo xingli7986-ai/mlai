@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import ConsumerNav from "@/components/ConsumerNav";
-import { Button, EmptyState } from "@/components/ui";
 import "./my-studio.css";
 
 type ToolVariant = "rose" | "blue" | "neutral";
@@ -88,22 +87,28 @@ const STATS = [
 
 const WORK_IMG = {
   rose: "/assets/images/my-studio/works/maxlulu-my-studio-work-rose-vine-print-1080x1440.png",
-  blue: "/assets/images/my-studio/works/maxlulu-my-studio-work-blue-floral-print-1080x1440.png",
   garden: "/assets/images/my-studio/works/maxlulu-my-studio-work-summer-garden-dress-1080x1440.png",
+  blue: "/assets/images/my-studio/works/maxlulu-my-studio-work-blue-floral-print-1080x1440.png",
 };
 
-const MOCK_WORKS = [
-  { id: "w1", title: "玫瑰藤蔓印花", time: "2026-05-03 14:32", img: WORK_IMG.rose },
-  { id: "w2", title: "蓝韵繁花", time: "2026-05-03 11:15", img: WORK_IMG.blue },
-  { id: "w3", title: "夏日花园连衣裙", time: "2026-05-02 22:08", img: WORK_IMG.garden },
-  { id: "w4", title: "扎染晚霞", time: "2026-05-02 16:40", img: WORK_IMG.rose },
-  { id: "w5", title: "工笔白描", time: "2026-05-01 21:12", img: WORK_IMG.blue },
-  { id: "w6", title: "印象繁星", time: "2026-04-30 13:55", img: WORK_IMG.garden },
+type Work =
+  | { id: string; title: string; time: string; kind: "image"; img: string }
+  | { id: string; title: string; time: string; kind: "gradient"; gradient: string };
+
+const MOCK_WORKS: Work[] = [
+  { id: "w1", title: "玫瑰藤蔓印花", time: "2026-05-03 14:32", kind: "image", img: WORK_IMG.rose },
+  { id: "w2", title: "夏日花园连衣裙", time: "2026-05-03 11:15", kind: "image", img: WORK_IMG.garden },
+  { id: "w3", title: "蓝韵繁花", time: "2026-05-02 22:08", kind: "image", img: WORK_IMG.blue },
+  { id: "w4", title: "海风微澜", time: "2026-05-02 16:40", kind: "gradient",
+    gradient: "linear-gradient(135deg, #A3CACE 0%, #234A58 100%)" },
+  { id: "w5", title: "粉樱漫舞", time: "2026-05-01 21:12", kind: "gradient",
+    gradient: "linear-gradient(135deg, #F4E5E7 0%, #C06A73 100%)" },
+  { id: "w6", title: "春日序曲", time: "2026-04-30 13:55", kind: "gradient",
+    gradient: "linear-gradient(135deg, #E2EEF1 0%, #C8A875 60%, #C06A73 100%)" },
 ];
 
 const HERO_FIGURE = "/assets/images/my-studio/hero/maxlulu-my-studio-hero-fashion-illustration-1200x900.png";
 const HERO_FLORAL = "/assets/images/my-studio/hero/maxlulu-my-studio-hero-floral-bg-desktop-1920x600.png";
-const EMPTY_ILLUSTRATION = "/assets/images/my-studio/empty-state/maxlulu-my-studio-empty-state-fashion-illustration-900x1200.png";
 
 function ActionIcon({ kind }: { kind: "save" | "buy" | "publish" }) {
   if (kind === "save") {
@@ -206,9 +211,17 @@ export default function MyStudioPage() {
         <div className="msWorksGrid" role="list">
           {MOCK_WORKS.map((w) => (
             <article key={w.id} className="msWork" role="listitem">
-              <div className="msWork__media">
-                <img src={w.img} alt={w.title} />
-              </div>
+              {w.kind === "image" ? (
+                <div className="msWork__media">
+                  <img src={w.img} alt={w.title} />
+                </div>
+              ) : (
+                <div
+                  className="msWork__media msWork__media--gradient"
+                  style={{ background: w.gradient }}
+                  aria-label={w.title}
+                />
+              )}
               <h3 className="msWork__title">{w.title}</h3>
               <p className="msWork__time">{w.time}</p>
               <div className="msWork__divider" />
@@ -229,18 +242,6 @@ export default function MyStudioPage() {
             </article>
           ))}
         </div>
-
-        <EmptyState
-          className="msEmpty"
-          icon={<img src={EMPTY_ILLUSTRATION} alt="" />}
-          title="还没有作品"
-          description="从第一朵花开始创作吧,完成一次生成后,你的作品会出现在这里。"
-          action={
-            <Button as="a" href="/studio/pattern/generate" variant="primary" size="md">
-              开始第一次创作
-            </Button>
-          }
-        />
       </section>
     </div>
   );

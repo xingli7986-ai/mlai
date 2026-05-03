@@ -87,9 +87,7 @@
   position: relative;
   z-index: 2;
   display: grid;
-  /* 用户原定 52/48,但 3 张 160px stat 卡(总 512)在 52% 列(490px)放不下,
-     微调左栏到 56% 让 stats 一行排开,figure 仍占 44% 充裕 */
-  grid-template-columns: 56% 44%;
+  grid-template-columns: 52% 48%;               /* spec / 用户:52/48 */
   gap: 32px;
   align-items: stretch;
   min-height: calc(360px - 56px * 2);           /* 248 */
@@ -207,12 +205,14 @@
    ============================================================ */
 .my-studio-page .msHero__stats {
   margin-top: 24px;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;                                    /* spec §三 统计卡间距 */
 }
 .my-studio-page .msStat {
-  width: 160px;
+  /* spec / 用户:160px;但 1200 容器 + 52% 左栏(491)放不下 3×160+2×16=512,
+     用 minmax 1fr 让 3 张卡均分左栏宽度,视觉上仍是 ~150-160 一张 */
+  width: 100%;
   height: 64px;
   padding: 12px 16px;
   display: grid;
@@ -252,12 +252,10 @@
 
 @media (max-width: 1023px) {
   .my-studio-page .msHero__stats { gap: 8px; margin-top: 16px; }
-  .my-studio-page .msStat { width: calc((100% - 16px) / 3); min-width: 120px; }
 }
 @media (max-width: 767px) {
   .my-studio-page .msHero__stats { gap: 8px; margin-top: 16px; }
   .my-studio-page .msStat {
-    width: calc((100% - 16px) / 3);
     height: 56px;
     padding: 8px 10px;
     grid-template-columns: 22px 1fr;
@@ -432,25 +430,28 @@
 }
 .my-studio-page .msWorks__more:hover { color: var(--color-text-secondary); }
 
-/* ===== 网格(desktop 6 列 / tablet 3 列 / mobile 隐藏)===== */
+/* ===== 网格(desktop 3 列 / tablet 2 列 / mobile 2 列)===== */
 .my-studio-page .msWorksGrid {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
 @media (max-width: 1023px) {
   .my-studio-page .msWorksGrid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
 }
 @media (max-width: 767px) {
-  .my-studio-page .msWorksGrid { display: none; }
+  .my-studio-page .msWorksGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
 }
 
-/* ===== 空状态(默认隐藏 desktop / 显示 mobile)===== */
+/* ===== 空状态(目前 desktop 用 mock 数据展示,空状态样式保留备用)===== */
 .my-studio-page .msEmpty.ui-empty {
-  display: none;
+  display: grid;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 16px;
@@ -459,11 +460,8 @@
   text-align: center;
   gap: 12px;
 }
-@media (max-width: 767px) {
-  .my-studio-page .msEmpty.ui-empty { display: grid; padding: 24px; }
-}
 .my-studio-page .msEmpty .ui-empty__icon {
-  width: 160px;
+  width: 200px;                                 /* 用户:160-220 */
   height: auto;
   background: transparent;
   display: block;
@@ -494,7 +492,8 @@
   margin-top: 16px;
 }
 @media (max-width: 767px) {
-  .my-studio-page .msEmpty .ui-empty__icon { width: 140px; }
+  .my-studio-page .msEmpty.ui-empty { padding: 24px; }
+  .my-studio-page .msEmpty .ui-empty__icon { width: 160px; }
   .my-studio-page .msEmpty .ui-empty__title { font-size: 18px; line-height: 26px; }
 }
 
@@ -539,6 +538,9 @@
   height: 100%;
   object-fit: cover;
   display: block;
+}
+.my-studio-page .msWork__media--gradient {
+  background: var(--gradient, linear-gradient(135deg, #E2EEF1, #C06A73));
 }
 .my-studio-page .msWork__title {
   margin: 4px 0 0;
