@@ -1,0 +1,546 @@
+/* /my-studio —— 严格按 design/08_my-studio_design_spec.md (2026-05-03)
+   全部规则 scoped 在 .my-studio-page,不污染全局。
+   配色 token 已在 globals.css 统一,这里只覆盖 layout 相关的 page 级 token。 */
+
+@import "../home-consumer.css";
+
+/* ============================================================
+   A. Page-scoped layout overrides
+   spec §三 / §六:container max 1200,desktop 左右 64px。
+   globals 的 --container-max 在大屏会膨胀到 1280/1600,这里 hard-cap 1200。
+   ============================================================ */
+.my-studio-page {
+  --ms-container-max: 1200px;
+  --ms-page-px-desktop: 64px;
+  --ms-page-px-tablet: 24px;
+  --ms-page-px-mobile: 16px;
+}
+
+/* ============================================================
+   B. Page Container
+   ============================================================ */
+.my-studio-page {
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  padding-bottom: 48px;          /* spec §三 桌面底部安全留白 */
+}
+.my-studio-page .container {
+  width: 100%;
+  max-width: var(--ms-container-max);
+  margin: 0 auto;
+  padding: 0 var(--ms-page-px-desktop);
+}
+@media (max-width: 1023px) {
+  .my-studio-page .container { padding: 0 var(--ms-page-px-tablet); }
+}
+@media (max-width: 767px) {
+  .my-studio-page .container { padding: 0 var(--ms-page-px-mobile); }
+  .my-studio-page { padding-bottom: 32px; }
+}
+
+/* ============================================================
+   C. Hero —— 左文右图 + 90° 渐变叠层 (spec §四 Hero / §五 序号 2)
+   ============================================================ */
+.my-studio-page .msHero {
+  position: relative;
+  min-height: 320px;
+  margin-top: 24px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.my-studio-page .msHero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.my-studio-page .msHero__bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center right;
+  display: block;
+  opacity: 0.82;                 /* spec §四 Hero 插画透明度 */
+}
+.my-studio-page .msHero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(252, 253, 253, 0.96) 0%,
+    rgba(252, 253, 253, 0.72) 48%,
+    rgba(252, 253, 253, 0.12) 100%
+  );
+}
+.my-studio-page .msHero__inner {
+  position: relative;
+  z-index: 2;
+  padding: 64px;                 /* spec §三 Hero 内边距 desktop */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 320px;
+}
+.my-studio-page .msHero__copy {
+  max-width: 50%;
+  min-width: 0;
+}
+
+.my-studio-page .msHero__eyebrow {
+  margin: 0 0 12px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  font-weight: 500;
+}
+.my-studio-page .msHero__eyebrow .slash {
+  color: var(--color-border-strong);
+  margin: 0 6px;
+}
+.my-studio-page .msHero__display {
+  margin: 0 0 8px;               /* spec §三 标题与副标题 8px */
+  font-family: var(--font-serif);
+  font-size: 28px;               /* spec §二 英文副标题 */
+  line-height: 36px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--color-accent);    /* spec §一 英文副标题色 */
+  letter-spacing: -0.005em;
+}
+.my-studio-page .msHero h1 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 40px;               /* spec §二 H1 desktop */
+  line-height: 48px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+}
+.my-studio-page .msHero__lead {
+  margin: 16px 0 0;              /* spec §三 标题与正文 / 正文与按钮 16 */
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 22px;
+  max-width: 460px;
+}
+.my-studio-page .msHero__cta {
+  margin-top: 24px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1023px) {
+  .my-studio-page .msHero__inner { padding: 40px; }
+  .my-studio-page .msHero__copy { max-width: 60%; }
+}
+@media (max-width: 767px) {
+  .my-studio-page .msHero {
+    min-height: 220px;
+    margin-top: 16px;
+    border-radius: 12px;
+  }
+  .my-studio-page .msHero__bg img { object-position: top right; }
+  .my-studio-page .msHero__overlay {
+    background: linear-gradient(
+      to top,
+      rgba(252, 253, 253, 0.96) 0%,
+      rgba(252, 253, 253, 0.72) 48%,
+      rgba(252, 253, 253, 0.12) 100%
+    );
+  }
+  .my-studio-page .msHero__inner {
+    padding: 24px;
+    justify-content: flex-end;
+    min-height: 220px;
+  }
+  .my-studio-page .msHero__copy { max-width: 100%; }
+  .my-studio-page .msHero__display { font-size: 20px; line-height: 28px; }
+  .my-studio-page .msHero h1 { font-size: 28px; line-height: 36px; }
+  .my-studio-page .msHero__lead { font-size: 13px; line-height: 20px; max-width: none; }
+  .my-studio-page .msHero__cta { margin-top: 16px; }
+  .my-studio-page .msHero__cta .ui-btn { width: 100%; }
+}
+
+/* ============================================================
+   D. Stats —— spec §四 统计卡 / §五 序号 3
+   ============================================================ */
+.my-studio-page .msStats {
+  margin-top: 40px;              /* spec §三 模块间距 desktop */
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;                     /* spec §三 统计卡间距 */
+}
+.my-studio-page .msStat {
+  height: 64px;                  /* spec §四 stat desktop 高度 */
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+.my-studio-page .msStat__icon {
+  width: 28px;
+  height: 28px;
+  color: var(--color-accent);    /* spec §四 图标色 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.my-studio-page .msStat__icon svg { width: 100%; height: 100%; }
+.my-studio-page .msStat__body { display: grid; gap: 4px; min-width: 0; }
+.my-studio-page .msStat b {
+  font-family: var(--font-sans);
+  font-size: 32px;               /* spec §二 统计数字 desktop */
+  line-height: 40px;
+  font-weight: 400;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+.my-studio-page .msStat small {
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 767px) {
+  .my-studio-page .msStats { gap: 8px; margin-top: 24px; }
+  .my-studio-page .msStat {
+    height: 56px;                /* spec §四 mobile 高度 */
+    padding: 10px 12px;
+    grid-template-columns: 24px 1fr;
+    gap: 8px;
+  }
+  .my-studio-page .msStat__icon { width: 24px; height: 24px; }
+  .my-studio-page .msStat b { font-size: 22px; line-height: 28px; }
+  .my-studio-page .msStat small { font-size: 11px; }
+}
+
+/* ============================================================
+   E. Tool hint —— spec §五 序号 4
+   ============================================================ */
+.my-studio-page .msHint {
+  margin-top: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 22px;
+}
+.my-studio-page .msHint__icon {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  color: var(--color-certified-gold);
+}
+.my-studio-page .msHint__icon svg { width: 100%; height: 100%; }
+.my-studio-page .msHint b {
+  color: var(--color-certified-gold);
+  font-weight: 600;
+}
+
+@media (max-width: 767px) {
+  .my-studio-page .msHint { margin-top: 20px; font-size: 13px; line-height: 20px; }
+}
+
+/* ============================================================
+   F. Tool cards —— spec §四 工具卡 / §五 序号 5
+   4 卡:图案生成 / 四方连续 / 上身试穿 / 线稿生成
+   ============================================================ */
+.my-studio-page .msTools {
+  margin-top: 16px;              /* 紧贴 hint */
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+.my-studio-page .msTool {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  min-height: 168px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--color-text-primary);
+  box-shadow: 0 1px 2px 0 rgba(30, 39, 43, 0.04);
+  transition:
+    border-color 150ms ease-out,
+    box-shadow 150ms ease-out,
+    transform 150ms ease-out;
+}
+.my-studio-page .msTool:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: 0 8px 24px 0 rgba(30, 39, 43, 0.08);
+  transform: translateY(-2px);
+}
+/* 主色浅底 — 图案生成 / 上身试穿 (spec §一 工具卡浅底用法) */
+.my-studio-page .msTool--primary {
+  background: color-mix(in srgb, var(--color-primary-subtle) 70%, var(--color-surface) 30%);
+}
+/* 强调色浅底 — 四方连续 / 线稿生成 */
+.my-studio-page .msTool--accent {
+  background: color-mix(in srgb, var(--color-accent-subtle) 60%, var(--color-surface) 40%);
+}
+
+.my-studio-page .msTool__icon {
+  width: 48px;
+  height: 48px;
+  color: var(--color-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.my-studio-page .msTool--accent .msTool__icon { color: var(--color-accent); }
+.my-studio-page .msTool__icon svg { width: 100%; height: 100%; }
+
+.my-studio-page .msTool h3 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 20px;               /* spec §二 工具卡标题 */
+  line-height: 28px;
+  font-weight: 500;
+  color: var(--color-primary);
+}
+.my-studio-page .msTool--accent h3 { color: var(--color-accent); }
+.my-studio-page .msTool p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 22px;
+}
+.my-studio-page .msTool__cta {
+  margin-top: auto;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.my-studio-page .msTool--accent .msTool__cta {
+  background: var(--color-accent);
+}
+.my-studio-page .msTool:hover .msTool__cta {
+  background: var(--color-primary-hover);
+}
+.my-studio-page .msTool--accent:hover .msTool__cta {
+  background: var(--color-accent-hover);
+}
+
+@media (max-width: 1023px) {
+  .my-studio-page .msTools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 767px) {
+  .my-studio-page .msTools {
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .my-studio-page .msTool {
+    padding: 16px;
+    min-height: 124px;
+    gap: 8px;
+  }
+  .my-studio-page .msTool__icon { width: 36px; height: 36px; }
+  .my-studio-page .msTool h3 { font-size: 16px; line-height: 24px; }
+  .my-studio-page .msTool p { font-size: 12px; line-height: 18px; }
+  .my-studio-page .msTool__cta { height: 28px; padding: 0 12px; font-size: 12px; }
+}
+
+/* ============================================================
+   G. Works section —— spec §五 序号 6 / 7 / 8 / 9
+   ============================================================ */
+.my-studio-page .msWorks {
+  margin-top: 40px;
+}
+.my-studio-page .msWorks__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 32px;
+  margin-bottom: 16px;
+}
+.my-studio-page .msWorks__head h2 {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.my-studio-page .msWorks__more {
+  color: var(--color-accent);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+.my-studio-page .msWorks__more:hover { color: var(--color-accent-hover); }
+
+@media (max-width: 767px) {
+  .my-studio-page .msWorks { margin-top: 24px; }
+  .my-studio-page .msWorks__head h2 { font-size: 18px; line-height: 26px; }
+  .my-studio-page .msWorks__more { font-size: 13px; }
+}
+
+/* ============================================================
+   H. Empty state —— spec §四 空状态模块
+   ============================================================ */
+.my-studio-page .msEmpty.ui-empty {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 32px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: 12px;
+}
+.my-studio-page .msEmpty .ui-empty__icon {
+  width: 96px;
+  height: 96px;
+  color: var(--color-accent);
+  background: var(--color-accent-subtle);
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+}
+.my-studio-page .msEmpty .ui-empty__icon svg { width: 48px; height: 48px; }
+.my-studio-page .msEmpty .ui-empty__title {
+  font-family: var(--font-sans);
+  font-size: 20px;
+  line-height: 28px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-top: 8px;
+}
+.my-studio-page .msEmpty .ui-empty__desc {
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--color-text-secondary);
+  max-width: 520px;
+}
+.my-studio-page .msEmpty .ui-empty__action {
+  margin-top: 16px;
+}
+
+@media (max-width: 767px) {
+  .my-studio-page .msEmpty.ui-empty { padding: 24px; }
+  .my-studio-page .msEmpty .ui-empty__title { font-size: 18px; line-height: 26px; }
+}
+
+/* ============================================================
+   I. Work card —— spec §四 作品卡 / §五 序号 7-8
+   目前无数据,样式预留;有数据时直接挂 .msWorksGrid > .msWork 即可。
+   ============================================================ */
+.my-studio-page .msWorksGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;                     /* spec §三 作品卡间距 desktop */
+}
+.my-studio-page .msWork {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px 0 rgba(30, 39, 43, 0.04);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    border-color 150ms ease-out,
+    box-shadow 150ms ease-out,
+    transform 150ms ease-out;
+}
+.my-studio-page .msWork:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: 0 8px 24px 0 rgba(30, 39, 43, 0.08);
+  transform: translateY(-2px);
+}
+.my-studio-page .msWork__media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background: var(--color-subtle);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.my-studio-page .msWork__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.my-studio-page .msWork__title {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.my-studio-page .msWork__time {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-text-tertiary);
+}
+.my-studio-page .msWork__divider {
+  height: 1px;
+  background: var(--color-divider);
+  margin: 4px 0;
+}
+.my-studio-page .msWork__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;                      /* spec §三 作品操作行间距 */
+}
+.my-studio-page .msWork__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 24px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  text-decoration: none;
+}
+.my-studio-page .msWork__action:hover { color: var(--color-primary); }
+.my-studio-page .msWork__action svg { width: 14px; height: 14px; }
+.my-studio-page .msWork__action--accent {
+  color: var(--color-accent);
+  font-weight: 500;
+}
+.my-studio-page .msWork__action--accent:hover { color: var(--color-accent-hover); }
+
+@media (max-width: 767px) {
+  .my-studio-page .msWorksGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+}
