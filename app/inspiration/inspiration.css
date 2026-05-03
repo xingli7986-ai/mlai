@@ -1,346 +1,450 @@
-/* 灵感广场 /inspiration —— 1:1 对照 design/high-fidelity-v2/01_inspiration_灵感广场.png
-   主配色:Porcelain Cyan + Smoked Rose;真 md §02 + §7.1 */
+/* /inspiration —— 严格按 design/07_inspiration_design_spec.md (2026-05-03)
+   全部规则 scoped 在 .inspiration-page,不污染全局。
+   只覆盖与 globals.css 不同的 token,其它复用 :root。 */
+
 @import "../home-consumer.css";
 
-.inspirationPage {
+/* ============================================================
+   A. Scoped CSS variable overrides
+   只列出与 globals.css :root 不同的;相同的不重复声明。
+   ============================================================ */
+.inspiration-page {
+  /* primary 主色 — globals 是 #2F5A5D,稿是 #234A58 */
+  --color-primary:         #234A58;
+  --color-primary-hover:   #235660;  /* globals #234A50 */
+  --color-primary-pressed: #1B3D49;  /* globals #1C393D */
+
+  /* accent — globals 是 #BA5E70,稿是 #C06A73 */
+  --color-accent:          #C06A73;
+  --color-accent-hover:    #AB5760;  /* globals #A85060 */
+
+  /* text 微调,与稿严格一致 */
+  --color-text-tertiary:   #879397;  /* globals #879197 */
+  --color-text-disabled:   #BECCCA;  /* globals #B7C2C8 */
+
+  /* 其它 (--color-bg / --color-surface / --color-divider / --color-border /
+            --color-certified-gold / --color-success / --color-info /
+            --color-warning / --color-error / 各 spacing token / radius token)
+     已在 globals 中匹配,不再覆盖。 */
+}
+
+/* ============================================================
+   B. Page Container
+   ============================================================ */
+.inspiration-page {
   min-height: 100vh;
   background: var(--color-bg);
   color: var(--color-text-primary);
-  padding-bottom: 96px;
   font-family: var(--font-sans);
+  padding-bottom: 96px;
 }
-
-.inspirationPage .container {
+.inspiration-page .container {
   width: 100%;
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: 0 var(--gutter-desktop);
+  padding: 0 32px; /* spec §3.2 页面左右边距 32px */
 }
 @media (max-width: 767px) {
-  .inspirationPage .container { padding: 0 var(--gutter-mobile); }
+  .inspiration-page .container { padding: 0 16px; } /* spec §6.4 mobile 16px */
+  .inspiration-page { padding-bottom: 80px; }
 }
 
-/* === Hero — 背景图铺满 + 文字浮层(对照稿 01)=== */
-.inspHero {
+/* ============================================================
+   C. Hero —— 左文右图 + 90° 渐变叠层 (spec §1.4 / §3.2 / §5)
+   ============================================================ */
+.inspiration-page .inspHero {
   position: relative;
-  min-height: 480px;
+  min-height: 300px;            /* spec §3.2 hero 高度 */
   overflow: hidden;
-  margin-top: var(--space-6);
-  border-radius: var(--radius-xl);
+  margin-top: 24px;
+  margin-bottom: 32px;          /* spec §3.2 模块与模块垂直间距 */
+  border-radius: 12px;
   border: 1px solid var(--color-divider);
+  background: var(--color-bg);
 }
-.inspHero__bg {
+.inspiration-page .inspHero__bg {
   position: absolute;
   inset: 0;
   z-index: 0;
 }
-.inspHero__bg img {
+.inspiration-page .inspHero__bg img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center right; /* 模特偏右,左侧留给文字 */
+  object-position: center right;
   display: block;
 }
-.inspHero__overlay {
+.inspiration-page .inspHero__overlay {
   position: absolute;
   inset: 0;
   z-index: 1;
-  background: linear-gradient(
-    to right,
-    var(--color-bg) 0%,
-    rgba(243, 246, 246, 0.85) 30%,
-    rgba(243, 246, 246, 0) 60%
-  );
   pointer-events: none;
+  /* spec §1.4 90° 渐变 */
+  background: linear-gradient(
+    90deg,
+    rgba(243, 246, 246, 0.96) 0%,
+    rgba(243, 246, 246, 0.72) 48%,
+    rgba(243, 246, 246, 0.12) 100%
+  );
 }
-.inspHero__inner {
+.inspiration-page .inspHero__inner {
   position: relative;
   z-index: 2;
-  padding: 64px;
-  max-width: var(--container-max);
-  margin: 0 auto;
+  padding: 48px 64px; /* spec §3.2 hero 内容左侧留白 64px */
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 480px;
+  min-height: 300px;
 }
-.inspHero__copy {
-  max-width: 50%; /* 文字只占左半,不要满宽 */
+.inspiration-page .inspHero__copy {
+  max-width: 50%;
   min-width: 0;
 }
 
-.inspHero__eyebrow {
-  margin: 0 0 var(--space-3);
+.inspiration-page .inspHero__eyebrow {
+  margin: 0 0 12px;
   color: var(--color-text-secondary);
-  font-family: var(--font-sans);
   font-size: 13px;
   letter-spacing: 0.18em;
   font-weight: 500;
 }
-.inspHero__eyebrow .slash {
+.inspiration-page .inspHero__eyebrow .slash {
   color: var(--color-border-strong);
   margin: 0 6px;
 }
-.inspHero__display {
-  margin: 0 0 var(--space-3);
+.inspiration-page .inspHero__display {
+  margin: 0 0 8px;                   /* spec §3.2 标题与副标题 8px */
   font-family: var(--font-serif);
+  font-size: 48px;                   /* spec §2 H1 */
+  line-height: 56px;
+  font-weight: 400;
   font-style: italic;
-  font-size: 56px;
-  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+}
+.inspiration-page .inspHero h1 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 48px;                   /* spec §2 H1 CN */
+  line-height: 56px;
   font-weight: 400;
   letter-spacing: -0.01em;
   color: var(--color-text-primary);
 }
-.inspHero h1 {
-  margin: 0;
-  font-family: var(--font-serif);
-  font-size: 48px;
-  line-height: 1.2;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--color-text-primary);
-}
-.inspHero__lead {
-  margin: var(--space-4) 0 0;
+.inspiration-page .inspHero__lead {
+  margin: 16px 0 0;
   color: var(--color-text-secondary);
-  font-size: 14px;
+  font-size: 14px;                   /* spec §2 Body */
   line-height: 22px;
   max-width: 440px;
 }
 
-/* Stats — 左侧 .inspHero__copy 内水平 3-up,普通文字组(无 text-shadow,无半透明卡) */
-.inspHero__stats {
+.inspiration-page .inspHero__stats {
   display: flex;
-  gap: 32px;
+  gap: 48px;                         /* spec §3.2 hero 统计水平间距 */
+  margin-top: 32px;                  /* spec §3.2 hero 标题与统计 32px */
   align-items: flex-start;
-  margin-top: var(--space-6);
 }
-.inspHero__stat {
-  text-align: left;
-}
-.inspHero__stat b {
+.inspiration-page .inspHero__stat { text-align: left; }
+.inspiration-page .inspHero__stat b {
   display: block;
-  font-family: var(--font-serif);
-  font-size: 36px;
-  line-height: 1.1;
-  font-weight: 700;
-  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: 22px;                   /* spec §2 数字统计 */
+  line-height: 28px;
+  font-weight: 400;
+  color: var(--color-primary);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
 }
-.inspHero__stat small {
+.inspiration-page .inspHero__stat small {
   display: block;
   margin-top: 4px;
   color: var(--color-text-tertiary);
   font-family: var(--font-sans);
-  font-size: 13px;
+  font-size: 12px;                   /* spec §2 Caption */
+  line-height: 18px;
   letter-spacing: 0.04em;
 }
+.inspiration-page .inspHero__cta { margin-top: 24px; }
 
-/* Mobile:背景图保持铺满,渐变改下→上 */
+/* Mobile Hero —— 渐变改下→上 */
 @media (max-width: 767px) {
-  .inspHero {
-    margin-left: calc(-1 * var(--gutter-mobile));
-    margin-right: calc(-1 * var(--gutter-mobile));
-    border-radius: 0;
-    border-left: 0;
-    border-right: 0;
+  .inspiration-page .inspHero {
+    min-height: 360px;
+    margin-top: 16px;
   }
-  .inspHero__overlay {
+  .inspiration-page .inspHero__overlay {
     background: linear-gradient(
       to top,
-      rgba(243, 246, 246, 0.95) 0%,
-      rgba(243, 246, 246, 0.5) 50%,
-      rgba(243, 246, 246, 0) 100%
+      rgba(243, 246, 246, 0.96) 0%,
+      rgba(243, 246, 246, 0.72) 48%,
+      rgba(243, 246, 246, 0.12) 100%
     );
   }
-  .inspHero__inner {
+  .inspiration-page .inspHero__inner {
     padding: 24px;
     justify-content: flex-end;
+    min-height: 360px;
   }
-  .inspHero__copy {
-    max-width: 100%;
-  }
-  .inspHero__display {
-    font-size: 36px;
-    line-height: 1;
-  }
-  .inspHero h1 {
-    font-size: 32px;
-    line-height: 1.2;
-  }
-  .inspHero__stats {
-    gap: 24px;
-  }
-  .inspHero__stat b {
-    font-size: 28px;
-  }
-}
-.inspHero__cta {
-  margin-top: var(--space-5);
+  .inspiration-page .inspHero__copy { max-width: 100%; }
+  .inspiration-page .inspHero__display { font-size: 32px; line-height: 1.1; }
+  .inspiration-page .inspHero h1 { font-size: 28px; line-height: 1.2; }
+  .inspiration-page .inspHero__stats { gap: 24px; margin-top: 20px; }
+  .inspiration-page .inspHero__stat b { font-size: 20px; line-height: 24px; }
 }
 
-/* === Tool / Sort tabs === */
-.inspTabs {
-  margin-top: 32px;
+/* ============================================================
+   D. Tool Filter Row —— spec §3.2 / §4.2 / §5
+   ============================================================ */
+.inspiration-page .inspTabs {
+  margin-top: 32px;                  /* spec §3.2 模块垂直间距 32px */
+  background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-radius: 12px;
+  padding: 16px 24px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
+  gap: 12px;
 }
-.inspTabRow {
+.inspiration-page .inspTabRow {
   display: flex;
-  gap: var(--space-2);
+  gap: 8px;                          /* spec §3.2 chip 间距 */
   align-items: center;
   flex-wrap: wrap;
 }
-.inspTab {
-  height: 36px;
-  padding: 0 var(--space-4);
+.inspiration-page .inspTabRow__sep { flex: 1; }
+.inspiration-page .inspTab {
+  height: 32px;                      /* spec §4.2 */
+  padding: 0 16px;                   /* spec §4.2 */
+  border-radius: 999px;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-full);
   background: var(--color-surface-elevated);
   color: var(--color-text-secondary);
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;                  /* spec §2 导航/Tab 字重 500 */
   cursor: pointer;
-  transition: background var(--motion-base), color var(--motion-base), border-color var(--motion-base);
+  transition:
+    background var(--motion-base),
+    color var(--motion-base),
+    border-color var(--motion-base);
 }
-.inspTab:hover { color: var(--color-primary); border-color: var(--color-primary); }
-.inspTab.is-active {
+.inspiration-page .inspTab:hover {
+  background: var(--color-bg);
+  color: var(--color-primary);
+}
+.inspiration-page .inspTab.is-active {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: var(--color-white);
+  color: #FFFFFF;
 }
-.inspTabRow__sep { flex: 1; }
+.inspiration-page .inspTab:disabled,
+.inspiration-page .inspTab[disabled] {
+  background: var(--color-bg);
+  color: var(--color-text-disabled);
+  border-color: var(--color-divider);
+  cursor: not-allowed;
+}
 
-/* === Layout: grid + side === */
-.inspGridSection {
-  margin-top: var(--space-8);
+/* ============================================================
+   E. Main Content —— 4 列瀑布流 + 280px sticky 侧栏 (spec §5 / §6.2 / §4.8)
+   ============================================================ */
+.inspiration-page .inspGridSection {
+  margin-top: 32px;                  /* spec §3.2 模块间距 */
 }
-.inspWithSide {
+.inspiration-page .inspWithSide {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 280px;
-  gap: var(--space-6);
+  gap: 24px;                         /* spec §3.2 卡间距 */
+  align-items: start;
 }
-@media (max-width: 1199px) {
-  .inspWithSide { grid-template-columns: 1fr; }
+@media (max-width: 1023px) {
+  .inspiration-page .inspWithSide { grid-template-columns: 1fr; }
 }
-.inspSide {
-  display: grid;
-  gap: var(--space-3);
-  align-content: start;
-  position: sticky;
-  top: 88px;
+
+/* override masonry breakpoint to spec §6 (1024 / 768)
+   通用 .ui-masonry 在 1199 处切到 3 列,此页强制按规范 1023 切 */
+.inspiration-page .ui-masonry {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;                         /* spec §3.2 桌面卡间距 24 */
 }
-@media (max-width: 1199px) {
-  .inspSide { position: relative; top: auto; grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 1023px) {
+  .inspiration-page .ui-masonry {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+  }
 }
-.inspSideCard {
-  padding: var(--space-4);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-l);
+@media (max-width: 767px) {
+  .inspiration-page .ui-masonry {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;                       /* spec §6.4 移动卡间距 */
+  }
+}
+
+/* ============================================================
+   F. Side Panel —— spec §4.8 / §3.2
+   ============================================================ */
+.inspiration-page .inspSide {
+  width: 280px;                      /* spec §4.8 */
   background: var(--color-surface);
+  border: 1px solid var(--color-divider);
+  border-left: 1px solid var(--color-divider);
+  border-radius: 12px;
+  padding: 24px;                     /* spec §4.8 内边距 */
+  position: sticky;
+  top: 80px;                         /* spec §6.2 sticky 80px */
+  display: grid;
+  gap: 32px;                         /* spec §3.2 / §4.8 模块间距 32px */
+  align-content: start;
 }
-.inspSideCard__head {
-  margin-bottom: var(--space-3);
+@media (max-width: 1023px) {
+  .inspiration-page .inspSide {
+    width: 100%;
+    position: relative;
+    top: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+@media (max-width: 767px) {
+  .inspiration-page .inspSide {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+}
+
+.inspiration-page .inspSideCard {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.inspiration-page .inspSideCard__head {
+  margin-bottom: 12px;
+  font-size: 20px;                   /* spec §4.8 标题 20 */
+  line-height: 28px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.inspiration-page .inspSideTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.inspiration-page .inspSideTags span {
+  height: 32px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 22px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition:
+    color var(--motion-base),
+    border-color var(--motion-base),
+    background var(--motion-base);
+}
+.inspiration-page .inspSideTags span:hover {
+  background: var(--color-bg);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+.inspiration-page .inspSideRanges {
+  display: grid;
+  gap: 8px;
+}
+.inspiration-page .inspSideRange {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--color-surface-elevated);
+  border: 1px solid var(--color-border);
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition:
+    border-color var(--motion-base),
+    color var(--motion-base);
+}
+.inspiration-page .inspSideRange:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.inspiration-page .inspSideRange em {
+  color: var(--color-text-tertiary);
+  font-style: normal;
+}
+
+.inspiration-page .inspSideJoin {
+  background: var(--color-accent-subtle);
+  border: 1px solid rgba(192, 106, 115, 0.24);
+  border-radius: 12px;
+  padding: 16px;
+}
+.inspiration-page .inspSideJoin b {
+  display: block;
+  margin-bottom: 4px;
   font-size: 14px;
   font-weight: 600;
   color: var(--color-text-primary);
 }
-.inspSideTags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-.inspSideTags span {
-  height: 24px;
-  padding: 0 10px;
-  border-radius: var(--radius-full);
-  background: var(--color-subtle);
-  border: 1px solid var(--color-divider);
+.inspiration-page .inspSideJoin p {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 18px;
   color: var(--color-text-secondary);
-  font-size: 12px;
-  display: inline-flex;
-  align-items: center;
-  cursor: pointer;
 }
-.inspSideTags span:hover { color: var(--color-primary); border-color: var(--color-primary); }
-.inspSideRanges {
-  display: grid;
-  gap: var(--space-2);
-}
-.inspSideRange {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  border-radius: var(--radius-m);
-  background: var(--color-subtle);
-  border: 1px solid var(--color-divider);
-  font-size: 12px;
-  color: var(--color-text-primary);
-  cursor: pointer;
-}
-.inspSideRange:hover { border-color: var(--color-primary); color: var(--color-primary); }
-.inspSideRange em { color: var(--color-text-tertiary); font-style: normal; }
-
-.inspSideJoin {
-  background: var(--color-accent-subtle);
-  border-color: rgba(186, 94, 112, 0.24);
-}
-.inspSideJoin b {
-  display: block;
-  margin-bottom: var(--space-1);
-  color: var(--color-text-primary);
-}
-.inspSideJoin p {
-  margin: 0 0 var(--space-2);
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  line-height: 1.6;
-}
-.inspSideJoin a {
+.inspiration-page .inspSideJoin a {
   color: var(--color-accent);
   font-size: 12px;
   font-weight: 600;
 }
 
-/* === Card === */
-.inspCard {
+/* ============================================================
+   G. Card —— spec §4.4
+   ============================================================ */
+.inspiration-page .inspCard {
   display: flex;
   flex-direction: column;
-  overflow: visible;
   cursor: pointer;
   text-decoration: none;
   color: inherit;
 }
-.inspCard__media {
+.inspiration-page .inspCard__media {
   position: relative;
-  aspect-ratio: 4 / 5;
-  background: var(--color-subtle);
-  border-radius: var(--radius-l);
+  aspect-ratio: 4 / 3;               /* spec §4.4 卡片图比例 */
+  background: var(--color-surface-elevated);
+  border-radius: 8px 8px 0 0;        /* spec §4.4 顶部圆角 */
   overflow: hidden;
 }
-.ui-certified-frame.is-certified .inspCard__media {
-  border-radius: calc(var(--radius-l) - 1.5px);
-}
-.inspCard__img {
+.inspiration-page .inspCard__img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform var(--motion-base);
 }
-.inspCard:hover .inspCard__img { transform: scale(1.03); }
-.inspCard__placeholder {
+.inspiration-page .inspCard:hover .inspCard__img {
+  transform: scale(1.03);
+}
+.inspiration-page .inspCard__placeholder {
   width: 100%;
   height: 100%;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, #2F5A5D 0%, #234A50 100%);
-  color: rgba(255, 255, 255, 0.7);
+  background: var(--color-primary-subtle);
+  color: var(--color-text-tertiary);
   font-size: 13px;
 }
-.inspCard__lockBadge {
+
+/* lock badge —— spec §4.4 */
+.inspiration-page .inspCard__lockBadge {
   position: absolute;
   bottom: 8px;
   right: 8px;
@@ -348,15 +452,19 @@
   padding: 0 8px;
   display: inline-flex;
   align-items: center;
-  border-radius: var(--radius-full);
-  font-size: 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 18px;
   font-weight: 500;
-  letter-spacing: 0.02em;
+  background: rgba(255, 255, 255, 0.92);
   z-index: 2;
 }
+.inspiration-page .inspCard__lockBadge--free    { color: var(--color-success); }
+.inspiration-page .inspCard__lockBadge--paid    { color: var(--color-accent); }
+.inspiration-page .inspCard__lockBadge--private { color: var(--color-text-tertiary); }
 
-/* 卡片右上心形收藏按钮(对照 01 稿)— hover 出现,放在金角标左下避开 */
-.inspCard__like {
+/* like btn —— hover 显现 */
+.inspiration-page .inspCard__like {
   position: absolute;
   top: 8px;
   left: 8px;
@@ -380,41 +488,32 @@
     background var(--motion-base);
   backdrop-filter: blur(6px);
 }
-.inspCard:hover .inspCard__like {
+.inspiration-page .inspCard:hover .inspCard__like {
   opacity: 1;
   transform: translateY(0);
 }
-.inspCard__like:hover {
-  background: var(--color-accent);
-  color: #FFFFFF;
-}
-.inspCard__like.is-on {
-  opacity: 1;
-  transform: translateY(0);
+.inspiration-page .inspCard__like:hover {
   background: var(--color-accent);
   color: #FFFFFF;
 }
 @media (max-width: 767px) {
-  .inspCard__like { opacity: 1; transform: translateY(0); width: 28px; height: 28px; font-size: 14px; }
+  .inspiration-page .inspCard__like {
+    opacity: 1;
+    transform: translateY(0);
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
 }
-.inspCard__lockBadge--free {
-  background: rgba(47, 125, 104, 0.12);
-  color: var(--color-success);
+
+.inspiration-page .inspCard__body {
+  padding: 12px;                     /* spec §3.2 / §4.4 卡片内边距 */
+  background: var(--color-surface);
+  border-radius: 0 0 8px 8px;
 }
-.inspCard__lockBadge--paid {
-  background: var(--color-accent-subtle);
-  color: var(--color-accent);
-}
-.inspCard__lockBadge--private {
-  background: var(--color-subtle);
-  color: var(--color-text-tertiary);
-}
-.inspCard__body {
-  padding: var(--space-3) var(--space-3) var(--space-4);
-}
-.inspCard__title {
-  margin: 0 0 var(--space-2);
-  font-size: 14px;
+.inspiration-page .inspCard__title {
+  margin: 0 0 8px;                   /* spec §3.2 标题与副标题 8px */
+  font-size: 14px;                   /* spec §4.4 卡片标题字号 */
   line-height: 22px;
   font-weight: 500;
   color: var(--color-text-primary);
@@ -422,15 +521,79 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.inspCard__metaRow {
+.inspiration-page .inspCard__metaRow {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 12px;
+  line-height: 18px;
   color: var(--color-text-tertiary);
-  margin-top: var(--space-2);
+  margin-top: 8px;
 }
-.inspCard__metaRow .ic { margin-right: 2px; }
+.inspiration-page .inspCard__metaRow .ic { margin-right: 2px; }
 
-/* Badge corner-fill 修正:认证卡内圆角与外框衔接 */
-.ui-certified-frame.is-certified .inspCard__body { padding: var(--space-3) var(--space-4) var(--space-4); }
+/* ============================================================
+   H. CertifiedCardFrame —— scoped 重写,spec §4.5
+      默认卡:1px #D2DEDF 描边 + base shadow
+      认证卡:1.5px #C8A875 描边 + 右上角斜切 ribbon (48×24px,白字"认证")
+   ============================================================ */
+.inspiration-page .ui-certified-frame {
+  position: relative;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  box-shadow: 0 1px 2px 0 rgba(30, 39, 43, 0.04); /* spec §1.4 base */
+  transition:
+    border-color var(--motion-base),
+    box-shadow var(--motion-base);
+}
+.inspiration-page .ui-certified-frame:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: 0 8px 24px 0 rgba(30, 39, 43, 0.08); /* spec §1.4 hover */
+}
+.inspiration-page .ui-certified-frame.is-certified {
+  border: 1.5px solid var(--color-certified-gold); /* spec §4.5 */
+}
+.inspiration-page .ui-certified-frame.is-certified:hover {
+  box-shadow: 0 8px 24px 0 rgba(200, 168, 117, 0.28);
+}
+
+/* 覆盖默认 image-based ribbon,改用纯 CSS 斜切 ribbon (spec §4.5) */
+.inspiration-page .ui-certified-frame.is-certified[data-ribbon]::before {
+  content: attr(data-ribbon);
+  position: absolute;
+  top: 8px;
+  right: 0;
+  width: 48px;                       /* spec §4.5 角标宽度 */
+  height: 24px;                      /* spec §4.5 角标高度 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-certified-gold);
+  background-image: none;
+  color: #FFFFFF;                    /* spec §4.5 角标文字色 */
+  font-size: 12px;                   /* spec §4.5 角标字号 */
+  font-weight: 500;
+  line-height: 18px;
+  letter-spacing: 0.04em;
+  z-index: 3;
+  pointer-events: none;
+  /* 斜切 ribbon:左侧斜切尖角(向卡片内伸出) */
+  clip-path: polygon(0 50%, 12px 0, 100% 0, 100% 100%, 12px 100%);
+}
+@media (max-width: 767px) {
+  .inspiration-page .ui-certified-frame.is-certified[data-ribbon]::before {
+    width: 44px;
+    height: 22px;
+    font-size: 11px;
+    background-image: none;
+    clip-path: polygon(0 50%, 10px 0, 100% 0, 100% 100%, 10px 100%);
+  }
+}
+
+/* ============================================================
+   I. Empty / Skeleton 区(在 grid 中横跨四列)
+   ============================================================ */
+.inspiration-page .ui-masonry > [data-fullspan] {
+  grid-column: 1 / -1;
+}

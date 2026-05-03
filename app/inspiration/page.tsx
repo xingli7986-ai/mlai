@@ -151,7 +151,7 @@ function InspirationBody() {
   );
 
   return (
-    <div className="page-wrap inspirationPage">
+    <div className="page-wrap inspiration-page">
       <ConsumerNav variant="solid" />
 
       <div className="container">
@@ -360,7 +360,7 @@ function InspirationBody() {
 
 export default function InspirationPage() {
   return (
-    <Suspense fallback={<main className="inspirationPage" />}>
+    <Suspense fallback={<main className="inspiration-page" />}>
       <InspirationBody />
     </Suspense>
   );
