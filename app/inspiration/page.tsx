@@ -156,26 +156,16 @@ function InspirationBody() {
 
       <div className="container">
         <section className="inspHero">
-          {/* 等待 GPT 提供 hero banner 图 — 当前用 CSS 渐变占位,布局保留 480px(移动 380px) */}
-          <div className="inspHero__bg inspHero__bg--placeholder" aria-hidden />
-          <div className="inspHero__overlay" aria-hidden />
-          <div className="inspHero__inner">
-            <div className="inspHero__copy">
-              <p className="inspHero__eyebrow">
-                灵感广场<span className="slash"> / </span>inspiration
-              </p>
-              <p className="inspHero__display">Fashion For You</p>
-              <h1>每一朵印花,都由你绽放</h1>
-              <p className="inspHero__lead">
-                展示创作过程 · 解锁 prompt · 基于喜欢的款式继续创作。
-                所有作品来自真实创作者。
-              </p>
-              <div className="inspHero__cta">
-                <Button as="a" href="/my-studio" variant="primary" size="md">
-                  成为创作者 → 进入工作室
-                </Button>
-              </div>
-            </div>
+          <div className="inspHero__left">
+            <p className="inspHero__eyebrow">
+              灵感广场<span className="slash"> / </span>inspiration
+            </p>
+            <p className="inspHero__display">Fashion For You</p>
+            <h1>每一朵印花,都由你绽放</h1>
+            <p className="inspHero__lead">
+              展示创作过程 · 解锁 prompt · 基于喜欢的款式继续创作。
+              所有作品来自真实创作者。
+            </p>
             <div className="inspHero__stats">
               <div className="inspHero__stat">
                 <b>{stats.totalWorks}</b>
@@ -190,6 +180,17 @@ function InspirationBody() {
                 <small>本周新增</small>
               </div>
             </div>
+            <div className="inspHero__cta">
+              <Button as="a" href="/my-studio" variant="primary" size="md">
+                成为创作者 → 进入工作室
+              </Button>
+            </div>
+          </div>
+          <div className="inspHero__right">
+            <img
+              src="/seed-images/inspiration/ChatGPT Image May 2, 2026, 06_17_43 PM (9).png"
+              alt=""
+            />
           </div>
         </section>
       </div>

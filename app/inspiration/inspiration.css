@@ -20,80 +20,37 @@
   .inspirationPage .container { padding: 0 var(--gutter-mobile); }
 }
 
-/* === Hero (560px,稿 01 高度对齐) === */
+/* === Hero — 左右两栏(对照稿 01)
+   左侧 50% 文字区(米色干净背景);右侧 50% 模特图;不再用背景图 + 渐变蒙版 === */
 .inspHero {
-  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  min-height: 480px;
   margin-top: var(--space-6);
-  height: 560px;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--color-divider);
+}
+.inspHero__left {
+  padding: 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: var(--color-bg);
+}
+.inspHero__right {
   position: relative;
   overflow: hidden;
-  border-radius: var(--radius-xl);
 }
-.inspHero__bg {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-}
-.inspHero__bg img {
+.inspHero__right img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center 18%;
+  object-position: center;
+  display: block;
 }
-/* Hero banner — public/seed-images/inspiration/...06_17_43 PM (9).png(模特半身横幅) */
-.inspHero__bg--placeholder {
-  background-image: url('/seed-images/inspiration/ChatGPT Image May 2, 2026, 06_17_43 PM (9).png');
-  background-size: cover;
-  background-position: center right;
-  background-repeat: no-repeat;
-}
-/* 左侧米色渐变,与右侧模特图过渡 — 模仿稿 01 hero 文字浮在浅色一侧 */
-.inspHero__overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    linear-gradient(
-      90deg,
-      rgba(243, 246, 246, 0.92) 0%,
-      rgba(243, 246, 246, 0.82) 30%,
-      rgba(243, 246, 246, 0.32) 55%,
-      rgba(243, 246, 246, 0) 70%
-    );
-  pointer-events: none;
-}
-.inspHero__inner {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: var(--container-max);
-  margin: 0 auto;
-  padding: var(--space-12) var(--gutter-desktop);
-  height: 100%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: var(--space-8);
-  align-items: end;
-}
-@media (max-width: 767px) {
-  .inspHero {
-    height: 420px;
-    margin-left: calc(-1 * var(--gutter-mobile));
-    margin-right: calc(-1 * var(--gutter-mobile));
-    border-radius: 0;
-  }
-  .inspHero__inner {
-    padding: var(--space-6) var(--gutter-mobile);
-    grid-template-columns: 1fr;
-  }
-  .inspHero__overlay {
-    background: linear-gradient(180deg, rgba(243,246,246,0) 0%, rgba(243,246,246,0.85) 60%, rgba(243,246,246,0.95) 100%);
-  }
-}
-.inspHero__copy {
-  min-width: 0;
-  max-width: 600px;
-}
+
 .inspHero__eyebrow {
   margin: 0 0 var(--space-3);
   color: var(--color-text-secondary);
@@ -116,26 +73,14 @@
   color: var(--color-text-primary);
   font-style: italic;
 }
-@media (max-width: 767px) {
-  .inspHero__display {
-    font-size: 36px;
-    line-height: 44px;
-  }
-}
 .inspHero h1 {
   margin: 0;
   font-family: var(--font-serif);
-  font-size: var(--text-h2-size);
-  line-height: var(--text-h2-line);
-  font-weight: var(--text-h2-weight);
-  letter-spacing: var(--text-h2-tracking);
+  font-size: 48px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--color-text-primary);
-}
-@media (max-width: 767px) {
-  .inspHero h1 {
-    font-size: var(--text-h2-mobile-size);
-    line-height: var(--text-h2-mobile-line);
-  }
 }
 .inspHero__lead {
   margin: var(--space-4) 0 0;
@@ -144,38 +89,68 @@
   line-height: 22px;
   max-width: 440px;
 }
+
+/* Stats — 左侧文字区内水平 3-up,卡式样式 */
 .inspHero__stats {
   display: flex;
-  gap: var(--space-8);
-  align-items: end;
-  /* 数字直接浮在模特图上,无背景卡(对照稿 01) */
+  gap: 32px;
+  align-items: flex-start;
+  margin-top: var(--space-6);
 }
-@media (max-width: 767px) {
-  .inspHero__stats { gap: var(--space-5); }
+.inspHero__stat {
+  text-align: left;
 }
-.inspHero__stat { text-align: right; }
 .inspHero__stat b {
   display: block;
   font-family: var(--font-serif);
   font-size: 36px;
-  line-height: 44px;
-  font-weight: 400;
+  line-height: 1.1;
+  font-weight: 700;
   color: var(--color-text-primary);
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
-  /* 阴影提升模特图上可读性 */
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
-}
-@media (max-width: 767px) {
-  .inspHero__stat b { font-size: 28px; line-height: 36px; }
 }
 .inspHero__stat small {
   display: block;
-  margin-top: var(--space-1);
-  color: var(--color-text-secondary);
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6);
+  margin-top: 4px;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+}
+
+/* Mobile:单列,模特图在上,文字在下 */
+@media (max-width: 767px) {
+  .inspHero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    margin-left: calc(-1 * var(--gutter-mobile));
+    margin-right: calc(-1 * var(--gutter-mobile));
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+  .inspHero__left {
+    padding: var(--space-8) var(--gutter-mobile);
+  }
+  .inspHero__right {
+    height: 320px;
+    order: -1;
+  }
+  .inspHero__display {
+    font-size: 36px;
+    line-height: 44px;
+  }
+  .inspHero h1 {
+    font-size: 32px;
+    line-height: 1.2;
+  }
+  .inspHero__stats {
+    gap: 24px;
+  }
+  .inspHero__stat b {
+    font-size: 28px;
+  }
 }
 .inspHero__cta {
   margin-top: var(--space-5);
@@ -183,7 +158,7 @@
 
 /* === Tool / Sort tabs === */
 .inspTabs {
-  margin-top: var(--space-10);
+  margin-top: 32px;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
