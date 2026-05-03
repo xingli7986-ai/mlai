@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "maxlulu-assets.r2.dev",
+      },
+      {
+        protocol: "https",
         hostname: "*.r2.cloudflarestorage.com",
       },
     ],
