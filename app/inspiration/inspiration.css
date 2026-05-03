@@ -20,35 +20,53 @@
   .inspirationPage .container { padding: 0 var(--gutter-mobile); }
 }
 
-/* === Hero — 左右两栏(对照稿 01)
-   左侧 50% 文字区(米色干净背景);右侧 50% 模特图;不再用背景图 + 渐变蒙版 === */
+/* === Hero — 背景图铺满 + 文字浮层(对照稿 01)=== */
 .inspHero {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: stretch;
+  position: relative;
   min-height: 480px;
+  overflow: hidden;
   margin-top: var(--space-6);
   border-radius: var(--radius-xl);
-  overflow: hidden;
   border: 1px solid var(--color-divider);
 }
-.inspHero__left {
-  padding: 64px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: var(--color-bg);
+.inspHero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
 }
-.inspHero__right {
-  position: relative;
-  overflow: hidden;
-}
-.inspHero__right img {
+.inspHero__bg img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+  object-position: center right; /* 模特偏右,左侧留给文字 */
   display: block;
+}
+.inspHero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to right,
+    var(--color-bg) 0%,
+    rgba(243, 246, 246, 0.85) 30%,
+    rgba(243, 246, 246, 0) 60%
+  );
+  pointer-events: none;
+}
+.inspHero__inner {
+  position: relative;
+  z-index: 2;
+  padding: 64px;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 480px;
+}
+.inspHero__copy {
+  max-width: 50%; /* 文字只占左半,不要满宽 */
+  min-width: 0;
 }
 
 .inspHero__eyebrow {
@@ -64,14 +82,14 @@
   margin: 0 6px;
 }
 .inspHero__display {
-  margin: 0 0 var(--space-2);
+  margin: 0 0 var(--space-3);
   font-family: var(--font-serif);
-  font-size: var(--text-display-size);
-  line-height: var(--text-display-line);
-  font-weight: var(--text-display-weight);
-  letter-spacing: var(--text-display-tracking);
-  color: var(--color-text-primary);
   font-style: italic;
+  font-size: 56px;
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
 }
 .inspHero h1 {
   margin: 0;
@@ -90,7 +108,7 @@
   max-width: 440px;
 }
 
-/* Stats — 左侧文字区内水平 3-up,卡式样式 */
+/* Stats — 左侧 .inspHero__copy 内水平 3-up,普通文字组(无 text-shadow,无半透明卡) */
 .inspHero__stats {
   display: flex;
   gap: 32px;
@@ -119,27 +137,33 @@
   letter-spacing: 0.04em;
 }
 
-/* Mobile:单列,模特图在上,文字在下 */
+/* Mobile:背景图保持铺满,渐变改下→上 */
 @media (max-width: 767px) {
   .inspHero {
-    grid-template-columns: 1fr;
-    min-height: auto;
     margin-left: calc(-1 * var(--gutter-mobile));
     margin-right: calc(-1 * var(--gutter-mobile));
     border-radius: 0;
     border-left: 0;
     border-right: 0;
   }
-  .inspHero__left {
-    padding: var(--space-8) var(--gutter-mobile);
+  .inspHero__overlay {
+    background: linear-gradient(
+      to top,
+      rgba(243, 246, 246, 0.95) 0%,
+      rgba(243, 246, 246, 0.5) 50%,
+      rgba(243, 246, 246, 0) 100%
+    );
   }
-  .inspHero__right {
-    height: 320px;
-    order: -1;
+  .inspHero__inner {
+    padding: 24px;
+    justify-content: flex-end;
+  }
+  .inspHero__copy {
+    max-width: 100%;
   }
   .inspHero__display {
     font-size: 36px;
-    line-height: 44px;
+    line-height: 1;
   }
   .inspHero h1 {
     font-size: 32px;
