@@ -198,6 +198,11 @@
    ============================================================ */
 .inspiration-page .inspTabs {
   margin-top: 32px;                  /* spec §3.2 模块垂直间距 32px */
+  /* spec §5:筛选栏 outer 与 Hero outer 等宽。
+     Hero 在 .container 内被 32px padding 内缩,筛选栏自身即 .container,
+     需再让出 32+32=64px(移动 16+16=32px) */
+  width: calc(100% - 64px);
+  max-width: calc(var(--container-max) - 64px);
   background: var(--color-surface);
   border: 1px solid var(--color-divider);
   border-radius: 12px;
@@ -205,6 +210,12 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+@media (max-width: 767px) {
+  .inspiration-page .inspTabs {
+    width: calc(100% - 32px);
+    max-width: calc(var(--container-max) - 32px);
+  }
 }
 .inspiration-page .inspTabRow {
   display: flex;
