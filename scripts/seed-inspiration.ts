@@ -143,13 +143,13 @@ async function ensureConsumerUser(spec: typeof CONSUMER_USERS[number]) {
 
 /**
  * 根据 title + prompt + creatorType 推导 params。规则:
- *   - 普通用户(桃子/栗子):colors = ["#BA5E70", "#6B767D"]
- *   - 标题含"墨" / "工笔" / "扎染晚霞":colors = ["#2B2F33", "#BA5E70"]
- *   - 标题含"瓷" / "海风" / "蓝调" / "鸢尾" / "瓷青":colors = ["#2F5A5D", "#FFFFFF"]
+ *   - 普通用户(桃子/栗子):colors = ["#C06A73", "#6B767D"]
+ *   - 标题含"墨" / "工笔" / "扎染晚霞":colors = ["#2B2F33", "#C06A73"]
+ *   - 标题含"瓷" / "海风" / "蓝调" / "鸢尾" / "瓷青":colors = ["#234A58", "#FFFFFF"]
  *   - 标题含"鎏金" / "Art Deco" / "金":colors = ["#C8A875", "#2B2F33"]
  *   - 标题含"薄荷" / "白噪" / "极简":colors = ["#A3CACE", "#F8F3EC"]
- *   - 标题含"雾紫" / "扎染"(且非"扎染晚霞"):colors = ["#7D5B6E", "#BA5E70"]
- *   - 标题含"热带花鸟":colors = ["#2F5A5D", "#C8A875"]
+ *   - 标题含"雾紫" / "扎染"(且非"扎染晚霞"):colors = ["#7D5B6E", "#C06A73"]
+ *   - 标题含"热带花鸟":colors = ["#234A58", "#C8A875"]
  *
  *   fabric:prompt 含 silk / 真丝 → silk;含 linen / 亚麻 → linen;否则 knit
  */
@@ -165,17 +165,17 @@ function derivedParams(spec: Spec): { colors: string[]; fabric: "silk" | "knit" 
 
   // 普通用户优先级最高
   if (spec.creatorType === "user") {
-    return { colors: ["#BA5E70", "#6B767D"], fabric };
+    return { colors: ["#C06A73", "#6B767D"], fabric };
   }
 
   // 1. 墨 / 工笔 / 扎染晚霞 — 注意"扎染晚霞"是字面量整体匹配,优先于纯"扎染"
   if (t.includes("墨") || t.includes("工笔") || t.includes("扎染晚霞")) {
-    return { colors: ["#2B2F33", "#BA5E70"], fabric };
+    return { colors: ["#2B2F33", "#C06A73"], fabric };
   }
 
   // 2. 瓷 / 海风 / 蓝调 / 鸢尾 / 瓷青
   if (t.includes("瓷") || t.includes("海风") || t.includes("蓝调") || t.includes("鸢尾")) {
-    return { colors: ["#2F5A5D", "#FFFFFF"], fabric };
+    return { colors: ["#234A58", "#FFFFFF"], fabric };
   }
 
   // 3. 鎏金 / Art Deco / 金 (注意:Art Deco 不区分大小写)
@@ -190,16 +190,16 @@ function derivedParams(spec: Spec): { colors: string[]; fabric: "silk" | "knit" 
 
   // 5. 热带花鸟(放在"扎染"前,虽然不冲突,但语义优先)
   if (t.includes("热带花鸟")) {
-    return { colors: ["#2F5A5D", "#C8A875"], fabric };
+    return { colors: ["#234A58", "#C8A875"], fabric };
   }
 
   // 6. 雾紫 / 扎染(此时已经过滤掉"扎染晚霞")
   if (t.includes("雾紫") || t.includes("扎染")) {
-    return { colors: ["#7D5B6E", "#BA5E70"], fabric };
+    return { colors: ["#7D5B6E", "#C06A73"], fabric };
   }
 
   // fallback:维持旧默认(理论上 14 条全覆盖,这条不会命中)
-  return { colors: ["#2F5A5D", "#BA5E70"], fabric };
+  return { colors: ["#234A58", "#C06A73"], fabric };
 }
 
 async function main() {

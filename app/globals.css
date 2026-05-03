@@ -3,9 +3,9 @@
 
 :root {
   /* ==========================================================================
-     Design System tokens — v1.2 真版高保真稿对齐(2026-05-02 第 2 轮)
-     Source: design/high-fidelity-v2/99_开发注意事项汇总.md(真版,1118 行)
-     主配色:Porcelain Cyan #2F5A5D × Smoked Rose #BA5E70。
+     Design System tokens — 2026-05-03 全站对齐 design/07_inspiration_design_spec.md
+     §1 配色系统 + §7.1 CSS Token。
+     主配色:Porcelain Cyan #234A58 × Smoked Rose #C06A73。
      金色 #C8A875 仅用于「认证设计师」身份系统,不作为品牌主色。
      ========================================================================== */
 
@@ -18,18 +18,18 @@
   --color-surface-soft: var(--color-subtle);
 
   /* ---- Colors — Primary (Porcelain Cyan 瓷青蓝) ---- */
-  --color-primary:        #2F5A5D;
-  --color-primary-hover:  #234A50;
-  --color-primary-pressed: #1C393D;
+  --color-primary:        #234A58;
+  --color-primary-hover:  #235660;  /* spec §1.1 Primary Deep */
+  --color-primary-pressed: #1B3D49; /* derived darker */
   --color-primary-subtle: #E2EEF1;
-  /* legacy 别名(原"主金色"已退场,值切换到 cyan) */
+  /* legacy 别名 */
   --color-primary-soft:   var(--color-primary-subtle);
   --color-primary-strong: var(--color-primary-hover);
 
   /* ---- Colors — Accent (Smoked Rose 烟粉玫瑰)— 主 CTA 用色 ---- */
-  --color-accent:        #BA5E70;
-  --color-accent-hover:  #A85060;
-  --color-accent-pressed: #8F4655;
+  --color-accent:        #C06A73;
+  --color-accent-hover:  #AB5760;
+  --color-accent-pressed: #9A4E5A; /* derived darker than hover */
   --color-accent-subtle: #F4E5E7;
 
   /* ---- Colors — Certified Gold(认证设计师专用)---- */
@@ -45,8 +45,8 @@
   /* ---- Colors — Text ---- */
   --color-text-primary:   #1E272B;
   --color-text-secondary: #566469;
-  --color-text-tertiary:  #879197;
-  --color-text-disabled:  #B7C2C8;
+  --color-text-tertiary:  #879397;
+  --color-text-disabled:  #BECCCA;
   --color-text-inverse:   #FFFFFF;
   /* legacy 别名 */
   --color-text-muted:   var(--color-text-tertiary);
@@ -70,7 +70,7 @@
   --neutral-200: #E6ECEC;
   --neutral-300: #D2DEDF;
   --neutral-400: #B8C7CA;
-  --neutral-500: #879197;
+  --neutral-500: #879397;
   --neutral-600: #566469;
   --neutral-700: #34484D;
   --neutral-800: #1E272B;

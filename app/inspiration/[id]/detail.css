@@ -86,7 +86,7 @@
   height: 100%;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, #2F5A5D 0%, #234A50 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
   color: rgba(255, 255, 255, 0.7);
   font-size: 16px;
 }

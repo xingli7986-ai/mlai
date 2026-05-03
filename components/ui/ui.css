@@ -42,7 +42,7 @@
 
 /* Primary — Smoked Rose accent(真 md §6.1 + 01/02/06 稿主 CTA 一致)
    01 灵感广场右上"成为创作者"+ 02 印花衣橱右上 + 06 商品详情"立即开团"
-   全部使用 Smoked Rose #BA5E70。瓷青蓝是次级 / 导航色。 */
+   全部使用 Smoked Rose #C06A73。瓷青蓝是次级 / 导航色。 */
 .ui-btn--primary {
   background: var(--color-accent);
   color: var(--color-white);

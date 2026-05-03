@@ -2478,8 +2478,8 @@
 }
 
 /* ============================================================
-   v1.2 真版高保真稿对齐(2026-05-02 第 2 轮)
-   主配色:Porcelain Cyan #2F5A5D × Smoked Rose #BA5E70。
+   v1.2 真版高保真稿对齐(2026-05-03 全站统一)
+   主配色:Porcelain Cyan #234A58 × Smoked Rose #C06A73。
    金 #C8A875 仅认证设计师。
    - /products(02 稿)
    - /products/[id](06 稿)
@@ -2552,11 +2552,11 @@
    注意:.gallerySearchSubmit 之前使用 var(--color-primary) → 现在变成 cyan;
    按真 md 它应该是 Accent rose,这里覆盖。 */
 .gallerySearchSubmit {
-  background: var(--color-accent, #BA5E70);
+  background: var(--color-accent, #C06A73);
   color: #FFFFFF;
 }
 .gallerySearchSubmit:hover {
-  background: var(--color-accent-hover, #A85060);
+  background: var(--color-accent-hover, #AB5760);
 }
 
 /* 认证设计师卡片(真 md §2.3) */
@@ -2588,12 +2588,12 @@
 /* 价格区主 CTA "立即开团" → Accent Rose(GroupBuyCta 内部样式由组件控制) */
 .pdpCtaRow .pdpCta--primary,
 .pdpCtaRow [data-primary="true"] {
-  background: var(--color-accent, #BA5E70);
+  background: var(--color-accent, #C06A73);
   color: #FFFFFF;
-  border-color: var(--color-accent, #BA5E70);
+  border-color: var(--color-accent, #C06A73);
 }
 .pdpCtaRow .pdpCta--primary:hover,
 .pdpCtaRow [data-primary="true"]:hover {
-  background: var(--color-accent-hover, #A85060);
-  border-color: var(--color-accent-hover, #A85060);
+  background: var(--color-accent-hover, #AB5760);
+  border-color: var(--color-accent-hover, #AB5760);
 }

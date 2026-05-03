@@ -5,28 +5,9 @@
 @import "../home-consumer.css";
 
 /* ============================================================
-   A. Scoped CSS variable overrides
-   只列出与 globals.css :root 不同的;相同的不重复声明。
+   A. Scoped overrides 已撤销
+   2026-05-03:配色 token 已统一到 globals.css :root,无需重复声明。
    ============================================================ */
-.inspiration-page {
-  /* primary 主色 — globals 是 #2F5A5D,稿是 #234A58 */
-  --color-primary:         #234A58;
-  --color-primary-hover:   #235660;  /* globals #234A50 */
-  --color-primary-pressed: #1B3D49;  /* globals #1C393D */
-
-  /* accent — globals 是 #BA5E70,稿是 #C06A73 */
-  --color-accent:          #C06A73;
-  --color-accent-hover:    #AB5760;  /* globals #A85060 */
-
-  /* text 微调,与稿严格一致 */
-  --color-text-tertiary:   #879397;  /* globals #879197 */
-  --color-text-disabled:   #BECCCA;  /* globals #B7C2C8 */
-
-  /* 其它 (--color-bg / --color-surface / --color-divider / --color-border /
-            --color-certified-gold / --color-success / --color-info /
-            --color-warning / --color-error / 各 spacing token / radius token)
-     已在 globals 中匹配,不再覆盖。 */
-}
 
 /* ============================================================
    B. Page Container
