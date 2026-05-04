@@ -9,6 +9,12 @@ export const metadata: Metadata = {
   title: "我的设计工作室 — MaxLuLu AI",
 };
 
+/* ---------- 路径前缀(spec §11)---------- */
+const A_HERO  = "/assets/my-studio/01_hero";
+const A_EMPTY = "/assets/my-studio/02_empty_state";
+const A_TOOL  = "/assets/my-studio/03_tool_illustrations";
+const A_WORK  = "/assets/my-studio/04_work_thumbnails";
+
 const TOOLS: {
   id: string;
   href: string;
@@ -23,7 +29,7 @@ const TOOLS: {
     title: "图案生成",
     desc: "用一句话生成专属印花,适合从零开始创作。",
     variant: "rose",
-    icon: "/assets/images/my-studio/tools/maxlulu-my-studio-tool-pattern-generation-512x512.png",
+    icon: `${A_TOOL}/maxlulu-my-studio-tool-pattern-generation-512x512.png`,
   },
   {
     id: "seamless",
@@ -31,7 +37,7 @@ const TOOLS: {
     title: "四方连续",
     desc: "把单元图案扩展为可无缝循环的面料底图。",
     variant: "blue",
-    icon: "/assets/images/my-studio/tools/maxlulu-my-studio-tool-seamless-repeat-512x512.png",
+    icon: `${A_TOOL}/maxlulu-my-studio-tool-seamless-repeat-512x512.png`,
   },
   {
     id: "fabric",
@@ -39,7 +45,7 @@ const TOOLS: {
     title: "上身试穿",
     desc: "把印花贴到模特版型,一秒预览成衣效果。",
     variant: "neutral",
-    icon: "/assets/images/my-studio/tools/maxlulu-my-studio-tool-try-on-512x512.png",
+    icon: `${A_TOOL}/maxlulu-my-studio-tool-try-on-512x512.png`,
   },
   {
     id: "sketch",
@@ -47,7 +53,7 @@ const TOOLS: {
     title: "线稿生成",
     desc: "AI 帮你出连衣裙款式线稿,直接进入打版。",
     variant: "rose",
-    icon: "/assets/images/my-studio/tools/maxlulu-my-studio-tool-line-sketch-512x512.png",
+    icon: `${A_TOOL}/maxlulu-my-studio-tool-line-sketch-512x512.png`,
   },
 ];
 
@@ -85,30 +91,50 @@ const STATS = [
   },
 ];
 
-const WORK_IMG = {
-  rose: "/assets/images/my-studio/works/maxlulu-my-studio-work-rose-vine-print-1080x1440.png",
-  garden: "/assets/images/my-studio/works/maxlulu-my-studio-work-summer-garden-dress-1080x1440.png",
-  blue: "/assets/images/my-studio/works/maxlulu-my-studio-work-blue-floral-print-1080x1440.png",
-};
-
-type Work =
-  | { id: string; title: string; time: string; kind: "image"; img: string }
-  | { id: string; title: string; time: string; kind: "gradient"; gradient: string };
-
-const MOCK_WORKS: Work[] = [
-  { id: "w1", title: "玫瑰藤蔓印花", time: "2026-05-03 14:32", kind: "image", img: WORK_IMG.rose },
-  { id: "w2", title: "夏日花园连衣裙", time: "2026-05-03 11:15", kind: "image", img: WORK_IMG.garden },
-  { id: "w3", title: "蓝韵繁花", time: "2026-05-02 22:08", kind: "image", img: WORK_IMG.blue },
-  { id: "w4", title: "海风微澜", time: "2026-05-02 16:40", kind: "gradient",
-    gradient: "linear-gradient(135deg, #A3CACE 0%, #234A58 100%)" },
-  { id: "w5", title: "粉樱漫舞", time: "2026-05-01 21:12", kind: "gradient",
-    gradient: "linear-gradient(135deg, #F4E5E7 0%, #C06A73 100%)" },
-  { id: "w6", title: "春日序曲", time: "2026-04-30 13:55", kind: "gradient",
-    gradient: "linear-gradient(135deg, #E2EEF1 0%, #C8A875 60%, #C06A73 100%)" },
+/* spec §9 mockWorks 6 条,id / 标题 / 日期严格按文档 */
+const MOCK_WORKS: { id: string; title: string; createdAt: string; image: string }[] = [
+  {
+    id: "rose-vine",
+    title: "玫瑰藤蔓印花",
+    createdAt: "今天 14:32",
+    image: `${A_WORK}/maxlulu-my-studio-work-rose-vine-print-1080x1440.png`,
+  },
+  {
+    id: "summer-garden",
+    title: "夏日花园连衣裙",
+    createdAt: "昨天 20:18",
+    image: `${A_WORK}/maxlulu-my-studio-work-summer-garden-dress-1080x1440.png`,
+  },
+  {
+    id: "blue-floral",
+    title: "蓝韵繁花",
+    createdAt: "4 月 28 日",
+    image: `${A_WORK}/maxlulu-my-studio-work-blue-floral-print-1080x1440.png`,
+  },
+  {
+    id: "sea-breeze",
+    title: "海风微澜",
+    createdAt: "4 月 24 日",
+    image: `${A_WORK}/maxlulu-my-studio-work-summer-garden-dress-1080x1440.png`,
+  },
+  {
+    id: "pink-sakura",
+    title: "粉樱漫舞",
+    createdAt: "4 月 20 日",
+    image: `${A_WORK}/maxlulu-my-studio-work-rose-vine-print-1080x1440.png`,
+  },
+  {
+    id: "spring-overture",
+    title: "春日序曲",
+    createdAt: "4 月 18 日",
+    image: `${A_WORK}/maxlulu-my-studio-work-blue-floral-print-1080x1440.png`,
+  },
 ];
 
-const HERO_FIGURE = "/assets/images/my-studio/hero/maxlulu-my-studio-hero-fashion-illustration-1200x900.png";
-const HERO_FLORAL = "/assets/images/my-studio/hero/maxlulu-my-studio-hero-floral-bg-desktop-1920x600.png";
+const HERO_FIGURE = `${A_HERO}/maxlulu-my-studio-hero-fashion-illustration-1200x900.png`;
+const HERO_FLORAL = `${A_HERO}/maxlulu-my-studio-hero-floral-bg-desktop-1920x600.png`;
+// 空状态(目前 desktop 用 mock 渲染,移动 2 列也用 mock,保留备用)
+// const EMPTY_ILLUSTRATION = `${A_EMPTY}/maxlulu-my-studio-empty-state-fashion-illustration-900x1200.png`;
 
 function ActionIcon({ kind }: { kind: "save" | "buy" | "publish" }) {
   if (kind === "save") {
@@ -142,7 +168,6 @@ export default function MyStudioPage() {
 
       <div className="container">
         <section className="msHero">
-          <div className="msHero__floral" aria-hidden style={{ backgroundImage: `url(${HERO_FLORAL})` }} />
           <div className="msHero__inner">
             <div className="msHero__copy">
               <p className="msHero__crumb">
@@ -167,8 +192,10 @@ export default function MyStudioPage() {
                 ))}
               </div>
             </div>
-            <div className="msHero__figure" aria-hidden>
-              <img src={HERO_FIGURE} alt="" />
+            {/* spec §5.3:Hero 右侧两层图(floral bg 淡铺 + 人物 contain) */}
+            <div className="msHero__visual" aria-hidden>
+              <img className="msHero__floralImg" src={HERO_FLORAL} alt="" />
+              <img className="msHero__figureImg" src={HERO_FIGURE} alt="" />
             </div>
           </div>
         </section>
@@ -180,7 +207,11 @@ export default function MyStudioPage() {
             <path d="M8 1.5l1.6 4.4 4.4 1.6-4.4 1.6L8 13.5l-1.6-4.4L2 7.5l4.4-1.6z" />
           </svg>
         </span>
-        精选 4 个入门工具 · <b>认证设计师可解锁 16 个专业工具</b>
+        <span className="msHint__lead">精选 4 个入门工具</span>
+        <span className="msHint__sep" aria-hidden />
+        <span className="msHint__chip">
+          认证设计师可解锁 <strong>16 个专业工具</strong>
+        </span>
       </p>
 
       <section className="msTools container" aria-label="AI 创作工具入口">
@@ -211,33 +242,26 @@ export default function MyStudioPage() {
         <div className="msWorksGrid" role="list">
           {MOCK_WORKS.map((w) => (
             <article key={w.id} className="msWork" role="listitem">
-              {w.kind === "image" ? (
-                <div className="msWork__media">
-                  <img src={w.img} alt={w.title} />
+              <div className="msWork__media">
+                <img src={w.image} alt={w.title} />
+              </div>
+              <div className="msWork__body">
+                <h3 className="msWork__title">{w.title}</h3>
+                <p className="msWork__time">{w.createdAt}</p>
+                <div className="msWork__actions">
+                  <button type="button" className="msWork__action">
+                    <ActionIcon kind="save" />
+                    保存到相册
+                  </button>
+                  <button type="button" className="msWork__action msWork__action--accent">
+                    <ActionIcon kind="buy" />
+                    定制下单
+                  </button>
+                  <button type="button" className="msWork__action">
+                    <ActionIcon kind="publish" />
+                    发布到灵感广场
+                  </button>
                 </div>
-              ) : (
-                <div
-                  className="msWork__media msWork__media--gradient"
-                  style={{ background: w.gradient }}
-                  aria-label={w.title}
-                />
-              )}
-              <h3 className="msWork__title">{w.title}</h3>
-              <p className="msWork__time">{w.time}</p>
-              <div className="msWork__divider" />
-              <div className="msWork__actions">
-                <button type="button" className="msWork__action">
-                  <ActionIcon kind="save" />
-                  保存到相册
-                </button>
-                <button type="button" className="msWork__action msWork__action--accent">
-                  <ActionIcon kind="buy" />
-                  定制下单
-                </button>
-                <button type="button" className="msWork__action">
-                  <ActionIcon kind="publish" />
-                  发布到灵感广场
-                </button>
               </div>
             </article>
           ))}

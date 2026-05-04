@@ -1,45 +1,23 @@
-import type { Metadata, Viewport } from "next";
-import {
-  Playfair_Display,
-  Inter,
-  Noto_Serif_SC,
-  Noto_Sans_SC,
-} from "next/font/google";
+import type { CSSProperties, Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
 
-// Font scheme (per design/font-update brief 2026-05-01):
-//   Title (英文): Playfair Display
-//   Title (中文): Noto Serif SC 思源宋体
-//   Body  (英文): Inter (replaces Cormorant Garamond)
-//   Body  (中文): Noto Sans SC 思源黑体 (new)
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "700", "800"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const notoSerifSC = Noto_Serif_SC({
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-noto-serif-sc",
-  display: "swap",
-  preload: false,
-});
-
-const notoSansSC = Noto_Sans_SC({
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-noto-sans-sc",
-  display: "swap",
-  preload: false,
-});
+// Temporary fallback (2026-05-04): next/font/google removed because
+// fonts.gstatic.com is not reachable from this dev environment, which made
+// `rm -rf .next && next dev` cold-start fail with a 500 on /my-studio.
+// The four primitive CSS variables (--font-playfair / --font-inter /
+// --font-noto-serif-sc / --font-noto-sans-sc) are mapped to system-font
+// stacks so globals.css's --font-serif / --font-sans composition still
+// resolves with no downstream CSS changes. Replace with next/font/local
+// once real font files land in app/fonts/.
+const fontFallbackVars: CSSProperties = {
+  "--font-playfair": 'Georgia, "Times New Roman", serif',
+  "--font-inter":
+    'Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+  "--font-noto-serif-sc": '"Songti SC", "STSong", "Noto Serif SC", serif',
+  "--font-noto-sans-sc":
+    '"PingFang SC", "Microsoft YaHei", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif',
+} as CSSProperties;
 
 export const metadata: Metadata = {
   title: "MaxLuLu AI - Fashion For You",
@@ -97,7 +75,8 @@ export default function RootLayout({
   return (
     <html
       lang="zh-CN"
-      className={`${playfair.variable} ${inter.variable} ${notoSerifSC.variable} ${notoSansSC.variable} h-full antialiased`}
+      className="h-full antialiased"
+      style={fontFallbackVars}
     >
       <body
         className="min-h-full flex flex-col bg-[#F7F0E9] text-[#0C0C0F]"
