@@ -1,4 +1,5 @@
-import type { CSSProperties, Metadata, Viewport } from "next";
+import type { Metadata, Viewport } from "next";
+import type { CSSProperties } from "react";
 import "./globals.css";
 import { Providers } from "./providers";
 
