@@ -207,11 +207,7 @@ export default function MyStudioPage() {
             <path d="M8 1.5l1.6 4.4 4.4 1.6-4.4 1.6L8 13.5l-1.6-4.4L2 7.5l4.4-1.6z" />
           </svg>
         </span>
-        <span className="msHint__lead">精选 4 个入门工具</span>
-        <span className="msHint__sep" aria-hidden />
-        <span className="msHint__chip">
-          认证设计师可解锁 <strong>16 个专业工具</strong>
-        </span>
+        精选 4 个入门工具 · <b>认证设计师可解锁 16 个专业工具</b>
       </p>
 
       <section className="msTools container" aria-label="AI 创作工具入口">

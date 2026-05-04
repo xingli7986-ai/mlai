@@ -63,7 +63,7 @@
    ============================================================ */
 .my-studio-page .msHero {
   position: relative;
-  min-height: 392px;                            /* P0 §2:380~400,取 392 */
+  min-height: 360px;                            /* spec §5.1 */
   margin-top: 24px;
   padding: 56px 64px;
   background: var(--color-surface);
@@ -79,7 +79,7 @@
   grid-template-columns: 52% 48%;               /* spec §5.1 */
   gap: 32px;
   align-items: center;                          /* spec §5.1 */
-  min-height: calc(392px - 56px * 2);           /* 280 */
+  min-height: calc(360px - 56px * 2);           /* 248 */
 }
 .my-studio-page .msHero__copy {
   display: flex;
@@ -100,34 +100,33 @@
   margin: 0 4px;
 }
 
-/* P0 §2:H1 加大 40→44 / 48→52,更有存在感 */
+/* H1 在前(中文 Noto Serif SC 40/48,#1E272B)spec §5.2 */
 .my-studio-page .msHero h1 {
   margin: 0;
   font-family: var(--font-serif);
-  font-size: 44px;
-  line-height: 52px;
+  font-size: 40px;
+  line-height: 48px;
   font-weight: 400;
-  letter-spacing: -0.012em;
+  letter-spacing: -0.01em;
   color: var(--color-text-primary);
 }
-/* P0 §2:英文副标题更突出 28→32 / 36→40 */
+/* My Design Studio(Playfair italic 28/36,#C06A73)spec §5.2 */
 .my-studio-page .msHero__display {
-  margin: 6px 0 0;
+  margin: 4px 0 0;                              /* spec §5.2 mt 4 */
   font-family: var(--font-serif);
-  font-size: 32px;
-  line-height: 40px;
+  font-size: 28px;
+  line-height: 36px;
   font-weight: 400;
   font-style: italic;
-  letter-spacing: -0.008em;
+  letter-spacing: -0.005em;
   color: var(--color-accent);                   /* #C06A73 */
 }
-/* P0 §2:lead 拉开呼吸感 14/22 → 15/24,max-w 略宽 */
 .my-studio-page .msHero__lead {
-  margin: 20px 0 0;
+  margin: 16px 0 0;
   color: var(--color-text-secondary);           /* #566469 */
-  font-size: 15px;
-  line-height: 24px;
-  max-width: 480px;
+  font-size: 14px;
+  line-height: 22px;
+  max-width: 460px;                             /* spec §5.2 */
 }
 
 /* spec §5.3 Hero 右侧视觉 —— 两层图,floral 淡铺 + figure abs right bottom */
@@ -143,16 +142,15 @@
   width: calc(100% + 144px);
   height: calc(100% + 80px);
   object-fit: cover;
-  opacity: 0.36;                                /* P0 §2:略降,避免喧宾夺主 */
+  opacity: 0.42;                                /* spec §5.3 0.35-0.5 */
   pointer-events: none;
 }
-/* P0 §2:人物插画 +15%,允许向右下溢出更多,主视觉感更强 */
 .my-studio-page .msHero__figureImg {
   position: absolute;
-  right: -28px;
-  bottom: -24px;
-  width: min(600px, calc(100% + 56px));
-  height: 380px;
+  right: -12px;
+  bottom: -12px;
+  width: min(520px, 100%);
+  height: 330px;
   object-fit: contain;
   object-position: right bottom;
   pointer-events: none;
@@ -217,33 +215,28 @@
    E. Stats —— spec §6.1 / §6.2
    3 张统计卡,每张 160×64,Playfair Display 数字 32/36
    ============================================================ */
-/* P1 §5:统计卡 64→72,数字更有存在感,卡片更整齐 */
+/* spec §6.2:3 张统计卡 160×64,Playfair 32/36 */
 .my-studio-page .msHero__stats {
-  margin-top: 28px;
+  margin-top: 24px;                             /* spec §6.2 */
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: 16px;                                    /* spec §6.2 */
 }
 .my-studio-page .msStat {
   width: 100%;
-  height: 72px;
-  padding: 14px 18px;
+  height: 64px;                                 /* spec §6.2 */
+  padding: 12px 16px;                           /* spec §6.2 */
   display: grid;
-  grid-template-columns: 32px 1fr;
+  grid-template-columns: 28px 1fr;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
-}
-.my-studio-page .msStat:hover {
-  border-color: var(--color-border-strong);
-  box-shadow: 0 4px 12px 0 rgba(30, 39, 43, 0.04);
+  border-radius: 12px;                          /* spec §6.2 */
 }
 .my-studio-page .msStat__icon {
-  width: 32px;
-  height: 32px;
+  width: 28px;                                  /* spec §6.2 */
+  height: 28px;
   color: var(--color-accent);                   /* #C06A73 */
   display: inline-flex;
   align-items: center;
@@ -253,9 +246,9 @@
 .my-studio-page .msStat__icon svg { width: 100%; height: 100%; stroke-width: 1.5; }
 .my-studio-page .msStat__body { display: grid; gap: 0; min-width: 0; }
 .my-studio-page .msStat b {
-  font-family: var(--font-serif);                /* Playfair Display 数字 */
-  font-size: 36px;
-  line-height: 40px;
+  font-family: var(--font-serif);                /* Playfair Display */
+  font-size: 32px;                               /* spec §6.2 */
+  line-height: 36px;                             /* spec §6.2 */
   font-weight: 400;
   color: var(--color-text-primary);
   font-variant-numeric: tabular-nums;
@@ -288,25 +281,16 @@
 /* ============================================================
    F. Tool hint —— spec §7.1
    ============================================================ */
-/* P0 §4 + P1 §7:hint 收紧顶部空间 + 重点更突出 */
+/* spec §7.1 */
 .my-studio-page .msHint {
-  margin-top: 28px;
-  margin-bottom: 16px;
+  margin-top: 40px;                             /* spec §7.1 */
+  margin-bottom: 24px;                          /* spec §7.1 */
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: var(--color-text-secondary);
   font-size: 13px;
   line-height: 20px;
-}
-.my-studio-page .msHint__lead {
-  color: var(--color-text-secondary);
-}
-.my-studio-page .msHint__sep {
-  width: 1px;
-  height: 12px;
-  background: var(--color-border);
-  flex: 0 0 auto;
 }
 .my-studio-page .msHint__icon {
   flex: 0 0 auto;
@@ -315,28 +299,13 @@
   color: var(--color-certified-gold);
 }
 .my-studio-page .msHint__icon svg { width: 100%; height: 100%; }
-/* "16 个专业工具" chip:轻底色 + 金字 + 数字加粗 */
-.my-studio-page .msHint__chip {
-  display: inline-flex;
-  align-items: center;
-  height: 24px;
-  padding: 0 10px;
-  border-radius: 999px;
-  background: var(--color-certified-gold-soft);
-  color: var(--color-certified-gold-pressed);
-  font-size: 12px;
+.my-studio-page .msHint b {
+  color: var(--color-certified-gold);
   font-weight: 600;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-}
-.my-studio-page .msHint__chip strong {
-  font-weight: 700;
-  font-feature-settings: "tnum" 1;
 }
 
 @media (max-width: 767px) {
-  .my-studio-page .msHint { margin-top: 20px; margin-bottom: 14px; font-size: 12px; line-height: 18px; gap: 8px; }
-  .my-studio-page .msHint__chip { height: 22px; padding: 0 8px; font-size: 11px; }
+  .my-studio-page .msHint { margin-top: 24px; margin-bottom: 16px; font-size: 12px; line-height: 18px; }
 }
 
 /* ============================================================
@@ -350,36 +319,34 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 24px;
 }
-/* P0 §3:工具卡升级为品牌入口卡 —— padding 28、留白增加,卡身更轻盈 */
 .my-studio-page .msTool {
   position: relative;
   display: flex;
   flex-direction: column;
-  height: 200px;
-  padding: 28px;
+  height: 168px;                                 /* spec §7.3 */
+  padding: 24px;                                 /* spec §7.3 */
   border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border-radius: 12px;                           /* spec §7.3 */
   text-decoration: none;
   color: var(--color-text-primary);
   box-shadow: 0 1px 2px 0 rgba(30, 39, 43, 0.04);
   transition:
-    border-color 180ms ease-out,
-    box-shadow 180ms ease-out,
-    transform 180ms ease-out;
+    border-color 150ms ease-out,
+    box-shadow 150ms ease-out,
+    transform 150ms ease-out;
 }
 .my-studio-page .msTool:hover {
   border-color: var(--color-border-strong);
-  box-shadow: 0 10px 28px 0 rgba(30, 39, 43, 0.08);
+  box-shadow: 0 8px 24px 0 rgba(30, 39, 43, 0.08);
   transform: translateY(-2px);
 }
 .my-studio-page .msTool--rose    { background: var(--color-accent-subtle); }   /* #F4E5E7 */
 .my-studio-page .msTool--blue    { background: var(--color-primary-subtle); }  /* #E2EEF1 */
 .my-studio-page .msTool--neutral { background: var(--color-surface); }         /* #FCFDFD */
 
-/* P0 §3:插画明显放大 56→88,不再是"小图标顶在左上" */
 .my-studio-page .msTool__icon {
-  width: 88px;
-  height: 88px;
+  width: 56px;                                   /* spec §7.3 */
+  height: 56px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -391,38 +358,35 @@
   object-fit: contain;
   display: block;
 }
-/* P0 §3 / P1 §6:标题层级更高级 20→22,描述更舒展 */
 .my-studio-page .msTool h3 {
-  margin: 14px 0 0;
-  font-family: var(--font-serif);                /* Noto Serif SC 标题 */
-  font-size: 22px;
-  line-height: 30px;
+  margin: 12px 0 0;                              /* spec §7.3 mt 12 */
+  font-family: var(--font-serif);                /* Noto Serif SC */
+  font-size: 20px;                               /* spec §7.3 */
+  line-height: 28px;
   font-weight: 500;
   color: var(--color-primary);                   /* #234A58 */
-  letter-spacing: -0.005em;
 }
 .my-studio-page .msTool p {
-  margin: 6px 0 0;
+  margin: 4px 0 0;                               /* spec §7.3 mt 4 */
   color: var(--color-text-secondary);
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 14px;                               /* spec §7.3 */
+  line-height: 22px;
 }
-/* P0 §3:CTA 更精致,微浮起 */
 .my-studio-page .msTool__cta {
   margin-top: auto;                              /* 推到底 */
   align-self: flex-start;
+  flex-shrink: 0;                                /* 防 fixed-h parent 把 cta 挤扁 */
   display: inline-flex;
   align-items: center;
-  height: 34px;
-  padding: 0 18px;
+  height: 32px;                                  /* spec §7.3 */
+  padding: 0 16px;                               /* spec §7.3 */
   border-radius: 999px;
   background: var(--color-accent);               /* #C06A73 */
   color: #FFFFFF;
-  font-size: 13px;
+  font-size: 14px;                               /* spec §7.3 */
   line-height: 20px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  box-shadow: 0 2px 6px 0 rgba(192, 106, 115, 0.18);
 }
 .my-studio-page .msTool:hover .msTool__cta {
   background: var(--color-accent-hover);
@@ -430,36 +394,35 @@
 }
 
 @media (max-width: 1279px) {
-  /* spec §12.2 Tablet 768-1279:工具卡 2 列 */
+  /* spec §12.2 Tablet 768-1279:工具卡 2 列;尺寸保留 spec base */
   .my-studio-page .msTools { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-  .my-studio-page .msTool { height: 184px; padding: 24px; }
-  .my-studio-page .msTool__icon { width: 72px; height: 72px; }
 }
 @media (max-width: 767px) {
+  /* spec §7.3 mobile */
   .my-studio-page .msTools { gap: 12px; }
   .my-studio-page .msTool {
-    height: 140px;                               /* +16,容纳更大插画 */
-    padding: 18px;
+    height: 124px;                               /* spec §7.3 mobile */
+    padding: 16px;                               /* spec §7.3 mobile */
   }
-  .my-studio-page .msTool__icon { width: 48px; height: 48px; }
-  .my-studio-page .msTool h3 { font-size: 17px; line-height: 25px; margin-top: 10px; }
+  .my-studio-page .msTool__icon { width: 36px; height: 36px; }   /* spec §7.3 mobile */
+  .my-studio-page .msTool h3 { font-size: 16px; line-height: 24px; margin-top: 8px; }
   .my-studio-page .msTool p { font-size: 12px; line-height: 18px; }
-  .my-studio-page .msTool__cta { height: 30px; padding: 0 14px; font-size: 12px; }
+  .my-studio-page .msTool__cta { height: 30px; padding: 0 12px; font-size: 12px; }
 }
 
 /* ============================================================
    H. Works section —— spec §8
    /my-studio 首页 6 列紧凑预览,4:3 裁切
    ============================================================ */
-/* P0 §4:压缩纵向密度 —— margin-top 32→16,腾出 fold 空间给第一排作品卡 */
+/* spec §8.1 */
 .my-studio-page .msWorks {
-  margin-top: 16px;
+  margin-top: 40px;                              /* spec §8.1 */
 }
 .my-studio-page .msWorks__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 16px;                           /* spec §8.1 */
 }
 .my-studio-page .msWorks__head h2 {
   margin: 0;
@@ -520,10 +483,10 @@
   box-shadow: 0 8px 24px 0 rgba(30, 39, 43, 0.08);
   transform: translateY(-2px);
 }
-/* P0 §1:作品图片"固定紧凑缩略图",mobile/tablet 走 4:3,desktop 走固定 120px */
+/* spec §8.3:image aspect 4:3,object-fit cover */
 .my-studio-page .msWork__media {
   position: relative;
-  aspect-ratio: 4 / 3;                           /* mobile/tablet baseline */
+  aspect-ratio: 4 / 3;                           /* spec §8.3 */
   background: var(--color-subtle);
   overflow: hidden;
 }
@@ -535,12 +498,12 @@
   display: block;
 }
 .my-studio-page .msWork__body {
-  padding: 10px 12px 12px;                       /* P0 §1:body 紧致 */
+  padding: 12px;                                 /* spec §8.3 */
 }
 .my-studio-page .msWork__title {
   margin: 0;
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 14px;                               /* spec §8.3 */
+  line-height: 22px;
   font-weight: 500;
   color: var(--color-text-primary);
   white-space: nowrap;
@@ -548,25 +511,25 @@
   text-overflow: ellipsis;
 }
 .my-studio-page .msWork__time {
-  margin: 1px 0 0;
-  font-size: 11px;
-  line-height: 16px;
+  margin: 2px 0 0;                               /* spec §8.3 */
+  font-size: 12px;                               /* spec §8.3 */
+  line-height: 18px;
   color: var(--color-text-tertiary);
 }
 .my-studio-page .msWork__actions {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--color-divider);
+  margin-top: 12px;                              /* spec §8.3 */
+  padding-top: 10px;                             /* spec §8.3 */
+  border-top: 1px solid var(--color-divider);    /* spec §8.3 divider */
   display: flex;
   flex-direction: column;
-  gap: 4px;                                      /* P0 §1:轻量展示 */
+  gap: 6px;                                      /* spec §8.3 */
 }
 .my-studio-page .msWork__action {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  line-height: 16px;
+  gap: 6px;                                      /* spec §8.3 */
+  font-size: 12px;                               /* spec §8.3 */
+  line-height: 18px;
   color: var(--color-text-secondary);            /* #566469 */
   background: transparent;
   border: 0;
@@ -584,14 +547,6 @@
   color: var(--color-accent);                    /* #C06A73 */
 }
 .my-studio-page .msWork__action--accent:hover { color: var(--color-accent-hover); }
-
-/* P0 §1:Desktop ≥1280 时缩略图固定 120px(用户 spec 110~125 范围,作品卡明显缩短) */
-@media (min-width: 1280px) {
-  .my-studio-page .msWork__media {
-    aspect-ratio: auto;
-    height: 120px;
-  }
-}
 
 /* ============================================================
    J. Empty state —— spec §10.3(目前 desktop 用 mock,样式保留备用)
