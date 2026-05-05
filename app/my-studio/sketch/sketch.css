@@ -1,0 +1,732 @@
+/* /my-studio/sketch — Step 1
+   严格按 design/11_my-studio_tools_design_spec.md §4 + 设计稿 11
+   全部 scoped 在 .skPage,sk 前缀防类名冲突 */
+
+@import "../../home-consumer.css";
+
+/* ============================================================
+   A. Page shell
+   ============================================================ */
+.skPage {
+  min-height: 100vh;
+  background: var(--color-bg);                  /* #F3F6F6 */
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  padding-bottom: 48px;
+}
+.skContainer {
+  width: min(1200px, calc(100vw - 128px));
+  margin: 0 auto;
+  padding: 12px 0 0;
+}
+@media (max-width: 1279px) {
+  .skContainer { width: calc(100vw - 48px); padding-top: 12px; }
+}
+@media (max-width: 767px) {
+  .skContainer { width: calc(100vw - 32px); padding-top: 12px; }
+  .skPage { padding-bottom: 32px; }
+}
+
+.skPage .nav {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-divider);
+  height: 64px;
+}
+.skPage .nav-center a.is-active {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.skPage .nav-center a.is-active::after {
+  width: 100%;
+  background: var(--color-primary);
+}
+
+/* ============================================================
+   B. Header
+   ============================================================ */
+.skHeader { margin: 0 0 6px; }
+.skHeader__brand {
+  margin: 0;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.18em;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+.skHeader__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 40px;                              /* spec §4.3 */
+  line-height: 48px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+}
+.skHeader__route {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 32px;
+  line-height: 40px;
+  color: var(--color-accent);
+  margin-left: 4px;
+  letter-spacing: -0.005em;
+}
+.skHeader__sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--color-text-tertiary);
+  max-width: 720px;
+}
+@media (max-width: 1279px) {
+  .skHeader__title { font-size: 36px; line-height: 44px; }
+  .skHeader__route { font-size: 28px; line-height: 36px; }
+}
+@media (max-width: 767px) {
+  .skHeader { margin-bottom: 4px; }
+  .skHeader__brand { font-size: 10px; letter-spacing: 0.14em; }
+  .skHeader__title { font-size: 26px; line-height: 32px; }
+  .skHeader__route { font-size: 18px; line-height: 26px; }
+  .skHeader__sub   { font-size: 12px; line-height: 18px; }
+}
+
+/* ============================================================
+   C. Crumb
+   ============================================================ */
+.skCrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-text-tertiary);
+  margin-bottom: 8px;
+}
+.skCrumb a { color: var(--color-text-tertiary); text-decoration: none; }
+.skCrumb a:hover { color: var(--color-text-secondary); }
+.skCrumb__sep { color: var(--color-border-strong); }
+.skCrumb__cur { color: var(--color-text-primary); font-weight: 500; }
+@media (max-width: 767px) {
+  .skCrumb { font-size: 11px; line-height: 16px; margin-bottom: 6px; }
+}
+
+/* ============================================================
+   D. Studio Shell
+   ============================================================ */
+.skStudioShell {
+  background: var(--color-surface);             /* #FCFDFD */
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  box-shadow: 0 8px 24px 0 rgba(30, 39, 43, 0.08);
+  padding: 24px;
+}
+@media (max-width: 1279px) {
+  .skStudioShell { padding: 20px; border-radius: 16px; }
+}
+@media (max-width: 767px) {
+  .skStudioShell { padding: 16px; border-radius: 14px; box-shadow: 0 4px 14px 0 rgba(30, 39, 43, 0.06); }
+}
+
+/* ============================================================
+   E. Workspace (desktop 36/44/20)
+   ============================================================ */
+.skWorkspace {
+  display: grid;
+  grid-template-columns: 36% 44% 20%;
+  gap: 24px;
+  align-items: stretch;
+}
+@media (max-width: 1279px) {
+  .skWorkspace {
+    grid-template-columns: minmax(280px, 0.4fr) minmax(360px, 0.6fr);
+    gap: 20px;
+  }
+  .skActionPanel { grid-column: 1 / -1; }
+}
+@media (max-width: 767px) {
+  .skWorkspace { grid-template-columns: 1fr; gap: 12px; }
+}
+
+/* ============================================================
+   F. Inner panels
+   ============================================================ */
+.skPanel {
+  background: #FCFDFD;
+  border: 1px solid rgba(210, 222, 223, 0.8);
+  border-radius: 14px;
+  padding: 14px;
+}
+@media (max-width: 767px) {
+  .skPanel { padding: 10px 12px 12px; border-radius: 12px; }
+}
+.skPanel__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 18px;                              /* spec §4.3 预览标题 18/26 */
+  line-height: 26px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+@media (max-width: 767px) {
+  .skPanel__title { font-size: 16px; line-height: 24px; }
+}
+
+/* ============================================================
+   G. Control panel
+   ============================================================ */
+.skControl__head { margin-bottom: 10px; }
+@media (max-width: 767px) {
+  .skControl__head { margin-bottom: 6px; }
+  .skControl__hint { display: none; }   /* mobile fold-tight,默认副提示在 desktop/tablet 即可 */
+}
+.skControl__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.skControl__hint {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-text-tertiary);
+}
+@media (max-width: 767px) {
+  .skControl__title { font-size: 16px; line-height: 24px; }
+}
+
+/* G1. 参数组 */
+.skParamGroup + .skParamGroup { margin-top: 12px; }
+.skParamGroup__label {
+  margin: 0 0 6px;
+  font-size: 14px;                              /* spec §4.3 参数组标题 14/22 */
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.skParamGroup__opt {
+  margin-left: 4px;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 400;
+  color: var(--color-text-tertiary);
+}
+@media (max-width: 767px) {
+  .skParamGroup + .skParamGroup { margin-top: 8px; }
+  .skParamGroup__label { font-size: 13px; line-height: 18px; margin-bottom: 4px; }
+}
+
+/* G2. Chip(spec §4.5 选中浅底 + 玫瑰边)*/
+.skChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;                                     /* spec §4.4 参数选项 gap 8 */
+}
+.skChip {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 12px;                              /* spec §4.3 参数选项 12/18 */
+  line-height: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+.skChip:hover {
+  background: var(--color-bg);
+  color: var(--color-primary);
+  border-color: var(--color-border-strong);
+}
+.skChip.is-selected {
+  background: var(--color-accent-subtle);       /* #F4E5E7 */
+  color: var(--color-accent);                   /* #C06A73 */
+  border-color: var(--color-accent);
+}
+@media (max-width: 767px) {
+  .skChip { height: 28px; padding: 0 10px; }
+  .skChips { gap: 6px; }
+}
+
+/* G3. 描述输入(spec §4.5 96h desktop / 80 mobile)*/
+.skDescriptionInput {
+  width: 100%;
+  height: 96px;                                 /* spec §4.5 */
+  padding: 10px 14px;                           /* spec §4.5 padding 14 */
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;                          /* spec §4.5 */
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--color-text-primary);
+  resize: none;
+  outline: none;
+  transition: border-color 150ms ease-out;
+}
+.skDescriptionInput::placeholder { color: var(--color-text-tertiary); }
+.skDescriptionInput:focus { border-color: var(--color-primary); }   /* spec §4.5 focus #234A58 */
+.skParamGroup:has(.skDescriptionInput) { position: relative; }
+.skDescriptionInput__count {
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+@media (max-width: 767px) {
+  .skDescriptionInput { height: 64px; padding: 8px 12px; }
+}
+
+/* ============================================================
+   H. Primary / Secondary / Ghost
+   ============================================================ */
+.skPrimary {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 8px;
+  background: var(--color-accent);
+  color: #FFFFFF;
+  font-size: 14px;                              /* spec §4.3 CTA 14/20 600 */
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 0;
+  cursor: pointer;
+  transition: background 150ms ease-out;
+}
+.skPrimary:hover { background: var(--color-accent-hover); }
+.skPrimary:disabled {
+  background: rgba(192, 106, 115, 0.32);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: not-allowed;
+}
+.skPrimary--full   { width: 100%; }
+.skPrimary--banner { width: auto; flex: 0 0 auto; padding: 0 28px; margin-top: 0; }
+
+.skSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+.skSecondary:hover {
+  background: var(--color-primary-subtle);
+  border-color: var(--color-primary);
+}
+.skSecondary:disabled {
+  background: #FFFFFF;
+  color: rgba(35, 74, 88, 0.42);
+  border-color: var(--color-divider);
+  cursor: not-allowed;
+}
+.skSecondary--full { width: 100%; }
+
+.skGhost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+.skGhost:hover { border-color: var(--color-border-strong); color: var(--color-text-primary); }
+.skGhost--sm { height: 28px; padding: 0 10px; font-size: 12px; }
+
+.skQuota {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-text-tertiary);
+}
+.skQuota b { color: var(--color-text-primary); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   I. Preview panel
+   ============================================================ */
+.skPreviewPanel { display: flex; flex-direction: column; }
+.skPreviewHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+/* I1. Preview stage(spec §4.5:bg #FFFFFF / radius 16 / border / padding 32) */
+.skPreviewStage {
+  position: relative;
+  width: 100%;
+  background: #FFFFFF;                          /* spec §4.5 */
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 24px;
+  min-height: 380px;                            /* spec §4.4 480-520,空态略低 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 1279px) {
+  .skPreviewStage { padding: 20px; }
+}
+@media (max-width: 767px) {
+  .skPreviewStage { padding: 16px; min-height: 320px; }
+}
+
+/* I2. Empty(双图占位 + 文字) */
+.skEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+}
+.skEmpty__art {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 28px;
+  margin-bottom: 14px;
+  opacity: 0.4;
+}
+.skEmpty__sketch {
+  width: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.skEmpty__sketch svg { width: 100%; height: auto; }
+.skEmpty__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  max-width: 320px;
+}
+.skEmpty__desc {
+  margin: 4px auto 0;
+  max-width: 300px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-text-secondary);
+}
+@media (max-width: 767px) {
+  .skEmpty__art { gap: 16px; }
+  .skEmpty__sketch { width: 80px; }
+}
+
+/* I3. Loading(spec §4.6 线条逐渐绘制)*/
+.skLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+.skDrawing {
+  width: 140px;
+  margin-bottom: 14px;
+}
+.skDrawing svg { width: 100%; height: auto; }
+.skDrawing__line {
+  stroke-dasharray: 360;
+  stroke-dashoffset: 360;
+  animation: skDraw 1.6s ease-in-out infinite;
+}
+@keyframes skDraw {
+  0%   { stroke-dashoffset: 360; opacity: 0.2; }
+  50%  { stroke-dashoffset: 0;   opacity: 0.85; }
+  100% { stroke-dashoffset: 360; opacity: 0.2; }
+}
+.skLoading__text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
+}
+
+/* I4. Result(Front + Back 双图并排,spec §4.4 线稿间距 48 desktop / 24 mobile)*/
+.skResult {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 48px;                                    /* spec §4.4 */
+  width: 100%;
+}
+.skSketchFront,
+.skSketchBack {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.skSketch__canvas {
+  width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.skSketch__canvas svg {
+  width: 100%;
+  height: auto;
+  /* spec §七:正反面 / 切换方案 svg 视觉过渡 */
+  transition: opacity 150ms ease-out;
+}
+.skSketch__caption {
+  margin-top: 6px;
+  font-size: 13px;                              /* spec §4.3 Front/Back 13/20 */
+  line-height: 20px;
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+}
+@media (max-width: 1279px) {
+  .skResult { gap: 32px; }
+  .skSketch__canvas { width: 180px; }
+}
+@media (max-width: 767px) {
+  .skResult { gap: 24px; }                     /* spec §4.4 mobile */
+  .skSketch__canvas { width: 130px; }
+  .skSketch__caption { font-size: 12px; line-height: 18px; }
+}
+
+/* I5. 方案切换缩略图 */
+.skVariants {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+.skVariant {
+  width: 56px;                                  /* spec §4.4 缩略图 64,留 padding 8 = 56 */
+  height: 64px;
+  padding: 4px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+.skVariant:hover { border-color: var(--color-border-strong); }
+.skVariant.is-active { border: 2px solid var(--color-accent); padding: 3px; }
+.skVariant__thumb {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.skVariant__thumb svg { width: 100%; height: 100%; }
+
+/* I6. Advice(spec §4.2 辅助提示 rgba(200,168,117,0.12))*/
+.skAdvice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-top: 12px;
+  border-radius: 10px;
+  background: rgba(200, 168, 117, 0.10);
+  color: #A8874F;
+  font-size: 12px;
+  line-height: 18px;
+}
+.skAdvice__dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #C8A875;
+}
+.skAdvice b { color: #A8874F; font-weight: 600; }
+/* error 变体(spec §七:#E57373 但轻柔)*/
+.skAdvice--error {
+  background: rgba(229, 115, 115, 0.10);
+  color: #B5443D;
+}
+.skAdvice__dot--error { background: #E57373; }
+.skGhost--error {
+  margin-left: auto;
+  border-color: rgba(229, 115, 115, 0.5);
+  color: #B5443D;
+  font-weight: 600;
+}
+.skGhost--error:hover {
+  border-color: #E57373;
+  background: rgba(229, 115, 115, 0.06);
+  color: #B5443D;
+}
+
+/* ============================================================
+   J. Action panel
+   ============================================================ */
+.skActionPanel { padding: 14px; }
+@media (max-width: 1279px) {
+  .skActionPanel { padding: 18px 20px; }
+}
+.skActions {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+@media (max-width: 1279px) {
+  .skActions { flex-direction: row; }
+  .skPrimary--full,
+  .skSecondary--full { flex: 1; }
+}
+@media (max-width: 767px) {
+  .skActions { flex-direction: column; gap: 8px; }
+}
+
+.skDivider {
+  height: 1px;
+  background: var(--color-divider);
+  margin: 14px 0;
+}
+.skActionPanel__sub {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.skHistory {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.skHistoryItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 150ms ease-out;
+}
+.skHistoryItem:hover { background: var(--color-bg); }
+.skHistoryItem__thumb {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 48px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #FFFFFF;
+  border: 1px solid var(--color-divider);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.skHistoryItem__thumb svg { width: 80%; height: 80%; }
+.skHistoryItem__meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.skHistoryItem__title {
+  font-size: 12px;                              /* 较紧凑,容纳长参数 */
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+.skHistoryItem__time {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--color-text-tertiary);
+}
+
+/* ============================================================
+   K. Bottom complete banner(spec §4.2 #FCF7F3 完成提示背景)
+   ============================================================ */
+.skNextBanner {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  background: #FCF7F3;                          /* spec §4.2 完成提示背景 */
+  border: 1px solid #EDE0D2;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px 0 rgba(30, 39, 43, 0.04);
+}
+.skNextBanner__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(200, 168, 117, 0.18);
+  color: #A8874F;
+}
+.skNextBanner__icon svg { width: 22px; height: 22px; }
+.skNextBanner__copy { flex: 1; min-width: 0; }
+.skNextBanner__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.skNextBanner__desc {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--color-text-secondary);
+}
+@media (max-width: 767px) {
+  .skNextBanner {
+    margin-top: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    border-radius: 12px;
+    gap: 14px;
+  }
+  .skNextBanner__icon { width: 36px; height: 36px; }
+  .skNextBanner__icon svg { width: 18px; height: 18px; }
+  .skNextBanner__title { font-size: 16px; line-height: 24px; }
+  .skNextBanner__desc  { font-size: 12px; line-height: 18px; }
+  .skPrimary--banner   { width: 100%; }
+}
