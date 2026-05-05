@@ -25,7 +25,7 @@ const TOOLS: {
 }[] = [
   {
     id: "pattern",
-    href: "/studio/pattern/generate",
+    href: "/my-studio/pattern-generate",
     title: "图案生成",
     desc: "用一句话生成专属印花,适合从零开始创作。",
     variant: "rose",
@@ -33,7 +33,7 @@ const TOOLS: {
   },
   {
     id: "seamless",
-    href: "/studio/pattern/seamless",
+    href: "/my-studio/seamless",
     title: "四方连续",
     desc: "把单元图案扩展为可无缝循环的面料底图。",
     variant: "blue",
@@ -41,7 +41,7 @@ const TOOLS: {
   },
   {
     id: "fabric",
-    href: "/studio/fashion/fabric",
+    href: "/my-studio/try-on",
     title: "上身试穿",
     desc: "把印花贴到模特版型,一秒预览成衣效果。",
     variant: "neutral",
@@ -49,7 +49,7 @@ const TOOLS: {
   },
   {
     id: "sketch",
-    href: "/studio/fashion/sketch",
+    href: "/my-studio/sketch",
     title: "线稿生成",
     desc: "AI 帮你出连衣裙款式线稿,直接进入打版。",
     variant: "rose",
