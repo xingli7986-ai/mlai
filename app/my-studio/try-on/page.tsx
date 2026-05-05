@@ -74,7 +74,7 @@ const SEED_HISTORY: HistoryItem[] = [
   { id: "h4", title: "蓝韵繁花 · 直筒裙",   param: "中长款 · 短袖", time: "4 月 24 日",  thumb: TRYON_WRAP   },
 ];
 
-type Phase = "idle" | "loading" | "result" | "error";
+type Phase = "idle" | "loading" | "result" | "error" | "auth-required";
 
 /* mock fallback:模特+花卉成衣上身图按版型挑选(严禁纯花型/线稿) */
 function pickMockMain(template: TemplateId): string {
@@ -184,8 +184,15 @@ export default function TryOnPage() {
         signal: ac.signal,
       });
 
-      if (res.status === 401 || res.status === 503) {
-        useMockFallback("接口需要登录或暂不可用,展示示例试穿");
+      // 401 未登录 → 显式登录引导
+      if (res.status === 401) {
+        setPhase("auth-required");
+        toast.show("请先登录,即可使用 AI 创作工具", { tone: "warning" });
+        return;
+      }
+      // 503 服务不可用 → mock fallback
+      if (res.status === 503) {
+        useMockFallback("接口暂不可用,展示示例试穿");
         return;
       }
 
@@ -284,6 +291,7 @@ export default function TryOnPage() {
   const isLoading = phase === "loading";
   const hasResult = phase === "result";
   const hasError  = phase === "error";
+  const needsAuth = phase === "auth-required";
 
   return (
     <div className="toPage">
@@ -412,7 +420,7 @@ export default function TryOnPage() {
               type="button"
               className="toPrimary toPrimary--full"
               onClick={runTryOn}
-              disabled={isLoading}
+              disabled={isLoading || needsAuth}
             >
               {isLoading ? "试穿中…" : "开始试穿"}
             </button>
@@ -442,6 +450,23 @@ export default function TryOnPage() {
             )}
 
             <div className="toPreviewStage">
+              {needsAuth && (
+                <div className="toEmpty">
+                  <div className="toEmpty__art" aria-hidden>
+                    <svg viewBox="0 0 64 64" fill="none">
+                      <g stroke="#234A58" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.78">
+                        <rect x="18" y="28" width="28" height="22" rx="3" />
+                        <path d="M24 28v-6a8 8 0 0 1 16 0v6" />
+                        <circle cx="32" cy="38" r="2" fill="#234A58" stroke="none" opacity="0.95" />
+                        <path d="M32 40v4" />
+                      </g>
+                    </svg>
+                  </div>
+                  <h3 className="toEmpty__title">请先登录,即可使用 AI 创作工具</h3>
+                  <p className="toEmpty__desc">登录后可保存作品、参与定制下单。</p>
+                  <Link href="/login" className="toPrimary" style={{ marginTop: 12 }}>去登录</Link>
+                </div>
+              )}
               {phase === "idle" && (
                 <div className="toEmpty">
                   <div className="toEmpty__art" aria-hidden>

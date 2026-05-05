@@ -63,7 +63,7 @@ const SEED_HISTORY: HistoryItem[] = [
   { id: "h5", title: "粉色水彩", time: "4 月 20 日", thumb: PATTERN_WATERCOLOR_PINK },
 ];
 
-type Phase = "idle" | "loading" | "result" | "error";
+type Phase = "idle" | "loading" | "result" | "error" | "auth-required";
 
 /* 工艺建议(Step 2 §六 — 后端目前没返 recommendation,先 mock) */
 const CRAFT_ADVICE = "这个花型色彩丰富,建议使用";
@@ -122,16 +122,18 @@ export default function PatternGeneratePage() {
     setSelected(0);
 
     /* 接入 POST /api/ai-studio/generate
-       后端 schema(实际):tool / prompt / params(buildPatternGeneratePrompt) / count / size
-       用户 Step 2 §一 字段(toolType / printType / styleTags) → 映射到后端 schema */
+       后端 schema(实际):tool / params(buildPatternGeneratePrompt) / count / size
+       - 不再传顶层 prompt(避免与 params.userPrompt 重复)
+       - patternType 固定 "floral"(后续可扩;风格标签拼到 userPrompt 里) */
+    const styleNote = tags.length > 0 ? `风格:${tags.join("、")}。` : "";
+    const enrichedUserPrompt = (styleNote + trimmed).trim();
     const requestBody = {
       tool: "pattern-generate" as const,
-      prompt: trimmed,
       params: {
-        patternType: tags.length > 0 ? tags.join("、") : "floral",
+        patternType: "floral",
         arrangement: PRINT_TYPE_TO_ARRANGEMENT[printType],
         colorPalette: "soft and elegant, brand palette",
-        userPrompt: trimmed,
+        userPrompt: enrichedUserPrompt,
       },
       count: 4,
       size: "1:1",
@@ -145,9 +147,15 @@ export default function PatternGeneratePage() {
         signal: ac.signal,
       });
 
-      // 401 未登录 / 503 等 → 退回 mock,UI 流程可继续
-      if (res.status === 401 || res.status === 503) {
-        useMockResults("接口需要登录或暂不可用,展示示例结果");
+      // 401 未登录 → 显式登录引导,不再静默 mock fallback
+      if (res.status === 401) {
+        setPhase("auth-required");
+        toast.show("请先登录,即可使用 AI 创作工具", { tone: "warning" });
+        return;
+      }
+      // 503 服务不可用 → mock fallback 保留 UI 流程
+      if (res.status === 503) {
+        useMockResults("接口暂不可用,展示示例结果");
         return;
       }
 
@@ -231,6 +239,7 @@ export default function PatternGeneratePage() {
   const isLoading = phase === "loading";
   const hasResult = phase === "result";
   const hasError = phase === "error";
+  const needsAuth = phase === "auth-required";
 
   return (
     <div className="pgPage">
@@ -330,7 +339,7 @@ export default function PatternGeneratePage() {
               type="button"
               className="pgPrimary"
               onClick={runGenerate}
-              disabled={isLoading}
+              disabled={isLoading || needsAuth}
             >
               {isLoading ? "设计中…" : "开始设计"}
             </button>
@@ -367,6 +376,24 @@ export default function PatternGeneratePage() {
                 </button>
               )}
             </header>
+
+            {needsAuth && (
+              <div className="pgEmpty">
+                <div className="pgEmpty__art" aria-hidden>
+                  <svg viewBox="0 0 64 64" fill="none">
+                    <g stroke="#234A58" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.78">
+                      <rect x="18" y="28" width="28" height="22" rx="3" />
+                      <path d="M24 28v-6a8 8 0 0 1 16 0v6" />
+                      <circle cx="32" cy="38" r="2" fill="#234A58" stroke="none" opacity="0.95" />
+                      <path d="M32 40v4" />
+                    </g>
+                  </svg>
+                </div>
+                <h3 className="pgEmpty__title">请先登录,即可使用 AI 创作工具</h3>
+                <p className="pgEmpty__desc">登录后可保存作品、参与定制下单。</p>
+                <Link href="/login" className="pgPrimary">去登录</Link>
+              </div>
+            )}
 
             {phase === "idle" && (
               <div className="pgEmpty">

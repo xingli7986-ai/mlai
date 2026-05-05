@@ -67,7 +67,7 @@ const WAISTS: { id: Waist; label: string }[] = [
   { id: "low",     label: "低腰"   },
 ];
 
-type Phase = "idle" | "loading" | "result" | "error";
+type Phase = "idle" | "loading" | "result" | "error" | "auth-required";
 
 interface HistoryItem { id: string; title: string; time: string }
 const SEED_HISTORY: HistoryItem[] = [
@@ -235,8 +235,15 @@ export default function SketchPage() {
         signal: ac.signal,
       });
 
-      if (res.status === 401 || res.status === 503) {
-        useMockFallback("接口需要登录或暂不可用,展示示例线稿");
+      // 401 未登录 → 显式登录引导
+      if (res.status === 401) {
+        setPhase("auth-required");
+        toast.show("请先登录,即可使用 AI 创作工具", { tone: "warning" });
+        return;
+      }
+      // 503 服务不可用 → mock fallback
+      if (res.status === 503) {
+        useMockFallback("接口暂不可用,展示示例线稿");
         return;
       }
 
@@ -313,6 +320,7 @@ export default function SketchPage() {
   const isLoading  = phase === "loading";
   const hasResult  = phase === "result";
   const hasError   = phase === "error";
+  const needsAuth  = phase === "auth-required";
   const descCount  = desc.length;
 
   return (
@@ -399,7 +407,7 @@ export default function SketchPage() {
               type="button"
               className="skPrimary skPrimary--full"
               onClick={runGenerate}
-              disabled={isLoading}
+              disabled={isLoading || needsAuth}
             >
               {isLoading ? "生成中…" : "生成线稿"}
             </button>
@@ -418,6 +426,23 @@ export default function SketchPage() {
             </header>
 
             <div className="skPreviewStage">
+              {needsAuth && (
+                <div className="skEmpty">
+                  <div className="skEmpty__art" aria-hidden style={{ display: "inline-flex", justifyContent: "center", opacity: 0.85 }}>
+                    <svg viewBox="0 0 64 64" fill="none" width="64" height="64">
+                      <g stroke="#234A58" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.78">
+                        <rect x="18" y="28" width="28" height="22" rx="3" />
+                        <path d="M24 28v-6a8 8 0 0 1 16 0v6" />
+                        <circle cx="32" cy="38" r="2" fill="#234A58" stroke="none" opacity="0.95" />
+                        <path d="M32 40v4" />
+                      </g>
+                    </svg>
+                  </div>
+                  <h3 className="skEmpty__title">请先登录,即可使用 AI 创作工具</h3>
+                  <p className="skEmpty__desc">登录后可保存作品、参与定制下单。</p>
+                  <Link href="/login" className="skPrimary" style={{ marginTop: 14 }}>去登录</Link>
+                </div>
+              )}
               {phase === "idle" && (
                 <div className="skEmpty">
                   <div className="skEmpty__art" aria-hidden>
