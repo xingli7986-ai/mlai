@@ -1,0 +1,827 @@
+/* /my-studio/try-on — Step 1
+   严格按 design/11_my-studio_tools_design_spec.md §3 + 设计稿 10
+   全部 scoped 在 .toPage,to 前缀防类名冲突 */
+
+@import "../../home-consumer.css";
+
+/* ============================================================
+   A. Page shell
+   ============================================================ */
+.toPage {
+  min-height: 100vh;
+  background: var(--color-bg);                  /* #F3F6F6 */
+  color: var(--color-text-primary);             /* #1E272B */
+  font-family: var(--font-sans);
+  padding-bottom: 48px;
+}
+.toContainer {
+  width: min(1200px, calc(100vw - 128px));
+  margin: 0 auto;
+  padding: 12px 0 0;
+}
+@media (max-width: 1279px) {
+  .toContainer { width: calc(100vw - 48px); padding-top: 12px; }
+}
+@media (max-width: 767px) {
+  .toContainer { width: calc(100vw - 32px); padding-top: 12px; }
+  .toPage { padding-bottom: 32px; }
+}
+
+/* scoped nav */
+.toPage .nav {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-divider);
+  height: 64px;
+}
+.toPage .nav-center a.is-active {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.toPage .nav-center a.is-active::after {
+  width: 100%;
+  background: var(--color-primary);
+}
+
+/* ============================================================
+   B. Header
+   ============================================================ */
+.toHeader {
+  margin: 0 0 6px;
+}
+.toHeader__brand {
+  margin: 0;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.18em;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+.toHeader__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 40px;                              /* spec §3.3 */
+  line-height: 48px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+}
+.toHeader__route {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 32px;
+  line-height: 40px;
+  color: var(--color-accent);                   /* #C06A73 */
+  margin-left: 4px;
+  letter-spacing: -0.005em;
+}
+.toHeader__sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--color-text-tertiary);
+  max-width: 720px;
+}
+@media (max-width: 1279px) {
+  .toHeader__title { font-size: 36px; line-height: 44px; }
+  .toHeader__route { font-size: 28px; line-height: 36px; }
+}
+@media (max-width: 767px) {
+  .toHeader { margin-bottom: 4px; }
+  .toHeader__brand { font-size: 10px; letter-spacing: 0.14em; }
+  .toHeader__title { font-size: 26px; line-height: 32px; }   /* spec §3.3 mobile 28/36,fold-tight */
+  .toHeader__route { font-size: 18px; line-height: 26px; }
+  .toHeader__sub   { font-size: 12px; line-height: 18px; }
+}
+
+/* ============================================================
+   C. Crumb
+   ============================================================ */
+.toCrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-text-tertiary);
+  margin-bottom: 8px;
+}
+.toCrumb a { color: var(--color-text-tertiary); text-decoration: none; }
+.toCrumb a:hover { color: var(--color-text-secondary); }
+.toCrumb__sep { color: var(--color-border-strong); }
+.toCrumb__cur { color: var(--color-text-primary); font-weight: 500; }
+@media (max-width: 767px) {
+  .toCrumb { font-size: 11px; line-height: 16px; margin-bottom: 6px; }
+}
+
+/* ============================================================
+   D. Studio Shell
+   ============================================================ */
+.toStudioShell {
+  background: var(--color-surface);             /* #FCFDFD */
+  border: 1px solid var(--color-border);        /* #D2DEDF */
+  border-radius: 20px;
+  box-shadow: 0 8px 24px 0 rgba(30, 39, 43, 0.08);
+  padding: 24px;
+}
+@media (max-width: 1279px) {
+  .toStudioShell { padding: 20px; border-radius: 16px; }
+}
+@media (max-width: 767px) {
+  .toStudioShell { padding: 16px; border-radius: 14px; box-shadow: 0 4px 14px 0 rgba(30, 39, 43, 0.06); }
+}
+
+/* ============================================================
+   E. Workspace (desktop 36/44/20)
+   ============================================================ */
+.toWorkspace {
+  display: grid;
+  grid-template-columns: 36% 44% 20%;
+  gap: 24px;
+  align-items: stretch;
+}
+@media (max-width: 1279px) {
+  .toWorkspace {
+    grid-template-columns: minmax(280px, 0.4fr) minmax(360px, 0.6fr);
+    gap: 20px;
+  }
+  .toActionPanel { grid-column: 1 / -1; }
+}
+@media (max-width: 767px) {
+  .toWorkspace {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* ============================================================
+   F. Inner panels(轻量,无重阴影)
+   ============================================================ */
+.toPanel {
+  background: #FCFDFD;
+  border: 1px solid rgba(210, 222, 223, 0.8);
+  border-radius: 14px;
+  padding: 14px;
+}
+@media (max-width: 767px) {
+  .toPanel { padding: 12px; border-radius: 12px; }
+}
+.toPanel__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 26px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+@media (max-width: 767px) {
+  .toPanel__title { font-size: 16px; line-height: 24px; }
+}
+
+/* ============================================================
+   G. Sections (control panel)
+   ============================================================ */
+.toSection + .toSection { margin-top: 12px; }
+.toSection__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.toSection__title {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.toSection__head .toSection__title { margin-bottom: 0; }
+.toSection__more {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: color 150ms ease-out;
+}
+.toSection__more:hover { color: var(--color-text-secondary); }
+@media (max-width: 767px) {
+  .toSection + .toSection { margin-top: 10px; }
+  .toSection__title { font-size: 13px; line-height: 20px; margin-bottom: 6px; }
+}
+
+/* G1. 版型选择卡(spec §3.4 / §3.5 — 84×112 desktop / 72×92 mobile,选中浅底 + 玫瑰边 + 角标) */
+.toTemplates {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;                                    /* spec §3.4 */
+}
+.toTemplateCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 112px;                                /* spec §3.4 desktop */
+  padding: 10px 8px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;                          /* spec §3.5 */
+  cursor: pointer;
+  text-align: center;
+  transition: all 150ms ease-out;
+}
+.toTemplateCard:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: 0 1px 2px 0 rgba(30, 39, 43, 0.04);   /* Shadow XS */
+}
+.toTemplateCard.is-selected {
+  background: var(--color-accent-subtle);       /* #F4E5E7 */
+  border-color: var(--color-accent);            /* #C06A73 */
+}
+.toTemplateCard__icon {
+  width: 48px;                                  /* spec §3.5 desktop */
+  height: 48px;
+  color: var(--color-text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.toTemplateCard.is-selected .toTemplateCard__icon { color: var(--color-accent); }
+.toTemplateCard__icon svg { width: 100%; height: 100%; }
+.toTemplateCard__title {
+  font-size: 13px;                              /* spec §3.3 版型名称 13/20 */
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+.toTemplateCard.is-selected .toTemplateCard__title { color: var(--color-accent); }
+.toTemplateCard__badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 20px;                                  /* spec §3.5 选中角标 20 */
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #FFFFFF;
+}
+.toTemplateCard__badge svg { width: 12px; height: 12px; }
+@media (max-width: 767px) {
+  .toTemplates { gap: 8px; }                    /* spec §3.4 mobile */
+  .toTemplateCard { height: 92px; padding: 6px; }
+  .toTemplateCard__icon { width: 40px; height: 40px; }
+  .toTemplateCard__title { font-size: 12px; line-height: 18px; }
+  .toTemplateCard__badge { width: 18px; height: 18px; top: 4px; right: 4px; }
+}
+
+/* G2. Chip(spec §3.4 32h / 30 mobile) */
+.toChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.toChip {
+  height: 32px;                                 /* spec §3.4 desktop */
+  padding: 0 14px;
+  border-radius: 999px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 13px;                              /* spec §3.3 chip 13/20 */
+  line-height: 20px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+.toChip:hover {
+  background: var(--color-bg);
+  color: var(--color-primary);
+  border-color: var(--color-border-strong);
+}
+.toChip.is-selected {
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+@media (max-width: 767px) {
+  .toChip { height: 30px; padding: 0 12px; font-size: 12px; line-height: 18px; }
+}
+
+/* G3. 花型来源卡(纯花型缩略图,不用模特图)*/
+.toSourceCard {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+.toSourceCard__thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--color-subtle);
+}
+.toSourceCard__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.toSourceCard__meta { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.toSourceCard__title {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.toSourceCard__param {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-text-secondary);
+}
+.toSourceCard__code {
+  margin: 0;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+@media (max-width: 767px) {
+  .toSourceCard { padding: 8px 10px; gap: 10px; grid-template-columns: 48px 1fr; }
+  .toSourceCard__thumb { width: 48px; height: 48px; }
+}
+
+/* ============================================================
+   H. Primary / Secondary / Quota
+   ============================================================ */
+.toPrimary {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 8px;
+  background: var(--color-accent);
+  color: #FFFFFF;
+  font-size: 14px;                              /* spec §3.3 CTA 14/20 */
+  line-height: 20px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 0;
+  cursor: pointer;
+  transition: background 150ms ease-out;
+}
+.toPrimary:hover { background: var(--color-accent-hover); }
+.toPrimary:disabled {
+  background: rgba(192, 106, 115, 0.32);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: not-allowed;
+}
+.toPrimary--full   { width: 100%; }
+.toPrimary--banner { width: auto; flex: 0 0 auto; padding: 0 28px; margin-top: 0; }
+
+.toSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+.toSecondary svg { width: 14px; height: 14px; }
+.toSecondary:hover {
+  background: var(--color-bg);
+  border-color: var(--color-border-strong);
+}
+.toSecondary--accent {
+  /* 定制下单:次按钮 + 玫瑰描边 + 玫瑰图标(spec §3.5 操作按钮组) */
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+.toSecondary--accent:hover {
+  background: var(--color-accent-subtle);
+  border-color: var(--color-accent);
+}
+.toSecondary:disabled {
+  background: #FFFFFF;
+  color: rgba(35, 74, 88, 0.42);
+  border-color: var(--color-divider);
+  cursor: not-allowed;
+}
+.toSecondary--accent:disabled {
+  color: rgba(192, 106, 115, 0.5);
+  border-color: rgba(192, 106, 115, 0.32);
+}
+.toSecondary--full { width: 100%; }
+
+.toQuota {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-text-tertiary);
+}
+.toQuota b { color: var(--color-text-primary); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   I. Preview panel
+   ============================================================ */
+.toPreviewPanel { display: flex; flex-direction: column; }
+.toPreviewHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.toAdvice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background: rgba(200, 168, 117, 0.10);        /* spec §3.2 提示背景 */
+  color: #A8874F;
+  font-size: 12px;
+  line-height: 18px;
+}
+.toAdvice__dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #C8A875;
+}
+.toAdvice b { color: #A8874F; font-weight: 600; }
+/* error 变体(spec §七:#E57373 但轻柔)*/
+.toAdvice--error {
+  background: rgba(229, 115, 115, 0.10);
+  color: #B5443D;
+}
+.toAdvice__dot--error { background: #E57373; }
+.toGhost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+.toGhost--error {
+  margin-left: auto;
+  border-color: rgba(229, 115, 115, 0.5);
+  color: #B5443D;
+  font-weight: 600;
+}
+.toGhost--error:hover {
+  border-color: #E57373;
+  background: rgba(229, 115, 115, 0.06);
+  color: #B5443D;
+}
+
+/* I1. Preview stage(主图 + 侧图,spec §3.4 60-65% / 28-32%) */
+.toPreviewStage {
+  position: relative;
+  width: 100%;
+  background: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;                          /* spec §3.4 */
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 360px;
+  max-height: 520px;
+}
+@media (max-width: 1279px) {
+  .toPreviewStage { max-height: 600px; }
+}
+@media (max-width: 767px) {
+  .toPreviewStage { border-radius: 12px; min-height: 320px; max-height: none; }
+}
+
+/* I2. Result(主 + 侧)*/
+.toResult {
+  display: grid;
+  grid-template-columns: 64% 36%;
+  gap: 8px;
+  width: 100%;
+  height: 100%;
+  padding: 8px;
+}
+.toResult__main {
+  position: relative;
+  aspect-ratio: 3 / 4;                          /* spec §3.5 */
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-subtle);
+}
+.toResult__side {
+  position: relative;
+  aspect-ratio: 3 / 4;                          /* spec §3.5 */
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-subtle);
+  border: 1px solid var(--color-divider);
+  align-self: start;
+}
+.toResult__main img,
+.toResult__side img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;                            /* spec §3.5 */
+  object-position: center;
+  display: block;
+  /* spec §七:主+侧切换过渡 */
+  transition: opacity 150ms ease-out;
+}
+@media (max-width: 767px) {
+  .toResult { grid-template-columns: 1fr; gap: 8px; padding: 6px; }
+  .toResult__main { aspect-ratio: 3 / 4; }
+  .toResult__side { aspect-ratio: 16 / 9; }
+}
+
+/* I3. Empty(轻量人台轮廓占位,无技术坐标线)*/
+.toEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px;
+  max-width: 340px;
+}
+.toEmpty__art {
+  width: 96px;
+  height: 128px;
+  margin-bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.toEmpty__art svg { width: 100%; height: 100%; }
+.toEmpty__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.toEmpty__desc {
+  margin: 4px auto 0;
+  max-width: 280px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--color-text-secondary);
+}
+
+/* I4. Loading */
+.toLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.toPetals {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 14px;
+}
+.toPetals span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 26px;
+  margin: -13px 0 0 -6px;
+  border-radius: 12px 12px 4px 4px;
+  background: var(--color-accent);
+  opacity: 0.14;
+  transform-origin: 50% 100%;
+  animation: toPetalPulse 2.0s ease-in-out infinite;
+}
+@keyframes toPetalPulse {
+  0%, 100% { opacity: 0.14; transform: rotate(var(--r, 0)) translateY(-22px) scale(0.9);  }
+  50%      { opacity: 0.62; transform: rotate(var(--r, 0)) translateY(-22px) scale(1.08); }
+}
+.toPetals span:nth-child(1) { --r:   0deg; animation-delay: 0s;    }
+.toPetals span:nth-child(2) { --r:  60deg; animation-delay: 0.18s; }
+.toPetals span:nth-child(3) { --r: 120deg; animation-delay: 0.36s; }
+.toPetals span:nth-child(4) { --r: 180deg; animation-delay: 0.54s; }
+.toPetals span:nth-child(5) { --r: 240deg; animation-delay: 0.72s; }
+.toPetals span:nth-child(6) { --r: 300deg; animation-delay: 0.9s;  }
+.toLoading__text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
+}
+
+/* I5. Carousel dots(spec §3.5 6px,active #C06A73) */
+.toCarousel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.toCarousel__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-border);
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+.toCarousel__dot.is-active {
+  background: var(--color-accent);              /* spec §3.5 */
+  width: 18px;
+}
+
+/* ============================================================
+   J. Action panel
+   ============================================================ */
+.toActionPanel { padding: 14px; }
+@media (max-width: 1279px) {
+  .toActionPanel { padding: 18px 20px; }
+}
+.toActions {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;                                    /* spec §3.4 desktop */
+}
+@media (max-width: 1279px) {
+  .toActions { flex-direction: row; }
+  .toPrimary--full,
+  .toSecondary--full { flex: 1; }
+}
+@media (max-width: 767px) {
+  .toActions { flex-direction: column; gap: 8px; }
+}
+
+.toDivider {
+  height: 1px;
+  background: var(--color-divider);
+  margin: 14px 0;
+}
+.toActionPanel__sub {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.toHistory {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.toHistoryItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 150ms ease-out;
+}
+.toHistoryItem:hover { background: var(--color-bg); }
+.toHistoryItem__thumb {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 48px;                                 /* try-on 历史用 3:4 缩略图,匹配模特图 */
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--color-subtle);
+  border: 1px solid var(--color-divider);
+}
+.toHistoryItem__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.toHistoryItem__meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.toHistoryItem__title {
+  font-size: 13px;                              /* spec §3.3 13/20 */
+  line-height: 18px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.toHistoryItem__param {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--color-text-secondary);
+}
+.toHistoryItem__time {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--color-text-tertiary);
+}
+
+/* ============================================================
+   K. Bottom next-step banner
+   ============================================================ */
+.toNextBanner {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px 0 rgba(30, 39, 43, 0.04);
+}
+.toNextBanner__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--color-primary-subtle);
+  color: var(--color-primary);
+}
+.toNextBanner__icon svg { width: 22px; height: 22px; }
+.toNextBanner__copy { flex: 1; min-width: 0; }
+.toNextBanner__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.toNextBanner__desc {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--color-text-secondary);
+}
+@media (max-width: 767px) {
+  .toNextBanner {
+    margin-top: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    border-radius: 12px;
+    gap: 14px;
+  }
+  .toNextBanner__icon { width: 36px; height: 36px; }
+  .toNextBanner__icon svg { width: 18px; height: 18px; }
+  .toNextBanner__title { font-size: 16px; line-height: 24px; }
+  .toNextBanner__desc  { font-size: 12px; line-height: 18px; }
+  .toPrimary--banner   { width: 100%; }
+}
