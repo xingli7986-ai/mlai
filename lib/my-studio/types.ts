@@ -193,6 +193,68 @@ export interface StudioProductionDraft {
   note?: string;
 }
 
+export type StudioOrderMode = "single" | "group";
+export type StudioCustomOrderStatus = "draft" | "submitted";
+export type StudioFabricOption = "default" | "premium";
+
+export interface StudioCustomizationOptions {
+  size: string;
+  quantity: number;
+  fabricOption: StudioFabricOption;
+  sleeve: string;
+  skirtLength: string;
+  neckline: string;
+  fitPreference: StudioFitPreference;
+  note?: string;
+}
+
+export interface StudioPriceEstimate {
+  itemPrice: number;
+  customServiceFee: number;
+  depositAmount: number;
+  finalPaymentEstimate: number;
+  groupPrice: number;
+  currency: "CNY";
+  productionCycleDays?: number;
+}
+
+export interface StudioAddressDraft {
+  receiverName?: string;
+  phone?: string;
+  region?: string;
+  detail?: string;
+  isDefault?: boolean;
+}
+
+export interface StudioGroupOrderDraft {
+  targetCount: 3 | 5 | 10;
+  currentCount: number;
+  expiresInDays: number;
+  status: "pending";
+  failPolicy: "refund_deposit_if_not_filled";
+}
+
+export interface StudioPublishOption {
+  publishToMarketplace: boolean;
+  commissionRate: number;
+}
+
+export interface StudioCustomOrderDraft {
+  orderMode: StudioOrderMode;
+  selectedPatternId?: string;
+  selectedTryOnId?: string;
+  bodyProfileSnapshot?: StudioBodyProfile;
+  garmentTemplateSnapshot?: StudioGarmentTemplate;
+  customizationOptions: StudioCustomizationOptions;
+  priceEstimate: StudioPriceEstimate;
+  addressDraft: StudioAddressDraft;
+  groupOrder?: StudioGroupOrderDraft;
+  publishOption?: StudioPublishOption;
+  status: StudioCustomOrderStatus;
+  createdAt?: string;
+  updatedAt: string;
+}
+
 export interface StudioResult {
   id: string;
   kind: StudioResultKind;
@@ -253,6 +315,7 @@ export interface StudioWorkMetadata {
   applicationGenerationGroups: StudioApplicationGenerationGroup[];
   tryOnGenerationGroups: StudioTryOnGenerationGroup[];
   preferenceMemory: StudioPatternPreferenceMemory;
+  customOrderDraft?: StudioCustomOrderDraft;
   productionDraft?: StudioProductionDraft;
   results: Partial<Record<StudioResultKind, StudioResult>>;
   productionSheet: {
@@ -291,6 +354,7 @@ export interface StudioWorkDTO {
   config: StudioWorkConfig;
   bodyProfile: StudioBodyProfile;
   garmentTemplates: StudioGarmentTemplate[];
+  customOrderDraft?: StudioCustomOrderDraft;
   productionDraft?: StudioProductionDraft;
   productionSheetStatus: ProductionSheetStatus;
   continueHref: string;

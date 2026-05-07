@@ -7,6 +7,7 @@ import type {
   StudioApplicationPreviewPreference,
   StudioBodyProfile,
   StudioCurrentStep,
+  StudioCustomOrderDraft,
   StudioGarmentTemplate,
   StudioPatternAssetSource,
   StudioPatternGenerationGroup,
@@ -16,6 +17,7 @@ import type {
   StudioResult,
   StudioResultKind,
   StudioSelectedAssets,
+  StudioFitPreference,
   StudioTryOnSource,
   StudioTryOnStatus,
   StudioTryOnGenerationGroup,
@@ -211,6 +213,7 @@ export function createEmptyStudioMetadata(title: string): StudioWorkMetadata {
     applicationGenerationGroups: [],
     tryOnGenerationGroups: [],
     preferenceMemory: { ...DEFAULT_PATTERN_PREFERENCE_MEMORY },
+    customOrderDraft: undefined,
     productionDraft: undefined,
     results: {},
     productionSheet: {
@@ -443,11 +446,13 @@ export function confirmStudioDesign(
   metadata: StudioWorkMetadata,
   input?: {
     config?: Partial<StudioWorkConfig>;
+    customOrderDraft?: unknown;
     note?: string;
   },
 ): StudioWorkMetadata {
   const now = new Date().toISOString();
   const selectedTemplate = selectedGarmentTemplate(metadata);
+  const customOrderDraft = normalizeCustomOrderDraft(input?.customOrderDraft, now);
   const productionDraft: StudioProductionDraft = {
     status: "draft",
     selectedPatternResultId: metadata.selectedAssets.patternResultId,
@@ -479,6 +484,7 @@ export function confirmStudioDesign(
       ...metadata.bodyProfile,
       usualSize: input?.config?.size || metadata.bodyProfile.usualSize || metadata.config.size,
     },
+    customOrderDraft,
     productionDraft,
     productionSheet: {
       status: "draft",
@@ -549,6 +555,7 @@ export function studioWorkToDTO(design: StudioDesign): StudioWorkDTO {
       sketches: metadata.assets.sketches.length,
     },
     config: metadata.config,
+    customOrderDraft: metadata.customOrderDraft,
     productionDraft: metadata.productionDraft,
     productionSheetStatus: metadata.productionSheet?.status ?? "draft",
     continueHref: hrefForStep(metadata.currentStep, design.id, false),
@@ -658,6 +665,7 @@ function normalizeMetadata(
     applicationGenerationGroups: normalizeApplicationGroups(metadata.applicationGenerationGroups),
     tryOnGenerationGroups: normalizeTryOnGroups(metadata.tryOnGenerationGroups),
     preferenceMemory: normalizePatternPreferenceMemory(metadata.preferenceMemory),
+    customOrderDraft: normalizeCustomOrderDraft(metadata.customOrderDraft),
     productionDraft: metadata.productionDraft,
     results,
     productionSheet: {
@@ -987,6 +995,79 @@ export function normalizeTryOnGroups(value: unknown): StudioTryOnGenerationGroup
       });
     });
   return groups;
+}
+
+export function normalizeCustomOrderDraft(
+  value: unknown,
+  fallbackUpdatedAt = new Date().toISOString(),
+): StudioCustomOrderDraft | undefined {
+  if (!isRecord(value)) return undefined;
+  const rawOptions = isRecord(value.customizationOptions) ? value.customizationOptions : {};
+  const rawPrice = isRecord(value.priceEstimate) ? value.priceEstimate : {};
+  const rawAddress = isRecord(value.addressDraft) ? value.addressDraft : {};
+  const rawGroup = isRecord(value.groupOrder) ? value.groupOrder : undefined;
+  const orderMode = value.orderMode === "group" ? "group" : "single";
+  const fitPreference: StudioFitPreference =
+    rawOptions.fitPreference === "slim" || rawOptions.fitPreference === "relaxed"
+      ? rawOptions.fitPreference
+      : "regular";
+  const targetCount =
+    rawGroup?.targetCount === 5 || rawGroup?.targetCount === 10 ? rawGroup.targetCount : 3;
+
+  const draft: StudioCustomOrderDraft = {
+    orderMode,
+    selectedPatternId: stringValue(value.selectedPatternId) || undefined,
+    selectedTryOnId: stringValue(value.selectedTryOnId) || undefined,
+    bodyProfileSnapshot: normalizeBodyProfile(value.bodyProfileSnapshot),
+    garmentTemplateSnapshot: isRecord(value.garmentTemplateSnapshot)
+      ? normalizeGarmentTemplates([value.garmentTemplateSnapshot])[0]
+      : undefined,
+    customizationOptions: {
+      size: stringValue(rawOptions.size) || "M",
+      quantity: numberValue(rawOptions.quantity) || 1,
+      fabricOption: rawOptions.fabricOption === "premium" ? "premium" : "default",
+      sleeve: stringValue(rawOptions.sleeve) || "短袖",
+      skirtLength: stringValue(rawOptions.skirtLength) || "中长款",
+      neckline: stringValue(rawOptions.neckline) || "圆领",
+      fitPreference,
+      note: stringValue(rawOptions.note) || undefined,
+    },
+    priceEstimate: {
+      itemPrice: numberValue(rawPrice.itemPrice) || 0,
+      customServiceFee: numberValue(rawPrice.customServiceFee) || 0,
+      depositAmount: numberValue(rawPrice.depositAmount) || 0,
+      finalPaymentEstimate: numberValue(rawPrice.finalPaymentEstimate) || 0,
+      groupPrice: numberValue(rawPrice.groupPrice) || 0,
+      currency: "CNY",
+      productionCycleDays: numberValue(rawPrice.productionCycleDays),
+    },
+    addressDraft: {
+      receiverName: stringValue(rawAddress.receiverName) || undefined,
+      phone: stringValue(rawAddress.phone) || undefined,
+      region: stringValue(rawAddress.region) || undefined,
+      detail: stringValue(rawAddress.detail) || undefined,
+      isDefault: Boolean(rawAddress.isDefault),
+    },
+    groupOrder: orderMode === "group"
+      ? {
+          targetCount,
+          currentCount: numberValue(rawGroup?.currentCount) || 1,
+          expiresInDays: numberValue(rawGroup?.expiresInDays) || 7,
+          status: "pending",
+          failPolicy: "refund_deposit_if_not_filled",
+        }
+      : undefined,
+    publishOption: isRecord(value.publishOption)
+      ? {
+          publishToMarketplace: Boolean(value.publishOption.publishToMarketplace),
+          commissionRate: numberValue(value.publishOption.commissionRate) || 0.1,
+        }
+      : undefined,
+    status: value.status === "submitted" ? "submitted" : "draft",
+    createdAt: stringValue(value.createdAt) || fallbackUpdatedAt,
+    updatedAt: stringValue(value.updatedAt) || fallbackUpdatedAt,
+  };
+  return draft;
 }
 
 export function normalizePatternPreferenceMemory(value: unknown): StudioPatternPreferenceMemory {

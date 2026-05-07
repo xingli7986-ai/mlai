@@ -177,6 +177,10 @@
   gap: 14px;
 }
 
+.cdAssetGrid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .cdAssetCard {
   display: grid;
   gap: 8px;
@@ -307,6 +311,123 @@
   top: 82px;
   display: grid;
   gap: 14px;
+}
+
+.cdPriceRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e1e8e8;
+  color: #566469;
+  font-size: 13px;
+}
+
+.cdPriceRow b {
+  color: #234a58;
+  font-size: 15px;
+}
+
+.cdPriceRow--strong {
+  border-bottom: 0;
+  color: #1e272b;
+}
+
+.cdPriceRow--strong b {
+  color: #c06a73;
+  font-size: 19px;
+}
+
+.cdCycle,
+.cdSuccess {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f3f6f6;
+  color: #566469;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.cdSuccess {
+  border: 1px solid rgba(35, 74, 88, 0.16);
+  background: rgba(200, 168, 117, 0.14);
+  color: #234a58;
+  font-weight: 700;
+}
+
+.cdModeList {
+  display: grid;
+  gap: 10px;
+}
+
+.cdModeList button {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid rgba(35, 74, 88, 0.13);
+  border-radius: 14px;
+  background: #ffffff;
+  color: #566469;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cdModeList button strong {
+  color: #234a58;
+  font-size: 14px;
+}
+
+.cdModeList button span,
+.cdGroupBox p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.cdModeList button.is-selected {
+  border-color: #c06a73;
+  background: rgba(192, 106, 115, 0.08);
+  box-shadow: 0 10px 24px rgba(192, 106, 115, 0.1);
+}
+
+.cdGroupBox {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  background: #f8fbfb;
+  color: #566469;
+}
+
+.cdGroupBox label,
+.cdCheckRow {
+  display: grid;
+  gap: 6px;
+  color: #566469;
+  font-size: 13px;
+}
+
+.cdGroupBox select {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid rgba(35, 74, 88, 0.14);
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1e272b;
+  font: inherit;
+}
+
+.cdCheckRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cdCheckRow input {
+  width: 16px;
+  height: 16px;
 }
 
 .cdPrimary,

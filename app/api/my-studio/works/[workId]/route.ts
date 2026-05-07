@@ -173,6 +173,7 @@ export async function PATCH(
   if (body.confirmDesign === true) {
     const confirmed = confirmStudioDesign(nextMetadata, {
       config: isRecord(body.confirmConfig) ? body.confirmConfig as Partial<StudioWorkConfig> : undefined,
+      customOrderDraft: body.customOrderDraft,
       note: getString(body.note) || undefined,
     });
     Object.assign(nextMetadata, confirmed);
