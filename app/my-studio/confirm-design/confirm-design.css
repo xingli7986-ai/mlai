@@ -1,0 +1,382 @@
+@import "../../home-consumer.css";
+
+.cdPage {
+  min-height: 100vh;
+  padding-bottom: 56px;
+  background: #f3f6f6;
+  color: #1e272b;
+  font-family: var(--font-sans, "Inter", "Noto Sans SC", sans-serif);
+}
+
+.cdPage .nav {
+  background: #fcfdfd;
+  border-bottom: 1px solid #e1e8e8;
+}
+
+.cdContainer {
+  width: min(1220px, calc(100vw - 64px));
+  margin: 0 auto;
+  padding-top: 16px;
+}
+
+.cdTop {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.cdCrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #879397;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.cdCrumb a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.cdCrumb a:hover {
+  color: #234a58;
+}
+
+.cdProgress {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 6px 12px;
+  border: 1px solid rgba(35, 74, 88, 0.1);
+  border-radius: 999px;
+  background: rgba(252, 253, 253, 0.88);
+}
+
+.cdProgress span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #879397;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.cdProgress b {
+  width: 20px;
+  height: 20px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #234a58;
+  color: #ffffff;
+  font-size: 11px;
+}
+
+.cdProgress .is-active {
+  color: #234a58;
+  font-weight: 700;
+}
+
+.cdHero {
+  margin-bottom: 18px;
+  padding: 8px 4px;
+}
+
+.cdEyebrow {
+  margin: 0 0 5px;
+  color: #c06a73;
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cdHero h1,
+.cdPanel h2 {
+  margin: 0;
+  color: #1e272b;
+  font-family: var(--font-serif, "Noto Serif SC", serif);
+  font-weight: 500;
+}
+
+.cdHero h1 {
+  font-size: 36px;
+  line-height: 44px;
+}
+
+.cdHero p,
+.cdPanelHead p,
+.cdSide p,
+.cdNotice {
+  color: #566469;
+  font-size: 13px;
+  line-height: 22px;
+}
+
+.cdHero p {
+  max-width: 760px;
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.cdNotice {
+  margin: 0 0 14px;
+  padding: 16px;
+  border: 1px dashed rgba(35, 74, 88, 0.18);
+  border-radius: 14px;
+  background: rgba(243, 246, 246, 0.72);
+}
+
+.cdShell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 22px;
+  align-items: start;
+  margin-top: 18px;
+}
+
+.cdMain,
+.cdSide {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cdPanel {
+  padding: 18px;
+  border: 1px solid rgba(35, 74, 88, 0.12);
+  border-radius: 18px;
+  background: #fcfdfd;
+  box-shadow: 0 10px 30px rgba(31, 51, 66, 0.06);
+}
+
+.cdPanel h2 {
+  font-size: 21px;
+  line-height: 30px;
+}
+
+.cdPanelHead {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.cdPanelHead p {
+  max-width: 720px;
+  margin: 6px 0 0;
+}
+
+.cdAssetGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.cdAssetCard {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(35, 74, 88, 0.12);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.cdAssetCard img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.cdAssetCard strong {
+  color: #234a58;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.cdAssetCard span,
+.cdAssetCard p {
+  margin: 0;
+  color: #879397;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.cdAssetCard a,
+.cdSecondaryLink {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  border: 1px solid rgba(35, 74, 88, 0.14);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #234a58;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.cdAssetCard--empty {
+  border-style: dashed;
+  background: rgba(243, 246, 246, 0.72);
+}
+
+.cdSnapshotGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.cdSnapshotGrid > div {
+  padding: 13px 14px;
+  border: 1px solid rgba(35, 74, 88, 0.1);
+  border-radius: 14px;
+  background: #f8fbfb;
+}
+
+.cdSnapshotGrid span,
+.cdSnapshotGrid b {
+  display: block;
+}
+
+.cdSnapshotGrid span {
+  color: #879397;
+  font-size: 12px;
+}
+
+.cdSnapshotGrid b {
+  margin-top: 5px;
+  color: #234a58;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.cdFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.cdFormGrid label {
+  display: grid;
+  gap: 6px;
+  color: #566469;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.cdFormGrid input,
+.cdFormGrid select,
+.cdFormGrid textarea {
+  width: 100%;
+  border: 1px solid rgba(35, 74, 88, 0.14);
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1e272b;
+  font: inherit;
+  font-size: 13px;
+}
+
+.cdFormGrid input,
+.cdFormGrid select {
+  min-height: 42px;
+  padding: 0 12px;
+}
+
+.cdFormGrid textarea {
+  resize: vertical;
+  padding: 11px 12px;
+}
+
+.cdFormGrid__wide {
+  grid-column: 1 / -1;
+}
+
+.cdStickyPanel {
+  position: sticky;
+  top: 82px;
+  display: grid;
+  gap: 14px;
+}
+
+.cdPrimary,
+.cdPrimaryLink {
+  display: inline-flex;
+  width: 100%;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 9px;
+  background: #234a58;
+  color: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 14px 30px rgba(35, 74, 88, 0.18);
+}
+
+.cdPrimary:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.cdSecondaryLink {
+  border-radius: 9px;
+}
+
+@media (max-width: 1180px) {
+  .cdContainer {
+    width: calc(100vw - 48px);
+  }
+
+  .cdShell {
+    grid-template-columns: 1fr;
+  }
+
+  .cdStickyPanel {
+    position: static;
+  }
+}
+
+@media (max-width: 760px) {
+  .cdContainer {
+    width: calc(100vw - 32px);
+  }
+
+  .cdHero h1 {
+    font-size: 30px;
+    line-height: 38px;
+  }
+
+  .cdTop {
+    grid-template-columns: 1fr;
+  }
+
+  .cdProgress {
+    overflow-x: auto;
+  }
+
+  .cdAssetGrid,
+  .cdFormGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .cdPanel {
+    padding: 14px;
+    border-radius: 14px;
+  }
+}
