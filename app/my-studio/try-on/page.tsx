@@ -225,7 +225,7 @@ export default function TryOnPage() {
     try {
       const persistedWork = await patchWorkSettings(profileForGeneration, selectedTemplate);
       const prompt = buildTryOnPrompt(persistedWork, selectedPattern, currentPreference, profileForGeneration, selectedTemplate, nextRevisionReason);
-      const source: "direct-pattern-try-on" | "remix-pattern-try-on" | "regenerate-fit" = nextRevisionReason
+      const tryOnSource: "direct-pattern-try-on" | "remix-pattern-try-on" | "regenerate-fit" = nextRevisionReason
         ? "regenerate-fit"
         : selectedPattern.source?.type?.includes("remix")
           ? "remix-pattern-try-on"
@@ -296,7 +296,7 @@ export default function TryOnPage() {
           garmentTemplate: selectedTemplate,
           fitPreference: profileForGeneration.fitPreference,
           revisionReason: nextRevisionReason,
-          tryOnSource: source,
+          tryOnSource,
           sourcePatternResultId: selectedPattern.id,
           groupId,
           selectFirst: true,
@@ -337,7 +337,7 @@ export default function TryOnPage() {
             garmentTemplateSnapshot: selectedTemplate,
             fitPreference: profileForGeneration.fitPreference,
             revisionReason: nextRevisionReason,
-            tryOnSource: source,
+            tryOnSource,
             tryOnStatus: data.isFallback ? "fallback" : "generated",
             groupId,
             params: {
