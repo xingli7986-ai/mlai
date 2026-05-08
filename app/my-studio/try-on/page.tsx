@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import ConsumerNav from "@/components/ConsumerNav";
@@ -27,6 +27,7 @@ type Framing = StudioTryOnPreviewPreference["framing"];
 const FLOW_STEPS = ["印花创作", "虚拟试穿", "开始定制"];
 const WORK_NOT_FOUND_MESSAGE = "当前作品不存在或无权访问，请回到我的设计工作室重新选择作品。";
 const TRY_ON_PLACEHOLDER = "/assets/my-studio/try-on/try-on-preview-placeholder.svg";
+const TRY_ON_LOADING_ELEGANT = "/assets/my-studio/try-on/try-on-loading-elegant.png";
 const EMPTY_HISTORY_IMAGE = "/assets/my-studio/empty/empty-try-on-history.svg";
 const DIGITAL_ASSETS_ICON = "/assets/my-studio/icons/icon-digital-assets.svg";
 const SELECTED_ICON = "/assets/my-studio/icons/icon-tryon-selected.svg";
@@ -73,11 +74,10 @@ const DEFAULT_TRY_ON_PREFERENCE: StudioTryOnPreviewPreference = {
 };
 
 const TRY_ON_GENERATION_STAGES = [
-  "正在准备印花平铺图",
-  "正在匹配版型模板",
-  "正在生成服装区域",
-  "正在合成高保真试穿图",
-  "正在保存数字资产",
+  "读取当前印花",
+  "匹配版型模板",
+  "贴合服装区域",
+  "渲染上身效果",
 ];
 
 export default function TryOnPage() {
@@ -241,7 +241,7 @@ export default function TryOnPage() {
       return;
     }
     if (requestedFidelityMode === "masked_garment_tryon" && !readiness.canRunMaskedTryOn) {
-      setError("高保真试穿条件未满足，请切换为快速示意试穿，或等待版型模板和服装区域素材补齐。");
+      setError(readiness.blockerMessage);
       return;
     }
     setGenerating(true);
@@ -603,10 +603,26 @@ export default function TryOnPage() {
                   </div>
                 </div>
                 <div className="toReadinessGrid">
-                  <ReadinessItem label="印花平铺图" ready={readiness.patternTileReady} />
-                  <ReadinessItem label="版型模板" ready={readiness.garmentTemplateReady} />
-                  <ReadinessItem label="模特体型" ready={readiness.modelBaseReady} />
-                  <ReadinessItem label="服装区域" ready={readiness.maskReady} />
+                  <ReadinessItem
+                    label="印花平铺图"
+                    ready={readiness.patternTileReady}
+                    detail={readiness.patternTileReady ? "已读取当前印花" : "请先选择当前印花"}
+                  />
+                  <ReadinessItem
+                    label="版型模板"
+                    ready={readiness.garmentTemplateReady}
+                    detail={readiness.garmentTemplateReady ? "已选择版型结构" : "请选择版型"}
+                  />
+                  <ReadinessItem
+                    label="模特体型 / 底图"
+                    ready={readiness.modelBaseReady}
+                    detail={readiness.modelBaseReady ? "已读取身材参数" : "请填写身高体重"}
+                  />
+                  <ReadinessItem
+                    label="服装区域 mask"
+                    ready={readiness.maskReady}
+                    detail={readiness.maskReady ? "已准备服装区域素材" : "当前缺少 mask"}
+                  />
                 </div>
                 <div className="toModeGroup" role="radiogroup" aria-label="试穿模式">
                   <button
@@ -616,7 +632,7 @@ export default function TryOnPage() {
                     onClick={() => setRequestedFidelityMode("masked_garment_tryon")}
                   >
                     高保真试穿
-                    <span>{readiness.canRunMaskedTryOn ? "推荐" : "素材待补齐"}</span>
+                    <span>{readiness.canRunMaskedTryOn ? "推荐" : readiness.shortBlocker}</span>
                   </button>
                   <button
                     type="button"
@@ -629,7 +645,7 @@ export default function TryOnPage() {
                 </div>
                 {!readiness.canRunMaskedTryOn && (
                   <p className="toFidelityHint">
-                    当前结果用于设计预览，印花位置和细节仍可能存在偏差。
+                    {readiness.blockerMessage} 可先使用“快速示意试穿”预览整体感觉，印花位置和细节仍可能存在偏差。
                   </p>
                 )}
               </section>
@@ -826,8 +842,17 @@ export default function TryOnPage() {
                 </button>
               </div>
 
-              <div className={`toPreviewCanvas${hasSelectedTryOn ? " is-selected" : ""}${generating ? " is-generating" : ""}`}>
-                <img src={previewImage} alt={hasSelectedTryOn ? "当前上身效果图" : "上身效果占位图"} />
+              <div
+                className={`toPreviewCanvas${hasSelectedTryOn ? " is-selected" : ""}${generating ? " is-generating" : ""}${!previewAsset ? " is-waiting" : ""}`}
+                style={{ "--try-on-loading-art": `url(${TRY_ON_LOADING_ELEGANT})` } as CSSProperties}
+              >
+                {previewAsset && !generating ? (
+                  <img src={previewImage} alt="当前上身效果图" />
+                ) : (
+                  <div className="toWaitingIllustration" aria-hidden="true">
+                    <span />
+                  </div>
+                )}
                 {hasSelectedTryOn && !generating && <span className="toSelectedFlag">当前上身效果</span>}
                 {previewAsset && !generating && (
                   <span className={`toFidelityBadge is-${readTryOnFidelityMode(previewAsset)}`}>
@@ -840,8 +865,9 @@ export default function TryOnPage() {
                       <span />
                     </div>
                     <div className="toGeneratingCopy">
-                      <strong>{TRY_ON_GENERATION_STAGES[generationStage]}</strong>
-                      <p>系统正在锁定当前印花、身材比例和所选版型，生成全身上身效果。</p>
+                      <strong>正在生成你的上身效果图</strong>
+                      <p>AI 正在根据印花、版型与身材参数生成试穿预览</p>
+                      <span className="toStageNow">{TRY_ON_GENERATION_STAGES[generationStage]}</span>
                       <ol>
                         {TRY_ON_GENERATION_STAGES.map((stage, index) => (
                           <li key={stage} className={index <= generationStage ? "is-active" : ""}>
@@ -953,11 +979,12 @@ function OptionGroup({
   );
 }
 
-function ReadinessItem({ label, ready }: { label: string; ready: boolean }) {
+function ReadinessItem({ label, ready, detail }: { label: string; ready: boolean; detail: string }) {
   return (
     <div className={ready ? "is-ready" : "is-missing"}>
       <span>{label}</span>
       <strong>{ready ? "已准备" : "待准备"}</strong>
+      <small>{detail}</small>
     </div>
   );
 }
@@ -1028,6 +1055,20 @@ function TryOnRailThumb({
 
 function buildTryOnReadiness(hasPattern: boolean, hasTemplate: boolean, bodyReady: boolean) {
   const maskReady = false;
+  const missing = [
+    !hasPattern ? "印花平铺图" : "",
+    !hasTemplate ? "版型模板" : "",
+    !bodyReady ? "模特体型 / 底图" : "",
+    !maskReady ? "服装区域素材（mask）" : "",
+  ].filter(Boolean);
+  const shortBlocker = !maskReady
+    ? "缺少服装区域 mask"
+    : missing.length > 0
+      ? `${missing[0]}待准备`
+      : "素材待补齐";
+  const blockerMessage = !maskReady
+    ? "当前缺少服装区域素材（mask），因此暂时不能进入高保真试穿。"
+    : `当前缺少${missing.join("、")}，因此暂时不能进入高保真试穿。`;
   return {
     patternTileReady: hasPattern,
     garmentTemplateReady: hasTemplate,
@@ -1035,6 +1076,9 @@ function buildTryOnReadiness(hasPattern: boolean, hasTemplate: boolean, bodyRead
     maskReady,
     providerReady: true,
     canRunMaskedTryOn: hasPattern && hasTemplate && bodyReady && maskReady,
+    missing,
+    shortBlocker,
+    blockerMessage,
   };
 }
 
