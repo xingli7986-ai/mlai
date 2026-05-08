@@ -6,8 +6,41 @@
  * 实际后端已切换到永鑫科技。
  */
 
+import type { TryOnProviderCapability } from "@/lib/my-studio/types";
+
 const API_KEY = process.env.YXAI_API_KEY!;
 const BASE_URL = process.env.YXAI_BASE_URL || "https://yxai.anthropic.edu.pl/v1";
+const IMAGE_MODEL = process.env.YXAI_IMAGE_MODEL || "gpt-image-2";
+
+export const GPT_IMAGE2_PROVIDER = "yxai";
+
+export function getGPTImage2Config() {
+  return {
+    provider: GPT_IMAGE2_PROVIDER,
+    baseUrl: BASE_URL,
+    model: IMAGE_MODEL,
+    hasApiKey: Boolean(process.env.YXAI_API_KEY),
+  };
+}
+
+export function getTryOnProviderCapability(): TryOnProviderCapability {
+  return {
+    provider: GPT_IMAGE2_PROVIDER,
+    model: IMAGE_MODEL,
+    supportsTextToImage: Boolean(process.env.YXAI_API_KEY),
+    supportsImageReference: false,
+    supportsImageEdit: false,
+    supportsMask: false,
+    supportsGarmentTryOn: false,
+    supportsPoseControl: false,
+    supportsMultiImageInput: false,
+    notes: [
+      "Current YXAI image2 wrapper uses an OpenAI-compatible /images/generations endpoint.",
+      "Reference URLs are prompt text only; they are not true image inputs.",
+      "Masked garment try-on requires a provider branch with image edit/reference and mask support.",
+    ],
+  };
+}
 
 interface OpenAIImageResponse {
   created?: number;
@@ -69,7 +102,7 @@ export async function generateWithGPTImage2(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "gpt-image-2",
+      model: IMAGE_MODEL,
       prompt: finalPrompt,
       size,
       n,

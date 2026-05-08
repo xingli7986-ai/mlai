@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { getAuthUser } from "@/lib/getAuthUser";
 import { uploadBufferToR2 } from "@/lib/upload";
-import { generateWithGPTImage2, getGPTImage2Config } from "@/lib/suchuang";
+import { generateWithGPTImage2, getGPTImage2Config, getTryOnProviderCapability } from "@/lib/suchuang";
 import {
   TOOL_PROMPT_MAP,
   type StudioTool,
@@ -14,6 +14,12 @@ import {
   getFallbackImagesForTool,
   resultTypeForTool,
 } from "@/lib/my-studio/fallbacks";
+import type {
+  TryOnFidelityMode,
+  TryOnProviderCapability,
+  TryOnQualityScores,
+  TryOnReferenceMode,
+} from "@/lib/my-studio/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -34,8 +40,13 @@ interface StudioGenerateRequest {
   workId?: string;
   patternAssetId?: string;
   patternImageUrl?: string;
+  patternTileAssetId?: string;
+  garmentTemplateAssetId?: string;
+  modelBaseAssetId?: string;
   bodyProfile?: Record<string, unknown>;
   garmentTemplate?: Record<string, unknown>;
+  requestedFidelityMode?: TryOnFidelityMode;
+  allowDegrade?: boolean;
   fitPreference?: string;
   revisionReason?: string;
   count?: number;
@@ -67,6 +78,15 @@ function fallbackResponse(params: {
   provider?: string;
   model?: string;
   message?: string;
+  fidelityMode?: TryOnFidelityMode;
+  referenceMode?: TryOnReferenceMode;
+  patternReferenceUsed?: boolean;
+  maskUsed?: boolean;
+  isProductionReady?: boolean;
+  warnings?: string[];
+  providerCapability?: TryOnProviderCapability;
+  jobId?: string;
+  qualityScores?: TryOnQualityScores;
 }) {
   const images = getFallbackImagesForTool(params.tool, params.count);
   const used = recordUsage(params.userId);
@@ -79,15 +99,133 @@ function fallbackResponse(params: {
     isFallback: true,
     provider: params.provider,
     model: params.model,
+    fidelityMode: params.fidelityMode,
+    referenceMode: params.referenceMode,
+    patternReferenceUsed: params.patternReferenceUsed,
+    maskUsed: params.maskUsed,
+    isProductionReady: params.isProductionReady,
+    warnings: params.warnings,
+    providerCapability: params.providerCapability,
+    jobId: params.jobId,
     message: params.message || fallbackMessageForTool(params.tool),
     metadata: {
       reason: params.reason,
       role: params.role,
       prompt: params.prompt,
+      fidelityMode: params.fidelityMode,
+      referenceMode: params.referenceMode,
+      patternReferenceUsed: params.patternReferenceUsed,
+      maskUsed: params.maskUsed,
+      isProductionReady: params.isProductionReady,
+      warnings: params.warnings,
+      providerCapability: params.providerCapability,
+      qualityScores: params.qualityScores,
     },
     used,
     limit: params.limit,
   });
+}
+
+type TryOnExecutionMode = {
+  fidelityMode: TryOnFidelityMode;
+  referenceMode: TryOnReferenceMode;
+  patternReferenceUsed: boolean;
+  maskUsed: boolean;
+  isProductionReady: boolean;
+  warnings: string[];
+  providerCapability: TryOnProviderCapability;
+  jobId: string;
+  blocked?: boolean;
+};
+
+function resolveTryOnExecutionMode(
+  body: StudioGenerateRequest,
+  capability: TryOnProviderCapability,
+  sourceImageUrls: string[],
+): TryOnExecutionMode {
+  const requested = body.requestedFidelityMode || "masked_garment_tryon";
+  const allowDegrade = body.allowDegrade !== false;
+  const hasPatternImage = Boolean(body.patternImageUrl || sourceImageUrls[0]);
+  const hasMask = Boolean((body.params as Record<string, unknown> | undefined)?.garmentRegionMaskUrl);
+  const canMasked =
+    requested === "masked_garment_tryon" &&
+    hasPatternImage &&
+    hasMask &&
+    capability.supportsGarmentTryOn &&
+    capability.supportsMask;
+  const canReference =
+    hasPatternImage &&
+    (capability.supportsImageReference || capability.supportsImageEdit || capability.supportsMultiImageInput);
+  const warnings: string[] = [];
+
+  if (canMasked) {
+    return {
+      fidelityMode: "masked_garment_tryon",
+      referenceMode: "masked_tryon",
+      patternReferenceUsed: true,
+      maskUsed: true,
+      isProductionReady: false,
+      warnings: ["高保真试穿结果仍需后台确认工艺细节后才能进入生产。"],
+      providerCapability: capability,
+      jobId: `tryon-job-${Date.now()}`,
+    };
+  }
+
+  if (canReference && requested !== "approximate") {
+    warnings.push("当前供应商支持真实参考图输入，但未检测到服装区域 mask，结果仅用于设计预览。");
+    return {
+      fidelityMode: "reference_image",
+      referenceMode: "true_image_reference",
+      patternReferenceUsed: true,
+      maskUsed: false,
+      isProductionReady: false,
+      warnings,
+      providerCapability: capability,
+      jobId: `tryon-job-${Date.now()}`,
+    };
+  }
+
+  warnings.push(
+    hasPatternImage
+      ? "当前供应商只支持文生图，印花图不会作为真实图像输入，结果为示意试穿。"
+      : "缺少当前印花图，结果为示意试穿。",
+  );
+  if (!allowDegrade && requested !== "approximate") {
+    return {
+      fidelityMode: "approximate",
+      referenceMode: "prompt_url_only",
+      patternReferenceUsed: false,
+      maskUsed: false,
+      isProductionReady: false,
+      warnings,
+      providerCapability: capability,
+      jobId: `tryon-job-${Date.now()}`,
+      blocked: true,
+    };
+  }
+  return {
+    fidelityMode: "approximate",
+    referenceMode: "prompt_url_only",
+    patternReferenceUsed: false,
+    maskUsed: false,
+    isProductionReady: false,
+    warnings,
+    providerCapability: capability,
+    jobId: `tryon-job-${Date.now()}`,
+  };
+}
+
+function estimateTryOnQualityScores(mode: TryOnExecutionMode, fullBodyRequested: boolean): TryOnQualityScores {
+  const printFidelity =
+    mode.fidelityMode === "masked_garment_tryon" ? 0.8 : mode.fidelityMode === "reference_image" ? 0.6 : 0.35;
+  return {
+    printFidelity,
+    silhouetteFidelity: mode.fidelityMode === "masked_garment_tryon" ? 0.8 : mode.fidelityMode === "reference_image" ? 0.55 : 0.35,
+    fullBody: fullBodyRequested ? 0.75 : 0.45,
+    realism: mode.fidelityMode === "approximate" ? 0.55 : 0.7,
+    bodyProportion: fullBodyRequested ? 0.65 : 0.45,
+    scoreMethod: "rule_placeholder",
+  };
 }
 
 function fallbackMessageForReason(tool: StudioTool, reason: string): string {
@@ -258,6 +396,30 @@ export async function POST(req: Request) {
   try {
     if (model === "gpt-image-2") {
       const image2Config = getGPTImage2Config();
+      const tryOnMode =
+        tool === "pattern-apply"
+          ? resolveTryOnExecutionMode(body, getTryOnProviderCapability(), sourceImageUrls)
+          : undefined;
+      const tryOnQualityScores = tryOnMode
+        ? estimateTryOnQualityScores(tryOnMode, finalPrompt.toLowerCase().includes("full-body") || finalPrompt.toLowerCase().includes("head to toe"))
+        : undefined;
+      if (tryOnMode?.blocked) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "当前高保真试穿条件未满足，请补充版型模板或稍后重试。",
+            fidelityMode: tryOnMode.fidelityMode,
+            referenceMode: tryOnMode.referenceMode,
+            patternReferenceUsed: tryOnMode.patternReferenceUsed,
+            maskUsed: tryOnMode.maskUsed,
+            isProductionReady: false,
+            warnings: tryOnMode.warnings,
+            providerCapability: tryOnMode.providerCapability,
+            jobId: tryOnMode.jobId,
+          },
+          { status: 422 },
+        );
+      }
       if (!IMAGE2_REAL_TOOLS.has(tool)) {
         const reason = tool === "pattern-apply"
           ? "tryon-model-not-configured"
@@ -272,6 +434,15 @@ export async function POST(req: Request) {
           prompt: finalPrompt,
           provider: image2Config.provider,
           model: image2Config.model,
+          fidelityMode: tryOnMode?.fidelityMode,
+          referenceMode: tryOnMode?.referenceMode,
+          patternReferenceUsed: tryOnMode?.patternReferenceUsed,
+          maskUsed: tryOnMode?.maskUsed,
+          isProductionReady: tryOnMode?.isProductionReady,
+          warnings: tryOnMode?.warnings,
+          providerCapability: tryOnMode?.providerCapability,
+          jobId: tryOnMode?.jobId,
+          qualityScores: tryOnQualityScores,
           message: fallbackMessageForReason(tool, reason),
         });
       }
@@ -286,6 +457,15 @@ export async function POST(req: Request) {
           prompt: finalPrompt,
           provider: image2Config.provider,
           model: image2Config.model,
+          fidelityMode: tryOnMode?.fidelityMode,
+          referenceMode: tryOnMode?.referenceMode,
+          patternReferenceUsed: tryOnMode?.patternReferenceUsed,
+          maskUsed: tryOnMode?.maskUsed,
+          isProductionReady: tryOnMode?.isProductionReady,
+          warnings: tryOnMode?.warnings,
+          providerCapability: tryOnMode?.providerCapability,
+          jobId: tryOnMode?.jobId,
+          qualityScores: tryOnQualityScores,
           message: fallbackMessageForReason(tool, "missing-yxai-api-key"),
         });
       }
@@ -331,6 +511,15 @@ export async function POST(req: Request) {
           prompt: finalPrompt,
           provider: image2Config.provider,
           model: image2Config.model,
+          fidelityMode: tryOnMode?.fidelityMode,
+          referenceMode: tryOnMode?.referenceMode,
+          patternReferenceUsed: tryOnMode?.patternReferenceUsed,
+          maskUsed: tryOnMode?.maskUsed,
+          isProductionReady: tryOnMode?.isProductionReady,
+          warnings: tryOnMode?.warnings,
+          providerCapability: tryOnMode?.providerCapability,
+          jobId: tryOnMode?.jobId,
+          qualityScores: tryOnQualityScores,
           message: fallbackMessageForReason(tool, "gpt-image-empty-result"),
         });
       }
@@ -344,8 +533,29 @@ export async function POST(req: Request) {
         isFallback: false,
         provider: image2Config.provider,
         model: image2Config.model,
+        fidelityMode: tryOnMode?.fidelityMode,
+        referenceMode: tryOnMode?.referenceMode,
+        patternReferenceUsed: tryOnMode?.patternReferenceUsed,
+        maskUsed: tryOnMode?.maskUsed,
+        isProductionReady: tryOnMode?.isProductionReady,
+        warnings: tryOnMode?.warnings,
+        providerCapability: tryOnMode?.providerCapability,
+        jobId: tryOnMode?.jobId,
         message: "生成完成",
-        metadata: { role, prompt: finalPrompt, sourceImageUrls },
+        metadata: {
+          role,
+          prompt: finalPrompt,
+          sourceImageUrls,
+          fidelityMode: tryOnMode?.fidelityMode,
+          referenceMode: tryOnMode?.referenceMode,
+          patternReferenceUsed: tryOnMode?.patternReferenceUsed,
+          maskUsed: tryOnMode?.maskUsed,
+          isProductionReady: tryOnMode?.isProductionReady,
+          warnings: tryOnMode?.warnings,
+          providerCapability: tryOnMode?.providerCapability,
+          jobId: tryOnMode?.jobId,
+          qualityScores: tryOnQualityScores,
+        },
         used,
         limit: aiDailyLimit,
       });

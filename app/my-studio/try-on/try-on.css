@@ -272,6 +272,87 @@
   font-size: 12px;
 }
 
+.toFidelityPanel {
+  border-color: rgba(192, 106, 115, 0.18);
+  background: linear-gradient(180deg, rgba(252, 253, 253, 0.98), rgba(248, 244, 242, 0.96));
+}
+
+.toReadinessGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.toReadinessGrid > div {
+  border: 1px solid rgba(35, 74, 88, 0.1);
+  border-radius: 14px;
+  padding: 9px 10px;
+  background: #fff;
+}
+
+.toReadinessGrid span,
+.toReadinessGrid strong {
+  display: block;
+  font-size: 12px;
+}
+
+.toReadinessGrid span {
+  color: #65757c;
+}
+
+.toReadinessGrid strong {
+  margin-top: 3px;
+  color: #234a58;
+}
+
+.toReadinessGrid .is-missing strong {
+  color: #c06a73;
+}
+
+.toModeGroup {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.toModeGroup button {
+  width: 100%;
+  border: 1px solid rgba(35, 74, 88, 0.12);
+  border-radius: 14px;
+  background: #fcfdfd;
+  color: #234a58;
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toModeGroup button span {
+  display: block;
+  margin-top: 4px;
+  color: #8e9aa0;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.toModeGroup button.is-selected {
+  border-color: rgba(192, 106, 115, 0.45);
+  box-shadow: 0 0 0 3px rgba(192, 106, 115, 0.12);
+}
+
+.toModeGroup button:disabled {
+  opacity: 0.58;
+  cursor: not-allowed;
+}
+
+.toFidelityHint {
+  margin: 12px 0 0;
+  color: #9a6269;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
 .toControlPanel {
   display: grid;
   gap: 14px;
@@ -627,6 +708,31 @@
   font-size: 12px;
   font-weight: 600;
   box-shadow: 0 12px 26px rgba(31, 51, 66, 0.12);
+}
+
+.toFidelityBadge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(252, 253, 253, 0.92);
+  color: #234a58;
+  font-size: 12px;
+  font-weight: 700;
+  box-shadow: 0 12px 26px rgba(31, 51, 66, 0.12);
+}
+
+.toFidelityBadge.is-approximate {
+  color: #9a6269;
+}
+
+.toFidelityBadge.is-reference_image {
+  color: #c06a73;
+}
+
+.toFidelityBadge.is-masked_garment_tryon {
+  color: #1d6b58;
 }
 
 .toGeneratingOverlay {

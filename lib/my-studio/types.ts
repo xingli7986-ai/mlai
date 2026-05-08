@@ -48,6 +48,16 @@ export interface StudioAsset {
   tryOnStatus?: StudioTryOnStatus;
   revisionReason?: string;
   tryOnSource?: StudioTryOnSource;
+  fidelityMode?: TryOnFidelityMode;
+  referenceMode?: TryOnReferenceMode;
+  patternReferenceUsed?: boolean;
+  maskUsed?: boolean;
+  isProductionReady?: boolean;
+  fidelityWarnings?: string[];
+  qualityScores?: TryOnQualityScores;
+  sourcePatternTileId?: string;
+  sourceGarmentTemplateId?: string;
+  sourceModelBaseId?: string;
 }
 
 export type StudioFitPreference = "slim" | "regular" | "relaxed";
@@ -83,6 +93,128 @@ export type StudioTryOnSource =
   | "direct-pattern-try-on"
   | "remix-pattern-try-on"
   | "regenerate-fit";
+
+export type TryOnFidelityMode = "approximate" | "reference_image" | "masked_garment_tryon";
+
+export type TryOnReferenceMode = "prompt_url_only" | "true_image_reference" | "masked_tryon";
+
+export type TryOnProviderCapability = {
+  provider: string;
+  model?: string;
+  supportsTextToImage: boolean;
+  supportsImageReference: boolean;
+  supportsImageEdit: boolean;
+  supportsMask: boolean;
+  supportsGarmentTryOn: boolean;
+  supportsPoseControl: boolean;
+  supportsMultiImageInput: boolean;
+  notes?: string[];
+};
+
+export type PatternTileAsset = {
+  id: string;
+  sourcePatternAssetId: string;
+  imageUrl: string;
+  tileUrl?: string;
+  thumbnailUrl?: string;
+  repeatMode: "seamless" | "block" | "placement" | "unknown";
+  scale?: "small" | "medium" | "large";
+  density?: "sparse" | "medium" | "dense";
+  colorProfile?: {
+    palette?: string[];
+    backgroundTone?: string;
+    contrast?: "low" | "medium" | "high";
+  };
+  fidelityReady: boolean;
+  createdAt: string;
+};
+
+export type GarmentTemplateAsset = {
+  id: string;
+  name: string;
+  garmentType: "dress" | "top" | "skirt" | "set";
+  silhouette: "wrap" | "a-line" | "sheath" | "straight" | "fit-and-flare" | "unknown";
+  neckline?: string;
+  sleeveLength?: string;
+  dressLength?: string;
+  waistline?: string;
+  closure?: "wrap-front" | "zipper" | "buttons" | "pullover" | "unknown";
+  templateImageUrl?: string;
+  flatSketchUrl?: string;
+  frontTemplateUrl?: string;
+  backTemplateUrl?: string;
+  garmentRegionMaskUrl?: string;
+  controlImageUrl?: string;
+  poseCompatibility?: string[];
+  fidelityReady: boolean;
+  createdAt: string;
+};
+
+export type ModelBaseAsset = {
+  id: string;
+  bodyProfileSnapshot: StudioBodyProfile;
+  pose: "front_full_body" | "slight_angle_full_body" | "side" | "back";
+  fullBodyImageUrl?: string;
+  segmentationMaskUrl?: string;
+  poseControlUrl?: string;
+  bodyShapeCategory?: string;
+  fidelityReady: boolean;
+  createdAt: string;
+};
+
+export type HighFidelityTryOnJob = {
+  id: string;
+  workId: string;
+  status: "draft" | "queued" | "processing" | "succeeded" | "failed" | "degraded";
+  patternTileAssetId?: string;
+  garmentTemplateAssetId?: string;
+  modelBaseAssetId?: string;
+  bodyProfileSnapshot: StudioBodyProfile;
+  fidelityMode: TryOnFidelityMode;
+  referenceMode: TryOnReferenceMode;
+  provider?: string;
+  model?: string;
+  prompt?: string;
+  negativePrompt?: string;
+  controlInputs?: {
+    patternImageUrl?: string;
+    garmentTemplateUrl?: string;
+    garmentRegionMaskUrl?: string;
+    modelBaseImageUrl?: string;
+    poseControlUrl?: string;
+  };
+  warnings: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type TryOnQualityScores = {
+  printFidelity?: number;
+  silhouetteFidelity?: number;
+  fullBody?: number;
+  realism?: number;
+  bodyProportion?: number;
+  scoreMethod?: "rule_placeholder" | "model_assessment";
+};
+
+export type HighFidelityTryOnAsset = {
+  id: string;
+  imageUrl: string;
+  sourcePatternTileId?: string;
+  sourcePatternAssetId?: string;
+  sourceGarmentTemplateId?: string;
+  sourceModelBaseId?: string;
+  bodyProfileSnapshot: StudioBodyProfile;
+  garmentTemplateSnapshot?: GarmentTemplateAsset;
+  fidelityMode: TryOnFidelityMode;
+  referenceMode: TryOnReferenceMode;
+  patternReferenceUsed: boolean;
+  maskUsed: boolean;
+  isProductionReady: boolean;
+  scores?: TryOnQualityScores;
+  warnings: string[];
+  createdAt: string;
+};
 
 export type StudioPatternSourceType =
   | "ai_generated"
@@ -186,6 +318,12 @@ export interface StudioProductionDraft {
   sleeveLength?: string;
   dressLength?: string;
   customerNote?: string;
+  sourcePatternTileId?: string;
+  sourceGarmentTemplateId?: string;
+  sourceModelBaseId?: string;
+  fidelityMode?: TryOnFidelityMode;
+  isProductionReady?: boolean;
+  fidelityWarnings?: string[];
   sketchStatus: "pending_auto_generation" | "generated_fallback" | "generated" | "not_started";
   techPackStatus: "draft" | "not_started";
   factoryStatus: "not_sent" | "sent";
@@ -297,6 +435,13 @@ export interface StudioWorkAssets {
   sketches: StudioAsset[];
 }
 
+export interface StudioFidelityAssets {
+  patternTiles: PatternTileAsset[];
+  garmentTemplates: GarmentTemplateAsset[];
+  modelBases: ModelBaseAsset[];
+  tryOnJobs: HighFidelityTryOnJob[];
+}
+
 export interface StudioWorkMetadata {
   schema: "studio-work-v1";
   title: string;
@@ -316,6 +461,8 @@ export interface StudioWorkMetadata {
   applicationGenerationGroups: StudioApplicationGenerationGroup[];
   tryOnGenerationGroups: StudioTryOnGenerationGroup[];
   preferenceMemory: StudioPatternPreferenceMemory;
+  fidelityAssets?: StudioFidelityAssets;
+  providerCapabilities?: TryOnProviderCapability[];
   customOrderDraft?: StudioCustomOrderDraft;
   productionDraft?: StudioProductionDraft;
   results: Partial<Record<StudioResultKind, StudioResult>>;
@@ -351,6 +498,8 @@ export interface StudioWorkDTO {
   applicationGenerationGroups: StudioApplicationGenerationGroup[];
   tryOnGenerationGroups: StudioTryOnGenerationGroup[];
   preferenceMemory: StudioPatternPreferenceMemory;
+  fidelityAssets?: StudioFidelityAssets;
+  providerCapabilities?: TryOnProviderCapability[];
   assetCounts: StudioAssetCounts;
   config: StudioWorkConfig;
   bodyProfile: StudioBodyProfile;
@@ -380,6 +529,14 @@ export interface StudioGenerateResponse {
   model?: string;
   metadata?: Record<string, unknown>;
   isFallback?: boolean;
+  fidelityMode?: TryOnFidelityMode;
+  referenceMode?: TryOnReferenceMode;
+  patternReferenceUsed?: boolean;
+  maskUsed?: boolean;
+  isProductionReady?: boolean;
+  warnings?: string[];
+  providerCapability?: TryOnProviderCapability;
+  jobId?: string;
   message?: string;
   error?: string;
   used?: number;

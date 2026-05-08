@@ -1,5 +1,9 @@
 import type { Design } from "@prisma/client";
 import type {
+  GarmentTemplateAsset,
+  HighFidelityTryOnJob,
+  ModelBaseAsset,
+  PatternTileAsset,
   ProductionSheetStatus,
   StudioAsset,
   StudioAssetKind,
@@ -22,6 +26,10 @@ import type {
   StudioTryOnStatus,
   StudioTryOnGenerationGroup,
   StudioTryOnPreviewPreference,
+  TryOnFidelityMode,
+  TryOnProviderCapability,
+  TryOnQualityScores,
+  TryOnReferenceMode,
   StudioWorkAssets,
   StudioWorkConfig,
   StudioWorkDTO,
@@ -170,6 +178,16 @@ export type StudioAssetInput = {
   tryOnStatus?: StudioTryOnStatus;
   revisionReason?: string;
   tryOnSource?: StudioTryOnSource;
+  fidelityMode?: TryOnFidelityMode;
+  referenceMode?: TryOnReferenceMode;
+  patternReferenceUsed?: boolean;
+  maskUsed?: boolean;
+  isProductionReady?: boolean;
+  fidelityWarnings?: string[];
+  qualityScores?: TryOnQualityScores;
+  sourcePatternTileId?: string;
+  sourceGarmentTemplateId?: string;
+  sourceModelBaseId?: string;
 };
 
 const EMPTY_ASSETS: StudioWorkAssets = {
@@ -219,6 +237,13 @@ export function createEmptyStudioMetadata(title: string): StudioWorkMetadata {
     applicationGenerationGroups: [],
     tryOnGenerationGroups: [],
     preferenceMemory: { ...DEFAULT_PATTERN_PREFERENCE_MEMORY },
+    fidelityAssets: {
+      patternTiles: [],
+      garmentTemplates: [],
+      modelBases: [],
+      tryOnJobs: [],
+    },
+    providerCapabilities: [],
     customOrderDraft: undefined,
     productionDraft: undefined,
     results: {},
@@ -458,6 +483,7 @@ export function confirmStudioDesign(
 ): StudioWorkMetadata {
   const now = new Date().toISOString();
   const selectedTemplate = selectedGarmentTemplate(metadata);
+  const selectedTryOn = selectedAsset(metadata, "tryOn");
   const customOrderDraft = normalizeCustomOrderDraft(input?.customOrderDraft, now);
   const productionDraft: StudioProductionDraft = {
     status: "draft",
@@ -473,6 +499,12 @@ export function confirmStudioDesign(
     sleeveLength: input?.config?.sleeveType || metadata.config.sleeveType,
     dressLength: input?.config?.skirtLength || metadata.config.skirtLength,
     customerNote: input?.config?.customerNote || metadata.config.customerNote || input?.note || "",
+    sourcePatternTileId: selectedTryOn?.sourcePatternTileId,
+    sourceGarmentTemplateId: selectedTryOn?.sourceGarmentTemplateId,
+    sourceModelBaseId: selectedTryOn?.sourceModelBaseId,
+    fidelityMode: selectedTryOn?.fidelityMode,
+    isProductionReady: selectedTryOn?.isProductionReady,
+    fidelityWarnings: selectedTryOn?.fidelityWarnings,
     sketchStatus: metadata.selectedAssets.sketchResultId ? "generated" : "pending_auto_generation",
     techPackStatus: "draft",
     factoryStatus: "not_sent",
@@ -552,6 +584,8 @@ export function studioWorkToDTO(design: StudioDesign): StudioWorkDTO {
     applicationGenerationGroups: metadata.applicationGenerationGroups,
     tryOnGenerationGroups: metadata.tryOnGenerationGroups,
     preferenceMemory: metadata.preferenceMemory,
+    fidelityAssets: metadata.fidelityAssets,
+    providerCapabilities: metadata.providerCapabilities,
     bodyProfile: metadata.bodyProfile,
     garmentTemplates: metadata.garmentTemplates,
     assetCounts: {
@@ -671,6 +705,8 @@ function normalizeMetadata(
     applicationGenerationGroups: normalizeApplicationGroups(metadata.applicationGenerationGroups),
     tryOnGenerationGroups: normalizeTryOnGroups(metadata.tryOnGenerationGroups),
     preferenceMemory: normalizePatternPreferenceMemory(metadata.preferenceMemory),
+    fidelityAssets: normalizeFidelityAssets(metadata.fidelityAssets),
+    providerCapabilities: normalizeProviderCapabilities(metadata.providerCapabilities),
     customOrderDraft: normalizeCustomOrderDraft(metadata.customOrderDraft),
     productionDraft: metadata.productionDraft,
     results,
@@ -708,6 +744,16 @@ function createStudioAsset(kind: StudioAssetKind, input: StudioAssetInput): Stud
     tryOnStatus: input.tryOnStatus,
     revisionReason: input.revisionReason,
     tryOnSource: input.tryOnSource,
+    fidelityMode: input.fidelityMode,
+    referenceMode: input.referenceMode,
+    patternReferenceUsed: input.patternReferenceUsed,
+    maskUsed: input.maskUsed,
+    isProductionReady: input.isProductionReady,
+    fidelityWarnings: input.fidelityWarnings,
+    qualityScores: input.qualityScores,
+    sourcePatternTileId: input.sourcePatternTileId,
+    sourceGarmentTemplateId: input.sourceGarmentTemplateId,
+    sourceModelBaseId: input.sourceModelBaseId,
   };
 }
 
@@ -848,6 +894,243 @@ export function selectedGarmentTemplate(metadata: StudioWorkMetadata): StudioGar
     metadata.garmentTemplates.find((item) => item.id === selectedId) ||
     metadata.garmentTemplates[0]
   );
+}
+
+export function ensureFidelityAssets(metadata: StudioWorkMetadata): StudioWorkMetadata {
+  return {
+    ...metadata,
+    fidelityAssets: normalizeFidelityAssets(metadata.fidelityAssets),
+    providerCapabilities: normalizeProviderCapabilities(metadata.providerCapabilities),
+  };
+}
+
+export function ensurePatternTileAsset(
+  metadata: StudioWorkMetadata,
+  selectedPattern = selectedAsset(metadata, "pattern"),
+): { metadata: StudioWorkMetadata; asset?: PatternTileAsset } {
+  if (!selectedPattern?.imageUrl) {
+    return { metadata: ensureFidelityAssets(metadata) };
+  }
+  const next = ensureFidelityAssets(metadata);
+  const existing = next.fidelityAssets?.patternTiles.find(
+    (asset) => asset.sourcePatternAssetId === selectedPattern.id,
+  );
+  if (existing) return { metadata: next, asset: existing };
+
+  const now = new Date().toISOString();
+  const asset: PatternTileAsset = {
+    id: `pattern-tile-${selectedPattern.id}`,
+    sourcePatternAssetId: selectedPattern.id,
+    imageUrl: selectedPattern.imageUrl,
+    tileUrl: selectedPattern.imageUrl,
+    thumbnailUrl: selectedPattern.imageUrl,
+    repeatMode: "unknown",
+    scale: "medium",
+    density: "medium",
+    fidelityReady: true,
+    createdAt: now,
+  };
+  return {
+    metadata: {
+      ...next,
+      fidelityAssets: {
+        ...normalizeFidelityAssets(next.fidelityAssets),
+        patternTiles: [...(next.fidelityAssets?.patternTiles || []), asset],
+      },
+      updatedAt: now,
+    },
+    asset,
+  };
+}
+
+export function ensureGarmentTemplateAsset(
+  metadata: StudioWorkMetadata,
+  selectedTemplate = selectedGarmentTemplate(metadata),
+): { metadata: StudioWorkMetadata; asset?: GarmentTemplateAsset } {
+  if (!selectedTemplate?.id) {
+    return { metadata: ensureFidelityAssets(metadata) };
+  }
+  const next = ensureFidelityAssets(metadata);
+  const existing = next.fidelityAssets?.garmentTemplates.find((asset) => asset.id === selectedTemplate.id);
+  if (existing) return { metadata: next, asset: existing };
+
+  const now = new Date().toISOString();
+  const asset: GarmentTemplateAsset = {
+    id: selectedTemplate.id,
+    name: selectedTemplate.name,
+    garmentType: "dress",
+    silhouette: normalizeTemplateSilhouette(selectedTemplate.silhouette),
+    neckline: selectedTemplate.neckline,
+    sleeveLength: selectedTemplate.sleeve,
+    dressLength: selectedTemplate.skirtLength,
+    waistline: selectedTemplate.waistline,
+    closure: normalizeTemplateClosure(selectedTemplate.closure),
+    poseCompatibility: ["front_full_body", "slight_angle_full_body"],
+    fidelityReady: true,
+    createdAt: now,
+  };
+  return {
+    metadata: {
+      ...next,
+      fidelityAssets: {
+        ...normalizeFidelityAssets(next.fidelityAssets),
+        garmentTemplates: [...(next.fidelityAssets?.garmentTemplates || []), asset],
+      },
+      updatedAt: now,
+    },
+    asset,
+  };
+}
+
+export function ensureModelBaseAsset(
+  metadata: StudioWorkMetadata,
+  bodyProfile: StudioBodyProfile = metadata.bodyProfile,
+): { metadata: StudioWorkMetadata; asset?: ModelBaseAsset } {
+  const next = ensureFidelityAssets(metadata);
+  const key = `${bodyProfile.heightCm || "h"}-${bodyProfile.weightKg || "w"}-${bodyProfile.usualSize || "size"}`;
+  const existing = next.fidelityAssets?.modelBases.find((asset) => asset.id === `model-base-${key}`);
+  if (existing) return { metadata: next, asset: existing };
+
+  const now = new Date().toISOString();
+  const asset: ModelBaseAsset = {
+    id: `model-base-${key}`,
+    bodyProfileSnapshot: { ...DEFAULT_BODY_PROFILE, ...bodyProfile },
+    pose: "front_full_body",
+    bodyShapeCategory: bodyProfile.bodyShape,
+    fidelityReady: Boolean(bodyProfile.heightCm || bodyProfile.weightKg || bodyProfile.usualSize),
+    createdAt: now,
+  };
+  return {
+    metadata: {
+      ...next,
+      fidelityAssets: {
+        ...normalizeFidelityAssets(next.fidelityAssets),
+        modelBases: [...(next.fidelityAssets?.modelBases || []), asset],
+      },
+      updatedAt: now,
+    },
+    asset,
+  };
+}
+
+export function createHighFidelityTryOnJob(
+  metadata: StudioWorkMetadata,
+  input: Partial<HighFidelityTryOnJob> & { workId: string; bodyProfileSnapshot: StudioBodyProfile },
+): { metadata: StudioWorkMetadata; job: HighFidelityTryOnJob } {
+  const next = ensureFidelityAssets(metadata);
+  const now = new Date().toISOString();
+  const job: HighFidelityTryOnJob = {
+    id: input.id || `tryon-job-${Date.now()}`,
+    workId: input.workId,
+    status: input.status || "draft",
+    patternTileAssetId: input.patternTileAssetId,
+    garmentTemplateAssetId: input.garmentTemplateAssetId,
+    modelBaseAssetId: input.modelBaseAssetId,
+    bodyProfileSnapshot: input.bodyProfileSnapshot,
+    fidelityMode: input.fidelityMode || "approximate",
+    referenceMode: input.referenceMode || "prompt_url_only",
+    provider: input.provider,
+    model: input.model,
+    prompt: input.prompt,
+    negativePrompt: input.negativePrompt,
+    controlInputs: input.controlInputs,
+    warnings: input.warnings || [],
+    createdAt: input.createdAt || now,
+    updatedAt: now,
+  };
+  return {
+    metadata: {
+      ...next,
+      fidelityAssets: {
+        ...normalizeFidelityAssets(next.fidelityAssets),
+        tryOnJobs: [...(next.fidelityAssets?.tryOnJobs || []), job],
+      },
+      updatedAt: now,
+    },
+    job,
+  };
+}
+
+export function appendHighFidelityTryOnResult(
+  metadata: StudioWorkMetadata,
+  result: StudioAssetInput & {
+    bodyProfileSnapshot: StudioBodyProfile;
+    garmentTemplateSnapshot?: StudioGarmentTemplate;
+    fidelityMode: TryOnFidelityMode;
+    referenceMode: TryOnReferenceMode;
+  },
+): StudioWorkMetadata {
+  return appendStudioAssets(metadata, "tryOn", [result], {
+    selectFirst: true,
+  }).metadata;
+}
+
+export function getTryOnReadiness(metadata: StudioWorkMetadata): {
+  patternTileReady: boolean;
+  garmentTemplateReady: boolean;
+  modelBaseReady: boolean;
+  maskReady: boolean;
+  providerReady: boolean;
+  canRunMaskedTryOn: boolean;
+  fallbackMode: "reference_image" | "approximate";
+  missing: string[];
+} {
+  const normalized = ensureFidelityAssets(metadata);
+  const pattern = selectedAsset(normalized, "pattern");
+  const template = selectedGarmentTemplate(normalized);
+  const patternTile = pattern
+    ? normalized.fidelityAssets?.patternTiles.find((asset) => asset.sourcePatternAssetId === pattern.id)
+    : undefined;
+  const templateAsset = template
+    ? normalized.fidelityAssets?.garmentTemplates.find((asset) => asset.id === template.id)
+    : undefined;
+  const modelBaseReady = Boolean(
+    normalized.bodyProfile.heightCm || normalized.bodyProfile.weightKg || normalized.bodyProfile.usualSize,
+  );
+  const maskReady = Boolean(templateAsset?.garmentRegionMaskUrl);
+  const capability = normalized.providerCapabilities?.[0];
+  const supportsMasked = Boolean(capability?.supportsGarmentTryOn && capability.supportsMask);
+  const supportsReference = Boolean(
+    capability?.supportsImageReference ||
+      capability?.supportsImageEdit ||
+      capability?.supportsMultiImageInput,
+  );
+  const missing: string[] = [];
+  if (!pattern?.imageUrl && !patternTile?.imageUrl) missing.push("pattern_tile");
+  if (!template) missing.push("garment_template");
+  if (!modelBaseReady) missing.push("model_base");
+  if (!maskReady) missing.push("garment_region_mask");
+  if (!supportsMasked && !supportsReference && !capability?.supportsTextToImage) missing.push("provider");
+
+  return {
+    patternTileReady: Boolean(pattern?.imageUrl || patternTile?.imageUrl),
+    garmentTemplateReady: Boolean(template),
+    modelBaseReady,
+    maskReady,
+    providerReady: Boolean(supportsMasked || supportsReference || capability?.supportsTextToImage),
+    canRunMaskedTryOn: Boolean(pattern?.imageUrl && template && modelBaseReady && maskReady && supportsMasked),
+    fallbackMode: supportsReference ? "reference_image" : "approximate",
+    missing,
+  };
+}
+
+export function estimateTryOnQuality(input: {
+  fidelityMode?: TryOnFidelityMode;
+  fullBodyRequested?: boolean;
+  garmentTemplate?: StudioGarmentTemplate | GarmentTemplateAsset;
+}): TryOnQualityScores {
+  const fidelityMode = input.fidelityMode || "approximate";
+  const printFidelity =
+    fidelityMode === "masked_garment_tryon" ? 0.8 : fidelityMode === "reference_image" ? 0.6 : 0.35;
+  const hasTemplate = Boolean(input.garmentTemplate?.silhouette);
+  return {
+    printFidelity,
+    silhouetteFidelity: hasTemplate ? (fidelityMode === "masked_garment_tryon" ? 0.8 : 0.55) : 0.35,
+    fullBody: input.fullBodyRequested ? 0.75 : 0.45,
+    realism: fidelityMode === "approximate" ? 0.55 : 0.7,
+    bodyProportion: input.fullBodyRequested ? 0.65 : 0.45,
+    scoreMethod: "rule_placeholder",
+  };
 }
 
 function cloneAssets(assets: StudioWorkAssets): StudioWorkAssets {
@@ -1077,6 +1360,53 @@ export function normalizeCustomOrderDraft(
   return draft;
 }
 
+export function normalizeFidelityAssets(value: unknown): NonNullable<StudioWorkMetadata["fidelityAssets"]> {
+  const record = isRecord(value) ? value : {};
+  return {
+    patternTiles: Array.isArray(record.patternTiles) ? record.patternTiles.filter(isPatternTileAsset) : [],
+    garmentTemplates: Array.isArray(record.garmentTemplates) ? record.garmentTemplates.filter(isGarmentTemplateAsset) : [],
+    modelBases: Array.isArray(record.modelBases) ? record.modelBases.filter(isModelBaseAsset) : [],
+    tryOnJobs: Array.isArray(record.tryOnJobs) ? record.tryOnJobs.filter(isHighFidelityTryOnJob) : [],
+  };
+}
+
+export function normalizeProviderCapabilities(value: unknown): TryOnProviderCapability[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(isRecord).map((item) => ({
+    provider: stringValue(item.provider) || "unknown",
+    model: stringValue(item.model),
+    supportsTextToImage: booleanValue(item.supportsTextToImage),
+    supportsImageReference: booleanValue(item.supportsImageReference),
+    supportsImageEdit: booleanValue(item.supportsImageEdit),
+    supportsMask: booleanValue(item.supportsMask),
+    supportsGarmentTryOn: booleanValue(item.supportsGarmentTryOn),
+    supportsPoseControl: booleanValue(item.supportsPoseControl),
+    supportsMultiImageInput: booleanValue(item.supportsMultiImageInput),
+    notes: arrayOfStrings(item.notes),
+  }));
+}
+
+function isPatternTileAsset(value: unknown): value is PatternTileAsset {
+  return (
+    isRecord(value) &&
+    typeof value.id === "string" &&
+    typeof value.sourcePatternAssetId === "string" &&
+    typeof value.imageUrl === "string"
+  );
+}
+
+function isGarmentTemplateAsset(value: unknown): value is GarmentTemplateAsset {
+  return isRecord(value) && typeof value.id === "string" && typeof value.name === "string";
+}
+
+function isModelBaseAsset(value: unknown): value is ModelBaseAsset {
+  return isRecord(value) && typeof value.id === "string" && isRecord(value.bodyProfileSnapshot);
+}
+
+function isHighFidelityTryOnJob(value: unknown): value is HighFidelityTryOnJob {
+  return isRecord(value) && typeof value.id === "string" && typeof value.workId === "string";
+}
+
 export function normalizePatternPreferenceMemory(value: unknown): StudioPatternPreferenceMemory {
   const record = isRecord(value) ? value : {};
   const rawApplicationPreview = isRecord(record.applicationPreview) ? record.applicationPreview : {};
@@ -1144,6 +1474,29 @@ function numberValue(value: unknown): number | undefined {
     if (Number.isFinite(parsed) && parsed > 0) return parsed;
   }
   return undefined;
+}
+
+function normalizeTemplateSilhouette(value: unknown): GarmentTemplateAsset["silhouette"] {
+  const text = stringValue(value).toLowerCase();
+  if (text.includes("wrap") || text.includes("裹")) return "wrap";
+  if (text.includes("a-line") || text.includes("a 字") || text.includes("a字")) return "a-line";
+  if (text.includes("sheath") || text.includes("修身")) return "sheath";
+  if (text.includes("straight") || text.includes("直筒") || text.includes("直身")) return "straight";
+  if (text.includes("fit") || text.includes("收腰")) return "fit-and-flare";
+  return "unknown";
+}
+
+function normalizeTemplateClosure(value: unknown): GarmentTemplateAsset["closure"] {
+  const text = stringValue(value).toLowerCase();
+  if (text.includes("wrap") || text.includes("系带") || text.includes("裹")) return "wrap-front";
+  if (text.includes("zip") || text.includes("拉链")) return "zipper";
+  if (text.includes("button") || text.includes("纽扣")) return "buttons";
+  if (text.includes("套头") || text.includes("pullover")) return "pullover";
+  return "unknown";
+}
+
+function booleanValue(value: unknown): boolean {
+  return value === true || value === "true" || value === 1 || value === "1";
 }
 
 function arrayOfStrings(value: unknown): string[] {

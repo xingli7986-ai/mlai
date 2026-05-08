@@ -15,6 +15,7 @@ import type {
   StudioGarmentTemplate,
   StudioTryOnGenerationGroup,
   StudioTryOnPreviewPreference,
+  TryOnFidelityMode,
   StudioWorkDTO,
 } from "@/lib/my-studio/types";
 import "./try-on.css";
@@ -72,10 +73,11 @@ const DEFAULT_TRY_ON_PREFERENCE: StudioTryOnPreviewPreference = {
 };
 
 const TRY_ON_GENERATION_STAGES = [
-  "正在读取当前印花",
-  "正在匹配身材比例",
-  "正在套用所选版型",
-  "正在生成全身上身效果",
+  "正在准备印花平铺图",
+  "正在匹配版型模板",
+  "正在生成服装区域",
+  "正在合成高保真试穿图",
+  "正在保存数字资产",
 ];
 
 export default function TryOnPage() {
@@ -92,6 +94,7 @@ export default function TryOnPage() {
   const [framing, setFraming] = useState<Framing>(DEFAULT_TRY_ON_PREFERENCE.framing);
   const [bodyProfile, setBodyProfile] = useState<StudioBodyProfile>({ ...DEFAULT_BODY_PROFILE });
   const [selectedTemplateId, setSelectedTemplateId] = useState(DEFAULT_GARMENT_TEMPLATES[0]?.id || "");
+  const [requestedFidelityMode, setRequestedFidelityMode] = useState<TryOnFidelityMode>("masked_garment_tryon");
   const [showRevision, setShowRevision] = useState(false);
   const [revisionReason, setRevisionReason] = useState("");
   const [generating, setGenerating] = useState(false);
@@ -195,6 +198,12 @@ export default function TryOnPage() {
   const hasSelectedTryOn = Boolean(selectedTryOn);
   const bodyReady = Boolean(bodyProfile.heightCm && bodyProfile.weightKg);
   const canGenerate = Boolean(selectedPattern && selectedTemplate && bodyReady);
+  const readiness = useMemo(
+    () => buildTryOnReadiness(Boolean(selectedPattern?.imageUrl), Boolean(selectedTemplate), bodyReady),
+    [selectedPattern?.imageUrl, selectedTemplate, bodyReady],
+  );
+  const canRunRequestedMode =
+    canGenerate && (requestedFidelityMode !== "masked_garment_tryon" || readiness.canRunMaskedTryOn);
   const nextHref = `/my-studio/confirm-design?workId=${encodeURIComponent(workId)}`;
   const digitalAssetsHref = "/my-studio#my-design-works";
 
@@ -231,6 +240,10 @@ export default function TryOnPage() {
       setError("请先填写身高和体重，再生成我的上身效果图。");
       return;
     }
+    if (requestedFidelityMode === "masked_garment_tryon" && !readiness.canRunMaskedTryOn) {
+      setError("高保真试穿条件未满足，请切换为快速示意试穿，或等待版型模板和服装区域素材补齐。");
+      return;
+    }
     setGenerating(true);
     setError("");
     const groupId = `tryon-${Date.now()}`;
@@ -259,6 +272,8 @@ export default function TryOnPage() {
           workId,
           patternAssetId: selectedPattern.id,
           patternImageUrl: selectedPattern.imageUrl,
+          requestedFidelityMode,
+          allowDegrade: requestedFidelityMode !== "masked_garment_tryon",
           bodyProfile: profileForGeneration,
           garmentTemplate: selectedTemplate,
           fitPreference: profileForGeneration.fitPreference,
@@ -271,6 +286,8 @@ export default function TryOnPage() {
             workId,
             patternAssetId: selectedPattern.id,
             patternImageUrl: selectedPattern.imageUrl,
+            requestedFidelityMode,
+            allowDegrade: requestedFidelityMode !== "masked_garment_tryon",
             bodyProfile: profileForGeneration,
             garmentTemplate: selectedTemplate,
             fitPreference: profileForGeneration.fitPreference,
@@ -312,6 +329,15 @@ export default function TryOnPage() {
         tryOnPreview: currentPreference,
       };
       const displayLabels = tryOnLabelParts(currentPreference);
+      const fidelityMode = data.fidelityMode || (data.isFallback ? "approximate" : requestedFidelityMode);
+      const referenceMode = data.referenceMode || (fidelityMode === "masked_garment_tryon" ? "masked_tryon" : fidelityMode === "reference_image" ? "true_image_reference" : "prompt_url_only");
+      const metadataRecord = isRecord(data.metadata) ? data.metadata : {};
+      const fidelityWarnings = Array.isArray(data.warnings)
+        ? data.warnings
+        : Array.isArray(metadataRecord.warnings)
+          ? metadataRecord.warnings.filter((item): item is string => typeof item === "string")
+          : [];
+      const qualityScores = isRecord(metadataRecord.qualityScores) ? metadataRecord.qualityScores : undefined;
       const saveRes = await fetch(`/api/my-studio/works/${encodeURIComponent(workId)}/results`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -330,6 +356,13 @@ export default function TryOnPage() {
           fitPreference: profileForGeneration.fitPreference,
           revisionReason: nextRevisionReason,
           tryOnSource,
+          fidelityMode,
+          referenceMode,
+          patternReferenceUsed: Boolean(data.patternReferenceUsed),
+          maskUsed: Boolean(data.maskUsed),
+          isProductionReady: Boolean(data.isProductionReady),
+          fidelityWarnings,
+          qualityScores,
           sourcePatternResultId: selectedPattern.id,
           groupId,
           selectFirst: true,
@@ -340,6 +373,13 @@ export default function TryOnPage() {
             bodyProfile: profileForGeneration,
             garmentTemplate: selectedTemplate,
             revisionReason: nextRevisionReason,
+            fidelityMode,
+            referenceMode,
+            patternReferenceUsed: Boolean(data.patternReferenceUsed),
+            maskUsed: Boolean(data.maskUsed),
+            isProductionReady: Boolean(data.isProductionReady),
+            fidelityWarnings,
+            qualityScores,
           },
           params: {
             sourcePatternResultId: selectedPattern.id,
@@ -375,6 +415,13 @@ export default function TryOnPage() {
             revisionReason: nextRevisionReason,
             tryOnSource,
             tryOnStatus: data.isFallback ? "fallback" : "generated",
+            fidelityMode,
+            referenceMode,
+            patternReferenceUsed: Boolean(data.patternReferenceUsed),
+            maskUsed: Boolean(data.maskUsed),
+            isProductionReady: Boolean(data.isProductionReady),
+            fidelityWarnings,
+            qualityScores,
             groupId,
             params: {
               sourcePatternResultId: selectedPattern.id,
@@ -395,6 +442,13 @@ export default function TryOnPage() {
               garmentTemplateSnapshot: selectedTemplate,
               garmentStructure,
               revisionReason: nextRevisionReason,
+              fidelityMode,
+              referenceMode,
+              patternReferenceUsed: Boolean(data.patternReferenceUsed),
+              maskUsed: Boolean(data.maskUsed),
+              isProductionReady: Boolean(data.isProductionReady),
+              fidelityWarnings,
+              qualityScores,
             },
           })),
         }),
@@ -540,6 +594,46 @@ export default function TryOnPage() {
                 </div>
               </section>
 
+              <section className="toPanel toFidelityPanel">
+                <div className="toPanelHead">
+                  <div>
+                    <p className="toEyebrow">高保真试穿准备</p>
+                    <h2>生成模式</h2>
+                    <p>高保真需要印花、版型模板、模特体型和服装区域都准备好；条件不足时会降级为示意试穿。</p>
+                  </div>
+                </div>
+                <div className="toReadinessGrid">
+                  <ReadinessItem label="印花平铺图" ready={readiness.patternTileReady} />
+                  <ReadinessItem label="版型模板" ready={readiness.garmentTemplateReady} />
+                  <ReadinessItem label="模特体型" ready={readiness.modelBaseReady} />
+                  <ReadinessItem label="服装区域" ready={readiness.maskReady} />
+                </div>
+                <div className="toModeGroup" role="radiogroup" aria-label="试穿模式">
+                  <button
+                    type="button"
+                    className={requestedFidelityMode === "masked_garment_tryon" ? "is-selected" : ""}
+                    disabled={!readiness.canRunMaskedTryOn}
+                    onClick={() => setRequestedFidelityMode("masked_garment_tryon")}
+                  >
+                    高保真试穿
+                    <span>{readiness.canRunMaskedTryOn ? "推荐" : "素材待补齐"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={requestedFidelityMode === "approximate" ? "is-selected" : ""}
+                    onClick={() => setRequestedFidelityMode("approximate")}
+                  >
+                    快速示意试穿
+                    <span>可先预览整体感觉</span>
+                  </button>
+                </div>
+                {!readiness.canRunMaskedTryOn && (
+                  <p className="toFidelityHint">
+                    当前结果用于设计预览，印花位置和细节仍可能存在偏差。
+                  </p>
+                )}
+              </section>
+
               <section className="toPanel toBodyPanel">
                 <div className="toPanelHead">
                   <div>
@@ -665,7 +759,7 @@ export default function TryOnPage() {
                 >
                   下一步：开始定制
                 </button>
-                <button type="button" className="toRegenerateButton" disabled={generating || !canGenerate} onClick={() => generateTryOn()}>
+                <button type="button" className="toRegenerateButton" disabled={generating || !canRunRequestedMode} onClick={() => generateTryOn()}>
                   {generating ? TRY_ON_GENERATION_STAGES[generationStage] : tryOnAssets.length > 0 ? "重新生成我的上身效果图" : "生成我的上身效果图"}
                 </button>
                 {hasSelectedTryOn && (
@@ -705,7 +799,7 @@ export default function TryOnPage() {
                     <button
                       type="button"
                       className="toRegenerateButton"
-                      disabled={!revisionReason || generating || !canGenerate}
+                      disabled={!revisionReason || generating || !canRunRequestedMode}
                       onClick={() => generateTryOn(revisionReason)}
                     >
                       按这个调整重新生成
@@ -735,6 +829,11 @@ export default function TryOnPage() {
               <div className={`toPreviewCanvas${hasSelectedTryOn ? " is-selected" : ""}${generating ? " is-generating" : ""}`}>
                 <img src={previewImage} alt={hasSelectedTryOn ? "当前上身效果图" : "上身效果占位图"} />
                 {hasSelectedTryOn && !generating && <span className="toSelectedFlag">当前上身效果</span>}
+                {previewAsset && !generating && (
+                  <span className={`toFidelityBadge is-${readTryOnFidelityMode(previewAsset)}`}>
+                    {tryOnFidelityLabel(previewAsset)}
+                  </span>
+                )}
                 {generating && (
                   <div className="toGeneratingOverlay" aria-live="polite">
                     <div className="toGeneratingFigure" aria-hidden="true">
@@ -757,7 +856,7 @@ export default function TryOnPage() {
 
               <div className="toPreviewCaption">
                 <strong>{previewAsset ? tryOnSummary(previewAsset) : "生成后可在右侧选择当前上身效果"}</strong>
-                <span>AI 虚拟试穿仅供设计参考，实际成衣以最终工艺和面料为准。</span>
+                <span>{previewAsset ? tryOnFidelityNotice(previewAsset) : "AI 虚拟试穿仅供设计参考，实际成衣以最终工艺和面料为准。"}</span>
               </div>
 
               <div className="toThumbStrip" aria-label="最近虚拟试穿缩略图">
@@ -854,6 +953,15 @@ function OptionGroup({
   );
 }
 
+function ReadinessItem({ label, ready }: { label: string; ready: boolean }) {
+  return (
+    <div className={ready ? "is-ready" : "is-missing"}>
+      <span>{label}</span>
+      <strong>{ready ? "已准备" : "待准备"}</strong>
+    </div>
+  );
+}
+
 function BodyInput({
   label,
   value,
@@ -908,7 +1016,7 @@ function TryOnRailThumb({
           当前
         </span>
       )}
-      {asset.isFallback && <em>示例</em>}
+      <em>{tryOnFidelityLabel(asset)}</em>
       <small>
         {asset.garmentTemplateSnapshot?.name || "已保存版型"}
         <br />
@@ -916,6 +1024,49 @@ function TryOnRailThumb({
       </small>
     </button>
   );
+}
+
+function buildTryOnReadiness(hasPattern: boolean, hasTemplate: boolean, bodyReady: boolean) {
+  const maskReady = false;
+  return {
+    patternTileReady: hasPattern,
+    garmentTemplateReady: hasTemplate,
+    modelBaseReady: bodyReady,
+    maskReady,
+    providerReady: true,
+    canRunMaskedTryOn: hasPattern && hasTemplate && bodyReady && maskReady,
+  };
+}
+
+function readTryOnFidelityMode(asset: StudioAsset): TryOnFidelityMode {
+  if (
+    asset.fidelityMode === "masked_garment_tryon" ||
+    asset.fidelityMode === "reference_image" ||
+    asset.fidelityMode === "approximate"
+  ) {
+    return asset.fidelityMode;
+  }
+  return asset.isFallback ? "approximate" : "approximate";
+}
+
+function tryOnFidelityLabel(asset: StudioAsset): string {
+  if (asset.isFallback) return "示例预览";
+  const mode = readTryOnFidelityMode(asset);
+  if (mode === "masked_garment_tryon") return "高保真试穿";
+  if (mode === "reference_image") return "参考图试穿";
+  return "示意试穿";
+}
+
+function tryOnFidelityNotice(asset: StudioAsset): string {
+  const mode = readTryOnFidelityMode(asset);
+  if (mode === "masked_garment_tryon") {
+    return "已使用印花、版型和服装区域生成高保真试穿，生产前仍需后台确认工艺细节。";
+  }
+  return "当前结果用于设计预览，印花位置和细节仍可能存在偏差。";
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
 function buildTryOnPrompt(
