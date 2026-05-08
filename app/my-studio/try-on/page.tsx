@@ -71,6 +71,13 @@ const DEFAULT_TRY_ON_PREFERENCE: StudioTryOnPreviewPreference = {
   framing: "full-body",
 };
 
+const TRY_ON_GENERATION_STAGES = [
+  "正在读取当前印花",
+  "正在匹配身材比例",
+  "正在套用所选版型",
+  "正在生成全身上身效果",
+];
+
 export default function TryOnPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -88,6 +95,7 @@ export default function TryOnPage() {
   const [showRevision, setShowRevision] = useState(false);
   const [revisionReason, setRevisionReason] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [generationStage, setGenerationStage] = useState(0);
   const [selectingId, setSelectingId] = useState("");
   const [error, setError] = useState("");
 
@@ -134,6 +142,18 @@ export default function TryOnPage() {
       alive = false;
     };
   }, [workId]);
+
+  useEffect(() => {
+    if (!generating) {
+      setGenerationStage(0);
+      return;
+    }
+    setGenerationStage(0);
+    const timer = window.setInterval(() => {
+      setGenerationStage((stage) => Math.min(stage + 1, TRY_ON_GENERATION_STAGES.length - 1));
+    }, 1800);
+    return () => window.clearInterval(timer);
+  }, [generating]);
 
   const selectedPattern = useMemo(() => {
     const selectedId = work?.selectedAssets.patternResultId;
@@ -225,6 +245,7 @@ export default function TryOnPage() {
     try {
       const persistedWork = await patchWorkSettings(profileForGeneration, selectedTemplate);
       const prompt = buildTryOnPrompt(persistedWork, selectedPattern, currentPreference, profileForGeneration, selectedTemplate, nextRevisionReason);
+      const garmentStructure = garmentStructureSnapshot(selectedTemplate);
       const tryOnSource: "direct-pattern-try-on" | "remix-pattern-try-on" | "regenerate-fit" = nextRevisionReason
         ? "regenerate-fit"
         : selectedPattern.source?.type?.includes("remix")
@@ -255,14 +276,26 @@ export default function TryOnPage() {
             fitPreference: profileForGeneration.fitPreference,
             revisionReason: nextRevisionReason,
             sourcePatternResultId: selectedPattern.id,
+            skirtType: selectedTemplate.name,
+            placement: "full",
+            scale: "preserve original print scale and density",
+            fabricName: "exact selected floral print fabric",
+            shotType: "full-body",
+            garmentStructure,
+            strictPatternReference: true,
             garmentType: persistedWork.config.garmentType,
             silhouette: selectedTemplate.silhouette,
+            neckline: selectedTemplate.neckline,
+            waist: selectedTemplate.waistline,
+            closure: selectedTemplate.closure,
+            sleeveLength: selectedTemplate.sleeve,
+            dressLength: selectedTemplate.skirtLength,
             occasion: persistedWork.config.occasion,
             size: profileForGeneration.usualSize || persistedWork.config.size,
             tryOnPreview: currentPreference,
           },
           count: 4,
-          size: "3:4",
+          size: "2:3",
         }),
       });
       const data = (await res.json()) as StudioGenerateResponse;
@@ -313,15 +346,18 @@ export default function TryOnPage() {
             patternAssetId: selectedPattern.id,
             bodyProfile: profileForGeneration,
             garmentTemplate: selectedTemplate,
+            garmentStructure,
             fitPreference: profileForGeneration.fitPreference,
             revisionReason: nextRevisionReason,
             tryOnPreview: currentPreference,
+            shotType: "full-body",
           },
           metadata: {
             ...data.metadata,
             displayLabels,
             bodyProfileSnapshot: profileForGeneration,
             garmentTemplateSnapshot: selectedTemplate,
+            garmentStructure,
             revisionReason: nextRevisionReason,
           },
           assets: images.map((imageUrl, index) => ({
@@ -345,16 +381,19 @@ export default function TryOnPage() {
               patternAssetId: selectedPattern.id,
               bodyProfile: profileForGeneration,
               garmentTemplate: selectedTemplate,
+              garmentStructure,
               fitPreference: profileForGeneration.fitPreference,
               revisionReason: nextRevisionReason,
               tryOnPreview: currentPreference,
               resultIndex: index,
+              shotType: "full-body",
             },
             metadata: {
               ...data.metadata,
               displayLabels,
               bodyProfileSnapshot: profileForGeneration,
               garmentTemplateSnapshot: selectedTemplate,
+              garmentStructure,
               revisionReason: nextRevisionReason,
             },
           })),
@@ -627,7 +666,7 @@ export default function TryOnPage() {
                   下一步：开始定制
                 </button>
                 <button type="button" className="toRegenerateButton" disabled={generating || !canGenerate} onClick={() => generateTryOn()}>
-                  {generating ? "正在生成..." : tryOnAssets.length > 0 ? "重新生成我的上身效果图" : "生成我的上身效果图"}
+                  {generating ? TRY_ON_GENERATION_STAGES[generationStage] : tryOnAssets.length > 0 ? "重新生成我的上身效果图" : "生成我的上身效果图"}
                 </button>
                 {hasSelectedTryOn && (
                   <button type="button" className="toRevisionToggle" onClick={() => setShowRevision((value) => !value)}>
@@ -693,9 +732,27 @@ export default function TryOnPage() {
                 </button>
               </div>
 
-              <div className={`toPreviewCanvas${hasSelectedTryOn ? " is-selected" : ""}`}>
+              <div className={`toPreviewCanvas${hasSelectedTryOn ? " is-selected" : ""}${generating ? " is-generating" : ""}`}>
                 <img src={previewImage} alt={hasSelectedTryOn ? "当前上身效果图" : "上身效果占位图"} />
-                {hasSelectedTryOn && <span className="toSelectedFlag">当前上身效果</span>}
+                {hasSelectedTryOn && !generating && <span className="toSelectedFlag">当前上身效果</span>}
+                {generating && (
+                  <div className="toGeneratingOverlay" aria-live="polite">
+                    <div className="toGeneratingFigure" aria-hidden="true">
+                      <span />
+                    </div>
+                    <div className="toGeneratingCopy">
+                      <strong>{TRY_ON_GENERATION_STAGES[generationStage]}</strong>
+                      <p>系统正在锁定当前印花、身材比例和所选版型，生成全身上身效果。</p>
+                      <ol>
+                        {TRY_ON_GENERATION_STAGES.map((stage, index) => (
+                          <li key={stage} className={index <= generationStage ? "is-active" : ""}>
+                            {stage}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="toPreviewCaption">
@@ -735,7 +792,13 @@ export default function TryOnPage() {
                 <span>{historyGroups.length} 组 / {tryOnAssets.length} 张</span>
               </div>
               <div className="toRailList">
-                {historyThumbs.length === 0 ? (
+                {generating && (
+                  <div className="toRailGenerating" aria-live="polite">
+                    <span />
+                    <small>生成中，即将出现在这里</small>
+                  </div>
+                )}
+                {historyThumbs.length === 0 && !generating ? (
                   <div className="toRailEmpty">
                     <img src={EMPTY_HISTORY_IMAGE} alt="" />
                     <span>暂无历史</span>
@@ -863,19 +926,40 @@ function buildTryOnPrompt(
   garmentTemplate: StudioGarmentTemplate,
   revisionReason?: string,
 ): string {
+  const garmentStructure = garmentStructureSnapshot(garmentTemplate);
+  const isWrapDress = garmentTemplate.id === "wrap-dress" || /wrap/i.test(garmentTemplate.name) || garmentTemplate.closure?.includes("系带");
   return [
     "Create refined premium womenswear virtual fitting preview images for MaxLuLu AI.",
-    `Use the selected print as the exact fabric pattern. Pattern asset id for reference only: ${pattern.id}.`,
-    "Preserve the print color palette and motif distribution. Do not invent a different print.",
-    `Apply the print to the selected dress silhouette: ${garmentTemplate.name}, ${garmentTemplate.silhouette}. Neckline: ${garmentTemplate.neckline || "follow template"}; sleeve: ${garmentTemplate.sleeve || "follow template"}; skirt length: ${garmentTemplate.skirtLength || "follow template"}; waistline: ${garmentTemplate.waistline || "follow template"}.`,
+    `Use the selected print image URL as the exact fabric print reference: ${pattern.imageUrl}.`,
+    "The selected print is not mood-board inspiration. It is the exact textile print to place on the garment.",
+    "Preserve original floral layout, preserve density, preserve color balance, preserve background tone, preserve motif scale, and preserve motif distribution.",
+    "Do not reinterpret the selected print into a different print. Do not invent new flowers, new colors, or a different background.",
+    `Apply the print to this exact selected garment template: ${garmentTemplate.name}.`,
+    `Garment structure must be followed exactly: silhouette=${garmentStructure.silhouette}; neckline=${garmentStructure.neckline}; waist=${garmentStructure.waist}; closure=${garmentStructure.closure}; sleeveLength=${garmentStructure.sleeveLength}; dressLength=${garmentStructure.dressLength}.`,
+    isWrapDress
+      ? "This is a wrap dress, not an A-line dress. Show wrap-front construction, overlapping front panels, visible waist tie, and a V neckline. Do not replace with an A-line silhouette."
+      : "",
     `Garment context: ${work.config.garmentType || "dress"}; occasion: ${work.config.occasion || "daily"}; size: ${bodyProfile.usualSize || work.config.size || "M"}; fit preference: ${fitLabel(bodyProfile.fitPreference)}.`,
     `Body proportion should match: height ${bodyProfile.heightCm || "unknown"}cm, weight ${bodyProfile.weightKg || "unknown"}kg, shoulder ${bodyProfile.shoulderCm || "unknown"}cm, bust ${bodyProfile.bustCm || "unknown"}cm, waist ${bodyProfile.waistCm || "unknown"}cm, hip ${bodyProfile.hipCm || "unknown"}cm.`,
     `Virtual fitting style: ${tryOnLabelParts(preference).join(" / ")}.`,
     revisionReason ? `Regenerate because the user said: ${revisionReason}. Keep the same selected print unless the garment template changed.` : "",
+    "Output must be full-body, head to toe, both feet visible, vertical fashion composition, 2:3 fashion editorial framing.",
+    "Do not crop at the waist, knees, ankles, or shoes. Keep the entire model and full dress visible.",
     "Show a wearable garment preview for a consumer to judge overall style, proportion and mood.",
     "Generate a model wearing the garment. Do not change the selected dress silhouette unless garmentTemplate changed.",
     "No text, no logo, no watermark, no technical sheet, no line sketch.",
   ].filter(Boolean).join("\n");
+}
+
+function garmentStructureSnapshot(garmentTemplate: StudioGarmentTemplate) {
+  return {
+    silhouette: garmentTemplate.silhouette || "follow selected template",
+    neckline: garmentTemplate.neckline || "follow selected template",
+    waist: garmentTemplate.waistline || "follow selected template",
+    closure: garmentTemplate.closure || (garmentTemplate.id === "wrap-dress" ? "wrap-front side waist tie closure" : "follow selected template"),
+    sleeveLength: garmentTemplate.sleeve || "follow selected template",
+    dressLength: garmentTemplate.skirtLength || "follow selected template",
+  };
 }
 
 function tryOnLabelParts(preference: StudioTryOnPreviewPreference): string[] {

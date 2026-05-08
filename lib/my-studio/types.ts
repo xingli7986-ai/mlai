@@ -74,6 +74,7 @@ export interface StudioGarmentTemplate {
   sleeve?: string;
   skirtLength?: string;
   waistline?: string;
+  closure?: string;
 }
 
 export type StudioTryOnStatus = "generated" | "selected" | "fallback";

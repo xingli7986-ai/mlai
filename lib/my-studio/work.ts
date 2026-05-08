@@ -71,6 +71,7 @@ export const DEFAULT_GARMENT_TEMPLATES: StudioGarmentTemplate[] = [
     sleeve: "短袖",
     skirtLength: "中长",
     waistline: "自然腰线",
+    closure: "后中隐形拉链",
   },
   {
     id: "commute-dress",
@@ -80,6 +81,7 @@ export const DEFAULT_GARMENT_TEMPLATES: StudioGarmentTemplate[] = [
     sleeve: "短袖",
     skirtLength: "中长",
     waistline: "微收腰",
+    closure: "后中隐形拉链",
   },
   {
     id: "wrap-dress",
@@ -89,6 +91,7 @@ export const DEFAULT_GARMENT_TEMPLATES: StudioGarmentTemplate[] = [
     sleeve: "七分袖",
     skirtLength: "中长",
     waistline: "收腰",
+    closure: "裹身前片交叠，侧腰系带",
   },
   {
     id: "tea-dress",
@@ -98,6 +101,7 @@ export const DEFAULT_GARMENT_TEMPLATES: StudioGarmentTemplate[] = [
     sleeve: "短袖",
     skirtLength: "中长",
     waistline: "自然腰线",
+    closure: "后中隐形拉链",
   },
   {
     id: "slim-knit-dress",
@@ -107,6 +111,7 @@ export const DEFAULT_GARMENT_TEMPLATES: StudioGarmentTemplate[] = [
     sleeve: "长袖",
     skirtLength: "中长",
     waistline: "贴合腰线",
+    closure: "套头针织结构",
   },
   {
     id: "straight-dress",
@@ -116,6 +121,7 @@ export const DEFAULT_GARMENT_TEMPLATES: StudioGarmentTemplate[] = [
     sleeve: "短袖",
     skirtLength: "中长",
     waistline: "宽松腰线",
+    closure: "套头直筒结构",
   },
 ];
 
@@ -931,6 +937,7 @@ export function normalizeGarmentTemplates(value: unknown): StudioGarmentTemplate
           sleeve: stringValue(item.sleeve) || undefined,
           skirtLength: stringValue(item.skirtLength) || undefined,
           waistline: stringValue(item.waistline) || undefined,
+          closure: stringValue(item.closure) || undefined,
         };
         return template;
       }).filter((item): item is StudioGarmentTemplate => Boolean(item))

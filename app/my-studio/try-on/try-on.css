@@ -612,6 +612,10 @@
   border-color: rgba(192, 106, 115, 0.36);
 }
 
+.toPreviewCanvas.is-generating {
+  border-color: rgba(200, 168, 117, 0.38);
+}
+
 .toSelectedFlag {
   position: absolute;
   top: 16px;
@@ -623,6 +627,112 @@
   font-size: 12px;
   font-weight: 600;
   box-shadow: 0 12px 26px rgba(31, 51, 66, 0.12);
+}
+
+.toGeneratingOverlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background:
+    linear-gradient(135deg, rgba(252, 253, 253, 0.88), rgba(250, 247, 244, 0.68)),
+    rgba(252, 253, 253, 0.52);
+  backdrop-filter: blur(5px);
+}
+
+.toGeneratingFigure {
+  position: relative;
+  width: min(300px, 44%);
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border: 1px solid rgba(35, 74, 88, 0.1);
+  border-radius: 26px;
+  background:
+    linear-gradient(90deg, rgba(252, 253, 253, 0.05), rgba(255, 255, 255, 0.78), rgba(252, 253, 253, 0.05)),
+    linear-gradient(180deg, rgba(35, 74, 88, 0.1), rgba(192, 106, 115, 0.16));
+  box-shadow: 0 24px 54px rgba(31, 51, 66, 0.16);
+}
+
+.toGeneratingFigure::before {
+  content: "";
+  position: absolute;
+  inset: 14% 26% 8%;
+  border-radius: 45% 45% 20% 20%;
+  background:
+    radial-gradient(circle at 50% 8%, rgba(35, 74, 88, 0.22) 0 10%, transparent 11%),
+    linear-gradient(160deg, rgba(192, 106, 115, 0.38), rgba(200, 168, 117, 0.22));
+  clip-path: polygon(38% 0, 62% 0, 72% 28%, 88% 100%, 12% 100%, 28% 28%);
+}
+
+.toGeneratingFigure span {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.62), transparent);
+  animation: toShimmer 1.55s ease-in-out infinite;
+}
+
+.toGeneratingCopy {
+  position: absolute;
+  right: 28px;
+  bottom: 28px;
+  left: 28px;
+  display: grid;
+  gap: 12px;
+  max-width: 520px;
+  padding: 18px;
+  border: 1px solid rgba(35, 74, 88, 0.1);
+  border-radius: 20px;
+  background: rgba(252, 253, 253, 0.92);
+  box-shadow: 0 18px 44px rgba(31, 51, 66, 0.12);
+}
+
+.toGeneratingCopy strong {
+  color: #234a58;
+  font-family: var(--font-noto-serif-sc, "Noto Serif SC", serif);
+  font-size: 20px;
+}
+
+.toGeneratingCopy p {
+  margin: 0;
+  color: #65757c;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.toGeneratingCopy ol {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.toGeneratingCopy li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #8a989e;
+  font-size: 12px;
+}
+
+.toGeneratingCopy li::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(35, 74, 88, 0.18);
+}
+
+.toGeneratingCopy li.is-active {
+  color: #234a58;
+  font-weight: 600;
+}
+
+.toGeneratingCopy li.is-active::before {
+  background: #c06a73;
+  box-shadow: 0 0 0 5px rgba(192, 106, 115, 0.12);
 }
 
 .toPreviewCaption {
@@ -837,6 +947,57 @@
 .toRailEmpty img {
   width: 48px;
   height: 48px;
+}
+
+.toRailGenerating {
+  position: relative;
+  display: grid;
+  width: 92px;
+  min-height: 126px;
+  place-items: center;
+  gap: 8px;
+  overflow: hidden;
+  padding: 12px 8px;
+  border: 1px solid rgba(200, 168, 117, 0.35);
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(252, 253, 253, 0.96), rgba(246, 241, 238, 0.9));
+  color: #7a6a5c;
+  font-size: 11px;
+  text-align: center;
+  box-shadow: 0 12px 26px rgba(31, 51, 66, 0.08);
+}
+
+.toRailGenerating span {
+  width: 48px;
+  height: 64px;
+  border-radius: 18px 18px 10px 10px;
+  background:
+    linear-gradient(90deg, rgba(252, 253, 253, 0.1), rgba(255, 255, 255, 0.8), rgba(252, 253, 253, 0.1)),
+    rgba(192, 106, 115, 0.2);
+  animation: toPulse 1.25s ease-in-out infinite;
+}
+
+.toRailGenerating small {
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+@keyframes toShimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes toPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @media (max-width: 1240px) {
