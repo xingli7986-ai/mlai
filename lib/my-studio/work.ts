@@ -1,5 +1,6 @@
 import type { Design } from "@prisma/client";
 import type {
+  GarmentImageAsset,
   GarmentTemplateAsset,
   HighFidelityTryOnJob,
   ModelBaseAsset,
@@ -27,6 +28,7 @@ import type {
   StudioTryOnGenerationGroup,
   StudioTryOnPreviewPreference,
   TryOnFidelityMode,
+  ModelBaseSource,
   TryOnProviderCapability,
   TryOnQualityScores,
   TryOnReferenceMode,
@@ -188,6 +190,12 @@ export type StudioAssetInput = {
   sourcePatternTileId?: string;
   sourceGarmentTemplateId?: string;
   sourceModelBaseId?: string;
+  garmentImageAsset?: GarmentImageAsset;
+  modelBaseSource?: ModelBaseSource;
+  tryOnProvider?: "yxai" | "fashn" | "mock";
+  providerJobId?: string;
+  providerResultUrl?: string;
+  persistedImageUrl?: string;
 };
 
 const EMPTY_ASSETS: StudioWorkAssets = {
@@ -237,12 +245,13 @@ export function createEmptyStudioMetadata(title: string): StudioWorkMetadata {
     applicationGenerationGroups: [],
     tryOnGenerationGroups: [],
     preferenceMemory: { ...DEFAULT_PATTERN_PREFERENCE_MEMORY },
-    fidelityAssets: {
-      patternTiles: [],
-      garmentTemplates: [],
-      modelBases: [],
-      tryOnJobs: [],
-    },
+  fidelityAssets: {
+    patternTiles: [],
+    garmentImages: [],
+    garmentTemplates: [],
+    modelBases: [],
+    tryOnJobs: [],
+  },
     providerCapabilities: [],
     customOrderDraft: undefined,
     productionDraft: undefined,
@@ -753,7 +762,13 @@ function createStudioAsset(kind: StudioAssetKind, input: StudioAssetInput): Stud
     qualityScores: input.qualityScores,
     sourcePatternTileId: input.sourcePatternTileId,
     sourceGarmentTemplateId: input.sourceGarmentTemplateId,
-    sourceModelBaseId: input.sourceModelBaseId,
+  sourceModelBaseId: input.sourceModelBaseId,
+    garmentImageAsset: input.garmentImageAsset,
+    modelBaseSource: input.modelBaseSource,
+    tryOnProvider: input.tryOnProvider,
+    providerJobId: input.providerJobId,
+    providerResultUrl: input.providerResultUrl,
+    persistedImageUrl: input.persistedImageUrl,
   };
 }
 
@@ -1031,6 +1046,7 @@ export function createHighFidelityTryOnJob(
     referenceMode: input.referenceMode || "prompt_url_only",
     provider: input.provider,
     model: input.model,
+    providerJobId: input.providerJobId,
     prompt: input.prompt,
     negativePrompt: input.negativePrompt,
     controlInputs: input.controlInputs,
@@ -1097,6 +1113,7 @@ export function getTryOnReadiness(metadata: StudioWorkMetadata): {
       ? "default_template"
       : "missing";
   const capability = normalized.providerCapabilities?.[0];
+  const supportsGarmentTryOn = Boolean(capability?.supportsGarmentTryOn);
   const supportsMasked = Boolean(capability?.supportsGarmentTryOn && capability.supportsMask);
   const supportsReference = Boolean(
     capability?.supportsImageReference ||
@@ -1117,7 +1134,7 @@ export function getTryOnReadiness(metadata: StudioWorkMetadata): {
     maskReady,
     maskSource,
     defaultMaskTemplateId: defaultMaskTemplate?.id,
-    providerReady: Boolean(supportsMasked || supportsReference || capability?.supportsTextToImage),
+    providerReady: Boolean(supportsGarmentTryOn || supportsMasked || supportsReference || capability?.supportsTextToImage),
     canRunMaskedTryOn: Boolean(pattern?.imageUrl && template && modelBaseReady && maskReady && supportsMasked),
     fallbackMode: supportsReference ? "reference_image" : "approximate",
     missing,
@@ -1160,11 +1177,25 @@ export function estimateTryOnQuality(input: {
 }): TryOnQualityScores {
   const fidelityMode = input.fidelityMode || "approximate";
   const printFidelity =
-    fidelityMode === "masked_garment_tryon" ? 0.8 : fidelityMode === "reference_image" ? 0.6 : 0.35;
+    fidelityMode === "garment_tryon_high_quality"
+      ? 0.82
+      : fidelityMode === "garment_tryon"
+        ? 0.72
+        : fidelityMode === "masked_garment_tryon"
+          ? 0.8
+          : fidelityMode === "reference_image"
+            ? 0.6
+            : 0.35;
   const hasTemplate = Boolean(input.garmentTemplate?.silhouette);
   return {
     printFidelity,
-    silhouetteFidelity: hasTemplate ? (fidelityMode === "masked_garment_tryon" ? 0.8 : 0.55) : 0.35,
+    silhouetteFidelity: hasTemplate
+      ? fidelityMode === "garment_tryon_high_quality"
+        ? 0.82
+        : fidelityMode === "garment_tryon" || fidelityMode === "masked_garment_tryon"
+          ? 0.75
+          : 0.55
+      : 0.35,
     fullBody: input.fullBodyRequested ? 0.75 : 0.45,
     realism: fidelityMode === "approximate" ? 0.55 : 0.7,
     bodyProportion: input.fullBodyRequested ? 0.65 : 0.45,
@@ -1403,6 +1434,7 @@ export function normalizeFidelityAssets(value: unknown): NonNullable<StudioWorkM
   const record = isRecord(value) ? value : {};
   return {
     patternTiles: Array.isArray(record.patternTiles) ? record.patternTiles.filter(isPatternTileAsset) : [],
+    garmentImages: Array.isArray(record.garmentImages) ? record.garmentImages.filter(isGarmentImageAsset) : [],
     garmentTemplates: Array.isArray(record.garmentTemplates) ? record.garmentTemplates.filter(isGarmentTemplateAsset) : [],
     modelBases: Array.isArray(record.modelBases) ? record.modelBases.filter(isModelBaseAsset) : [],
     tryOnJobs: Array.isArray(record.tryOnJobs) ? record.tryOnJobs.filter(isHighFidelityTryOnJob) : [],
@@ -1432,6 +1464,10 @@ function isPatternTileAsset(value: unknown): value is PatternTileAsset {
     typeof value.sourcePatternAssetId === "string" &&
     typeof value.imageUrl === "string"
   );
+}
+
+function isGarmentImageAsset(value: unknown): value is GarmentImageAsset {
+  return isRecord(value) && typeof value.id === "string" && typeof value.imageUrl === "string";
 }
 
 function isGarmentTemplateAsset(value: unknown): value is GarmentTemplateAsset {

@@ -94,7 +94,7 @@ export default function TryOnPage() {
   const [framing, setFraming] = useState<Framing>(DEFAULT_TRY_ON_PREFERENCE.framing);
   const [bodyProfile, setBodyProfile] = useState<StudioBodyProfile>({ ...DEFAULT_BODY_PROFILE });
   const [selectedTemplateId, setSelectedTemplateId] = useState(DEFAULT_GARMENT_TEMPLATES[0]?.id || "");
-  const [requestedFidelityMode, setRequestedFidelityMode] = useState<TryOnFidelityMode>("masked_garment_tryon");
+  const [requestedFidelityMode, setRequestedFidelityMode] = useState<TryOnFidelityMode>("garment_tryon");
   const [showRevision, setShowRevision] = useState(false);
   const [revisionReason, setRevisionReason] = useState("");
   const [generating, setGenerating] = useState(false);
@@ -203,7 +203,9 @@ export default function TryOnPage() {
     [selectedPattern?.imageUrl, selectedTemplate, bodyReady],
   );
   const canRunRequestedMode =
-    canGenerate && (requestedFidelityMode !== "masked_garment_tryon" || readiness.canRunMaskedTryOn);
+    canGenerate &&
+    ((requestedFidelityMode !== "masked_garment_tryon" && requestedFidelityMode !== "garment_tryon") ||
+      readiness.canRunMaskedTryOn);
   const nextHref = `/my-studio/confirm-design?workId=${encodeURIComponent(workId)}`;
   const digitalAssetsHref = "/my-studio#my-design-works";
 
@@ -240,7 +242,10 @@ export default function TryOnPage() {
       setError("请先填写身高和体重，再生成我的上身效果图。");
       return;
     }
-    if (requestedFidelityMode === "masked_garment_tryon" && !readiness.canRunMaskedTryOn) {
+    if (
+      (requestedFidelityMode === "masked_garment_tryon" || requestedFidelityMode === "garment_tryon") &&
+      !readiness.canRunMaskedTryOn
+    ) {
       setError(readiness.blockerMessage);
       return;
     }
@@ -274,7 +279,7 @@ export default function TryOnPage() {
           patternAssetId: selectedPattern.id,
           patternImageUrl: selectedPattern.imageUrl,
           requestedFidelityMode,
-          allowDegrade: requestedFidelityMode !== "masked_garment_tryon",
+          allowDegrade: requestedFidelityMode !== "masked_garment_tryon" && requestedFidelityMode !== "garment_tryon",
           bodyProfile: profileForGeneration,
           garmentTemplate: selectedTemplate,
           fitPreference: profileForGeneration.fitPreference,
@@ -288,7 +293,7 @@ export default function TryOnPage() {
             patternAssetId: selectedPattern.id,
             patternImageUrl: selectedPattern.imageUrl,
             requestedFidelityMode,
-            allowDegrade: requestedFidelityMode !== "masked_garment_tryon",
+            allowDegrade: requestedFidelityMode !== "masked_garment_tryon" && requestedFidelityMode !== "garment_tryon",
             bodyProfile: profileForGeneration,
             garmentTemplate: selectedTemplate,
             fitPreference: profileForGeneration.fitPreference,
@@ -319,6 +324,18 @@ export default function TryOnPage() {
         }),
       });
       const data = (await res.json()) as StudioGenerateResponse;
+      if (
+        !res.ok &&
+        (data.code === "FASHN_PROVIDER_NOT_CONFIGURED" ||
+          data.code === "GARMENT_IMAGE_NOT_READY" ||
+          data.code === "MODEL_BASE_NOT_READY")
+      ) {
+        const message = data.message || "高保真试穿服务尚未配置，可先使用快速示意试穿。";
+        setError(message);
+        setRequestedFidelityMode("approximate");
+        toast.show(message, { tone: "warning" });
+        return;
+      }
       if (!res.ok && data.code === "HIGH_FIDELITY_PROVIDER_NOT_READY") {
         const message = data.message || "高保真试穿能力正在接入中，你可以先使用快速示意试穿预览整体效果。";
         setError(message);
@@ -340,7 +357,7 @@ export default function TryOnPage() {
       };
       const displayLabels = tryOnLabelParts(currentPreference);
       const fidelityMode = data.fidelityMode || (data.isFallback ? "approximate" : requestedFidelityMode);
-      const referenceMode = data.referenceMode || (fidelityMode === "masked_garment_tryon" ? "masked_tryon" : fidelityMode === "reference_image" ? "true_image_reference" : "prompt_url_only");
+      const referenceMode = data.referenceMode || (fidelityMode === "masked_garment_tryon" ? "masked_tryon" : fidelityMode === "reference_image" || fidelityMode === "garment_tryon" || fidelityMode === "garment_tryon_high_quality" ? "true_image_reference" : "prompt_url_only");
       const metadataRecord = isRecord(data.metadata) ? data.metadata : {};
       const fidelityWarnings = Array.isArray(data.warnings)
         ? data.warnings
@@ -374,6 +391,12 @@ export default function TryOnPage() {
           fidelityWarnings,
           qualityScores,
           sourcePatternResultId: selectedPattern.id,
+          garmentImageAsset: data.garmentImageAsset,
+          modelBaseSource: data.modelBaseSource,
+          tryOnProvider: data.tryOnProvider,
+          providerJobId: data.providerJobId,
+          providerResultUrl: data.providerResultUrl,
+          persistedImageUrl: data.persistedImageUrl,
           groupId,
           selectFirst: true,
           preferenceMemory: nextPreferenceMemory,
@@ -390,6 +413,12 @@ export default function TryOnPage() {
             isProductionReady: Boolean(data.isProductionReady),
             fidelityWarnings,
             qualityScores,
+            garmentImageAsset: data.garmentImageAsset,
+            modelBaseSource: data.modelBaseSource,
+            tryOnProvider: data.tryOnProvider,
+            providerJobId: data.providerJobId,
+            providerResultUrl: data.providerResultUrl,
+            persistedImageUrl: data.persistedImageUrl,
             garmentRegionSource: garmentRegionTemplate?.source,
             defaultGarmentRegionTemplateId: garmentRegionTemplate?.id,
           },
@@ -438,6 +467,12 @@ export default function TryOnPage() {
             isProductionReady: Boolean(data.isProductionReady),
             fidelityWarnings,
             qualityScores,
+            garmentImageAsset: data.garmentImageAsset,
+            modelBaseSource: data.modelBaseSource,
+            tryOnProvider: data.tryOnProvider,
+            providerJobId: data.providerJobId,
+            providerResultUrl: data.providerResultUrl,
+            persistedImageUrl: data.persistedImageUrl,
             groupId,
             params: {
               sourcePatternResultId: selectedPattern.id,
@@ -469,6 +504,12 @@ export default function TryOnPage() {
               isProductionReady: Boolean(data.isProductionReady),
               fidelityWarnings,
               qualityScores,
+              garmentImageAsset: data.garmentImageAsset,
+              modelBaseSource: data.modelBaseSource,
+              tryOnProvider: data.tryOnProvider,
+              providerJobId: data.providerJobId,
+              providerResultUrl: data.providerResultUrl,
+              persistedImageUrl: data.persistedImageUrl,
             },
           })),
         }),
@@ -647,9 +688,9 @@ export default function TryOnPage() {
                 <div className="toModeGroup" role="radiogroup" aria-label="试穿模式">
                   <button
                     type="button"
-                    className={requestedFidelityMode === "masked_garment_tryon" ? "is-selected" : ""}
+                    className={requestedFidelityMode === "garment_tryon" ? "is-selected" : ""}
                     disabled={!readiness.canRunMaskedTryOn}
-                    onClick={() => setRequestedFidelityMode("masked_garment_tryon")}
+                    onClick={() => setRequestedFidelityMode("garment_tryon")}
                   >
                     高保真试穿
                     <span>{readiness.canRunMaskedTryOn ? "推荐" : readiness.shortBlocker}</span>
@@ -1081,7 +1122,7 @@ function buildTryOnReadiness(hasPattern: boolean, template: StudioGarmentTemplat
   const defaultRegionTemplate = resolveDefaultGarmentRegionTemplate(template);
   const hasRealMask = Boolean((template as (StudioGarmentTemplate & { garmentRegionMaskUrl?: string }) | undefined)?.garmentRegionMaskUrl);
   const maskReady = Boolean(hasRealMask || defaultRegionTemplate);
-  const providerReady = false;
+  const providerReady = hasPattern && hasTemplate && bodyReady && maskReady;
   const missing = [
     !hasPattern ? "印花平铺图" : "",
     !hasTemplate ? "版型模板" : "",
@@ -1156,6 +1197,8 @@ function resolveDefaultGarmentRegionTemplate(template?: StudioGarmentTemplate) {
 function readTryOnFidelityMode(asset: StudioAsset): TryOnFidelityMode {
   if (
     asset.fidelityMode === "masked_garment_tryon" ||
+    asset.fidelityMode === "garment_tryon" ||
+    asset.fidelityMode === "garment_tryon_high_quality" ||
     asset.fidelityMode === "reference_image" ||
     asset.fidelityMode === "approximate"
   ) {
@@ -1165,6 +1208,8 @@ function readTryOnFidelityMode(asset: StudioAsset): TryOnFidelityMode {
 }
 
 function tryOnFidelityLabel(asset: StudioAsset): string {
+  if (asset.fidelityMode === "garment_tryon_high_quality") return "高质量确认图";
+  if (asset.fidelityMode === "garment_tryon") return "高保真试穿";
   if (asset.isFallback) return "示例预览";
   const mode = readTryOnFidelityMode(asset);
   if (mode === "masked_garment_tryon") return "高保真试穿";
@@ -1174,6 +1219,12 @@ function tryOnFidelityLabel(asset: StudioAsset): string {
 
 function tryOnFidelityNotice(asset: StudioAsset): string {
   const mode = readTryOnFidelityMode(asset);
+  if (mode === "garment_tryon_high_quality") {
+    return "已生成高质量确认图，生产前仍需后台审核工艺细节。";
+  }
+  if (mode === "garment_tryon") {
+    return "已使用服装图和标准模特底图生成高保真试穿，生产前仍需确认版型与工艺细节。";
+  }
   if (mode === "masked_garment_tryon") {
     return "已使用印花、版型和服装区域生成高保真试穿，生产前仍需后台确认工艺细节。";
   }

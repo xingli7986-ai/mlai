@@ -1,12 +1,23 @@
 import { NextResponse } from "next/server";
+import { readFile } from "fs/promises";
+import path from "path";
 import { GoogleGenAI } from "@google/genai";
 import { getAuthUser } from "@/lib/getAuthUser";
 import { uploadBufferToR2 } from "@/lib/upload";
 import {
+  prepareGarmentImageAsset,
+  selectModelBaseAsset,
+} from "@/lib/my-studio/garment-template-render";
+import {
+  generateFashnTryOn,
+  generateFashnTryOnMax,
+  getFashnProviderCapability,
+} from "@/lib/my-studio/tryon-provider";
+import {
   generateMaskedGarmentTryOn,
   generateWithGPTImage2,
   getGPTImage2Config,
-  getTryOnProviderCapability,
+  getTryOnProviderCapability as getYxaiTryOnProviderCapability,
 } from "@/lib/suchuang";
 import {
   TOOL_PROMPT_MAP,
@@ -153,7 +164,60 @@ function resolveTryOnExecutionMode(
   const requested = body.requestedFidelityMode || "masked_garment_tryon";
   const allowDegrade = body.allowDegrade !== false;
   const hasPatternImage = Boolean(body.patternImageUrl || sourceImageUrls[0]);
+  const isFashnMode = requested === "garment_tryon" || requested === "garment_tryon_high_quality";
   const hasMask = Boolean((body.params as Record<string, unknown> | undefined)?.garmentRegionMaskUrl);
+  const hasGarmentImage = Boolean(
+    (body.params as Record<string, unknown> | undefined)?.garmentImageUrl || body.patternImageUrl || sourceImageUrls[0],
+  );
+  const hasModelBase = Boolean(
+    (body.params as Record<string, unknown> | undefined)?.modelBaseImageUrl || body.bodyProfile,
+  );
+  if (isFashnMode) {
+    const warnings: string[] = [];
+    if (requested === "garment_tryon") {
+      warnings.push("高保真试穿已生成后，生产前仍需确认版型与工艺细节。");
+    } else {
+      warnings.push("高质量确认图仅供后台审核，生产前仍需确认版型与工艺细节。");
+    }
+    const base = {
+      fidelityMode: requested,
+      referenceMode: "true_image_reference" as const,
+      patternReferenceUsed: true,
+      maskUsed: false,
+      isProductionReady: false,
+      warnings,
+      providerCapability: capability,
+      jobId: `tryon-job-${Date.now()}`,
+    };
+
+    if (!capability.supportsGarmentTryOn) {
+      return {
+        ...base,
+        patternReferenceUsed: false,
+        blocked: true,
+        blockCode: "FASHN_PROVIDER_NOT_CONFIGURED",
+        canDegrade: allowDegrade,
+      };
+    }
+    if (!hasPatternImage || !hasGarmentImage) {
+      return {
+        ...base,
+        patternReferenceUsed: false,
+        blocked: true,
+        blockCode: "GARMENT_IMAGE_NOT_READY",
+        canDegrade: allowDegrade,
+      };
+    }
+    if (!hasModelBase) {
+      return {
+        ...base,
+        blocked: true,
+        blockCode: "MODEL_BASE_NOT_READY",
+        canDegrade: allowDegrade,
+      };
+    }
+    return base;
+  }
   const canMasked =
     requested === "masked_garment_tryon" &&
     hasPatternImage &&
@@ -291,10 +355,25 @@ function resolveTryOnExecutionMode(
 
 function estimateTryOnQualityScores(mode: TryOnExecutionMode, fullBodyRequested: boolean): TryOnQualityScores {
   const printFidelity =
-    mode.fidelityMode === "masked_garment_tryon" ? 0.8 : mode.fidelityMode === "reference_image" ? 0.6 : 0.35;
+    mode.fidelityMode === "garment_tryon_high_quality"
+      ? 0.82
+      : mode.fidelityMode === "garment_tryon"
+        ? 0.72
+        : mode.fidelityMode === "masked_garment_tryon"
+          ? 0.8
+          : mode.fidelityMode === "reference_image"
+            ? 0.6
+            : 0.35;
   return {
     printFidelity,
-    silhouetteFidelity: mode.fidelityMode === "masked_garment_tryon" ? 0.8 : mode.fidelityMode === "reference_image" ? 0.55 : 0.35,
+    silhouetteFidelity:
+      mode.fidelityMode === "garment_tryon_high_quality"
+        ? 0.82
+        : mode.fidelityMode === "garment_tryon" || mode.fidelityMode === "masked_garment_tryon"
+          ? 0.75
+          : mode.fidelityMode === "reference_image"
+            ? 0.55
+            : 0.35,
     fullBody: fullBodyRequested ? 0.75 : 0.45,
     realism: mode.fidelityMode === "approximate" ? 0.55 : 0.7,
     bodyProportion: fullBodyRequested ? 0.65 : 0.45,
@@ -327,6 +406,29 @@ function hasR2Config(): boolean {
   );
 }
 
+function providerCapabilityForTryOn(requested?: TryOnFidelityMode): TryOnProviderCapability {
+  if (requested === "garment_tryon" || requested === "garment_tryon_high_quality") {
+    return getFashnProviderCapability();
+  }
+  return getYxaiTryOnProviderCapability();
+}
+
+function tryOnBlockedMessage(code: string): string {
+  if (code === "FASHN_PROVIDER_NOT_CONFIGURED") {
+    return "高保真试穿服务尚未配置，可先使用快速示意试穿。";
+  }
+  if (code === "GARMENT_IMAGE_NOT_READY") {
+    return "服装图还没有准备好，可先使用快速示意试穿。";
+  }
+  if (code === "MODEL_BASE_NOT_READY") {
+    return "模特底图还没有准备好，可先使用快速示意试穿。";
+  }
+  if (code === "HIGH_FIDELITY_PROVIDER_NOT_READY") {
+    return "当前高保真试穿模型尚未接入，请先使用快速示意试穿。";
+  }
+  return "当前高保真能力暂时不可用，请先使用快速示意试穿。";
+}
+
 async function persistGeneratedImage(sourceUrl: string, key: string): Promise<string> {
   if (!hasR2Config()) return sourceUrl;
   const dataUrl = parseBase64Image(sourceUrl);
@@ -348,6 +450,38 @@ async function persistGeneratedImage(sourceUrl: string, key: string): Promise<st
     console.error("R2 upload for generated URL failed, using provider URL:", err);
     return sourceUrl;
   }
+}
+
+async function ensureProviderInputUrl(sourceUrl: string, key: string): Promise<string> {
+  if (!sourceUrl) return "";
+  if (sourceUrl.startsWith("data:") || /^https?:\/\//i.test(sourceUrl)) {
+    return persistGeneratedImage(sourceUrl, key);
+  }
+
+  if (!sourceUrl.startsWith("/")) return sourceUrl;
+
+  if (hasR2Config()) {
+    try {
+      const publicPath = sourceUrl.replace(/^\/+/, "");
+      const filePath = path.join(process.cwd(), "public", publicPath);
+      const buffer = await readFile(filePath);
+      return await uploadBufferToR2(buffer, key, contentTypeForFile(sourceUrl));
+    } catch (err) {
+      console.error("[ai-studio/generate] local provider input upload failed", err);
+    }
+  }
+
+  const publicBase = process.env.NEXT_PUBLIC_BASE_URL || process.env.R2_PUBLIC_URL || "";
+  if (!publicBase) return "";
+  return `${publicBase.replace(/\/+$/, "")}${sourceUrl}`;
+}
+
+function contentTypeForFile(fileName: string): string {
+  const ext = path.extname(fileName).toLowerCase();
+  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+  if (ext === ".webp") return "image/webp";
+  if (ext === ".svg") return "image/svg+xml";
+  return "image/png";
 }
 
 function parseBase64Image(
@@ -472,13 +606,39 @@ export async function POST(req: Request) {
       const image2Config = getGPTImage2Config();
       const tryOnMode =
         tool === "pattern-apply"
-          ? resolveTryOnExecutionMode(body, getTryOnProviderCapability(), sourceImageUrls)
+          ? resolveTryOnExecutionMode(body, providerCapabilityForTryOn(body.requestedFidelityMode), sourceImageUrls)
           : undefined;
       const tryOnQualityScores = tryOnMode
         ? estimateTryOnQualityScores(tryOnMode, finalPrompt.toLowerCase().includes("full-body") || finalPrompt.toLowerCase().includes("head to toe"))
         : undefined;
       if (tryOnMode?.blocked) {
         const code = tryOnMode.blockCode || "HIGH_FIDELITY_PROVIDER_NOT_READY";
+        if (
+          code === "FASHN_PROVIDER_NOT_CONFIGURED" ||
+          code === "GARMENT_IMAGE_NOT_READY" ||
+          code === "MODEL_BASE_NOT_READY"
+        ) {
+          const message = tryOnBlockedMessage(code);
+          return NextResponse.json(
+            {
+              success: false,
+              ok: false,
+              code,
+              error: message,
+              message,
+              canDegrade: tryOnMode.canDegrade ?? true,
+              fidelityMode: tryOnMode.fidelityMode,
+              referenceMode: tryOnMode.referenceMode,
+              patternReferenceUsed: tryOnMode.patternReferenceUsed,
+              maskUsed: tryOnMode.maskUsed,
+              isProductionReady: false,
+              warnings: tryOnMode.warnings,
+              providerCapability: tryOnMode.providerCapability,
+              jobId: tryOnMode.jobId,
+            },
+            { status: 422 },
+          );
+        }
         const message = code === "HIGH_FIDELITY_PROVIDER_NOT_READY"
           ? "当前高保真试穿模型尚未接入，请先使用快速示意试穿。"
           : "当前参考图试穿能力尚未接入，请先使用快速示意试穿。";
@@ -501,6 +661,139 @@ export async function POST(req: Request) {
           },
           { status: 422 },
         );
+      }
+      if (
+        tool === "pattern-apply" &&
+        (tryOnMode?.fidelityMode === "garment_tryon" ||
+          tryOnMode?.fidelityMode === "garment_tryon_high_quality")
+      ) {
+        try {
+          const patternImageUrl = body.patternImageUrl || sourceImageUrls[0] || "";
+          const garment = prepareGarmentImageAsset({
+            selectedPattern: {
+              id: body.patternAssetId || `pattern-${batchId}`,
+              imageUrl: patternImageUrl,
+            },
+            garmentTemplate: body.garmentTemplate,
+          });
+          const modelBase = selectModelBaseAsset(body.bodyProfile);
+          const garmentImageUrl = await ensureProviderInputUrl(
+            garment.asset.imageUrl,
+            `studio/fashn-inputs/${batchId}_garment.jpg`,
+          );
+          const modelImageUrl = await ensureProviderInputUrl(
+            modelBase.asset.fullBodyImageUrl || "",
+            `studio/fashn-inputs/${batchId}_model.jpg`,
+          );
+
+          if (!garmentImageUrl) throw new Error("GARMENT_IMAGE_NOT_READY");
+          if (!modelImageUrl) throw new Error("MODEL_BASE_NOT_READY");
+
+          const result = tryOnMode.fidelityMode === "garment_tryon_high_quality"
+            ? await generateFashnTryOnMax({
+                modelImageUrl,
+                garmentImageUrl,
+                category: "one-pieces",
+                mode: "confirm",
+                bodyProfile: body.bodyProfile,
+                garmentTemplate: body.garmentTemplate,
+              })
+            : await generateFashnTryOn({
+                modelImageUrl,
+                garmentImageUrl,
+                category: "one-pieces",
+                mode: "preview",
+                bodyProfile: body.bodyProfile,
+                garmentTemplate: body.garmentTemplate,
+              });
+          const persistedImageUrl = await persistGeneratedImage(
+            result.imageUrl,
+            `studio/outputs/${batchId}_fashn_tryon.jpg`,
+          );
+          const warnings = [...result.warnings, ...garment.warnings, ...modelBase.warnings, ...tryOnMode.warnings];
+          const used = recordUsage(user.id);
+          return NextResponse.json({
+            success: true,
+            tool,
+            imageUrl: persistedImageUrl,
+            images: [persistedImageUrl],
+            resultType: resultTypeForTool(tool),
+            isFallback: false,
+            provider: result.provider,
+            model: result.model,
+            fidelityMode: result.fidelityMode,
+            referenceMode: result.referenceMode,
+            patternReferenceUsed: result.patternReferenceUsed,
+            maskUsed: result.maskUsed,
+            isProductionReady: result.isProductionReady,
+            warnings,
+            providerCapability: tryOnMode.providerCapability,
+            jobId: tryOnMode.jobId,
+            providerJobId: result.providerJobId,
+            providerResultUrl: result.providerResultUrl,
+            persistedImageUrl,
+            garmentImageAsset: garment.asset,
+            modelBaseSource: modelBase.asset.modelBaseSource,
+            tryOnProvider: "fashn",
+            message: result.fidelityMode === "garment_tryon_high_quality" ? "高质量确认图已生成。" : "高保真试穿已生成。",
+            metadata: {
+              role,
+              prompt: finalPrompt,
+              sourceImageUrls,
+              fidelityMode: result.fidelityMode,
+              referenceMode: result.referenceMode,
+              patternReferenceUsed: result.patternReferenceUsed,
+              maskUsed: result.maskUsed,
+              isProductionReady: result.isProductionReady,
+              warnings,
+              providerCapability: tryOnMode.providerCapability,
+              jobId: tryOnMode.jobId,
+              providerJobId: result.providerJobId,
+              providerResultUrl: result.providerResultUrl,
+              persistedImageUrl,
+              garmentImageAsset: garment.asset,
+              modelBaseSource: modelBase.asset.modelBaseSource,
+              modelBaseAsset: modelBase.asset,
+              tryOnProvider: "fashn",
+              qualityScores: tryOnQualityScores,
+            },
+            used,
+            limit: aiDailyLimit,
+          });
+        } catch (err) {
+          const code = err instanceof Error ? err.message : "FASHN_TRYON_FAILED";
+          const safeCode =
+            code === "FASHN_PROVIDER_NOT_CONFIGURED" ||
+            code === "GARMENT_IMAGE_NOT_READY" ||
+            code === "MODEL_BASE_NOT_READY" ||
+            code === "FASHN_TRYON_TIMEOUT"
+              ? code
+              : "FASHN_TRYON_FAILED";
+          const message = safeCode === "FASHN_TRYON_TIMEOUT"
+            ? "高保真试穿生成超时，可先使用快速示意试穿。"
+            : safeCode === "FASHN_TRYON_FAILED"
+              ? "高保真试穿暂时失败，可先使用快速示意试穿。"
+              : tryOnBlockedMessage(safeCode);
+          return NextResponse.json(
+            {
+              success: false,
+              ok: false,
+              code: safeCode,
+              error: message,
+              message,
+              canDegrade: true,
+              fidelityMode: tryOnMode.fidelityMode,
+              referenceMode: tryOnMode.referenceMode,
+              patternReferenceUsed: false,
+              maskUsed: false,
+              isProductionReady: false,
+              warnings: [message],
+              providerCapability: tryOnMode.providerCapability,
+              jobId: tryOnMode.jobId,
+            },
+            { status: 422 },
+          );
+        }
       }
       if (tool === "pattern-apply" && tryOnMode?.fidelityMode === "masked_garment_tryon") {
         try {

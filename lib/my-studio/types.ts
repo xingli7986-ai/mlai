@@ -58,6 +58,12 @@ export interface StudioAsset {
   sourcePatternTileId?: string;
   sourceGarmentTemplateId?: string;
   sourceModelBaseId?: string;
+  garmentImageAsset?: GarmentImageAsset;
+  modelBaseSource?: ModelBaseSource;
+  tryOnProvider?: "yxai" | "fashn" | "mock";
+  providerJobId?: string;
+  providerResultUrl?: string;
+  persistedImageUrl?: string;
 }
 
 export type StudioFitPreference = "slim" | "regular" | "relaxed";
@@ -94,9 +100,35 @@ export type StudioTryOnSource =
   | "remix-pattern-try-on"
   | "regenerate-fit";
 
-export type TryOnFidelityMode = "approximate" | "reference_image" | "masked_garment_tryon";
+export type TryOnFidelityMode =
+  | "approximate"
+  | "reference_image"
+  | "masked_garment_tryon"
+  | "garment_tryon"
+  | "garment_tryon_high_quality";
 
 export type TryOnReferenceMode = "prompt_url_only" | "true_image_reference" | "masked_tryon";
+
+export type GarmentImageSource =
+  | "rendered_from_pattern_template"
+  | "placeholder_template"
+  | "uploaded_garment_image";
+
+export type ModelBaseSource =
+  | "standard_model_library"
+  | "body_profile_matched"
+  | "user_uploaded";
+
+export type GarmentImageAsset = {
+  id: string;
+  imageUrl: string;
+  sourcePatternAssetId?: string;
+  sourcePatternTileId?: string;
+  garmentTemplateId?: string;
+  garmentImageSource: GarmentImageSource;
+  fidelityReady: boolean;
+  createdAt: string;
+};
 
 export type TryOnProviderCapability = {
   provider: string;
@@ -158,6 +190,7 @@ export type ModelBaseAsset = {
   segmentationMaskUrl?: string;
   poseControlUrl?: string;
   bodyShapeCategory?: string;
+  modelBaseSource?: ModelBaseSource;
   fidelityReady: boolean;
   createdAt: string;
 };
@@ -174,6 +207,7 @@ export type HighFidelityTryOnJob = {
   referenceMode: TryOnReferenceMode;
   provider?: string;
   model?: string;
+  providerJobId?: string;
   prompt?: string;
   negativePrompt?: string;
   controlInputs?: {
@@ -211,6 +245,12 @@ export type HighFidelityTryOnAsset = {
   patternReferenceUsed: boolean;
   maskUsed: boolean;
   isProductionReady: boolean;
+  providerJobId?: string;
+  providerResultUrl?: string;
+  persistedImageUrl?: string;
+  garmentImageAsset?: GarmentImageAsset;
+  modelBaseSource?: ModelBaseSource;
+  tryOnProvider?: "yxai" | "fashn" | "mock";
   scores?: TryOnQualityScores;
   warnings: string[];
   createdAt: string;
@@ -437,6 +477,7 @@ export interface StudioWorkAssets {
 
 export interface StudioFidelityAssets {
   patternTiles: PatternTileAsset[];
+  garmentImages: GarmentImageAsset[];
   garmentTemplates: GarmentTemplateAsset[];
   modelBases: ModelBaseAsset[];
   tryOnJobs: HighFidelityTryOnJob[];
@@ -540,6 +581,12 @@ export interface StudioGenerateResponse {
   warnings?: string[];
   providerCapability?: TryOnProviderCapability;
   jobId?: string;
+  providerJobId?: string;
+  providerResultUrl?: string;
+  persistedImageUrl?: string;
+  garmentImageAsset?: GarmentImageAsset;
+  modelBaseSource?: ModelBaseSource;
+  tryOnProvider?: "yxai" | "fashn" | "mock";
   message?: string;
   error?: string;
   used?: number;
