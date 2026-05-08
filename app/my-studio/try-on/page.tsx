@@ -199,9 +199,14 @@ export default function TryOnPage() {
   const bodyReady = Boolean(bodyProfile.heightCm && bodyProfile.weightKg);
   const canGenerate = Boolean(selectedPattern && selectedTemplate && bodyReady);
   const readiness = useMemo(
-    () => buildTryOnReadiness(Boolean(selectedPattern?.imageUrl), Boolean(selectedTemplate), bodyReady),
+    () => buildTryOnReadiness(Boolean(selectedPattern?.imageUrl), selectedTemplate, bodyReady),
     [selectedPattern?.imageUrl, selectedTemplate, bodyReady],
   );
+  useEffect(() => {
+    if (requestedFidelityMode === "masked_garment_tryon" && !readiness.canRunMaskedTryOn) {
+      setRequestedFidelityMode("approximate");
+    }
+  }, [readiness.canRunMaskedTryOn, requestedFidelityMode]);
   const canRunRequestedMode =
     canGenerate && (requestedFidelityMode !== "masked_garment_tryon" || readiness.canRunMaskedTryOn);
   const nextHref = `/my-studio/confirm-design?workId=${encodeURIComponent(workId)}`;
@@ -259,6 +264,7 @@ export default function TryOnPage() {
       const persistedWork = await patchWorkSettings(profileForGeneration, selectedTemplate);
       const prompt = buildTryOnPrompt(persistedWork, selectedPattern, currentPreference, profileForGeneration, selectedTemplate, nextRevisionReason);
       const garmentStructure = garmentStructureSnapshot(selectedTemplate);
+      const garmentRegionTemplate = resolveDefaultGarmentRegionTemplate(selectedTemplate);
       const tryOnSource: "direct-pattern-try-on" | "remix-pattern-try-on" | "regenerate-fit" = nextRevisionReason
         ? "regenerate-fit"
         : selectedPattern.source?.type?.includes("remix")
@@ -299,6 +305,8 @@ export default function TryOnPage() {
             fabricName: "exact selected floral print fabric",
             shotType: "full-body",
             garmentStructure,
+            garmentRegionSource: garmentRegionTemplate?.source,
+            defaultGarmentRegionTemplateId: garmentRegionTemplate?.id,
             strictPatternReference: true,
             garmentType: persistedWork.config.garmentType,
             silhouette: selectedTemplate.silhouette,
@@ -380,6 +388,8 @@ export default function TryOnPage() {
             isProductionReady: Boolean(data.isProductionReady),
             fidelityWarnings,
             qualityScores,
+            garmentRegionSource: garmentRegionTemplate?.source,
+            defaultGarmentRegionTemplateId: garmentRegionTemplate?.id,
           },
           params: {
             sourcePatternResultId: selectedPattern.id,
@@ -391,6 +401,8 @@ export default function TryOnPage() {
             revisionReason: nextRevisionReason,
             tryOnPreview: currentPreference,
             shotType: "full-body",
+            garmentRegionSource: garmentRegionTemplate?.source,
+            defaultGarmentRegionTemplateId: garmentRegionTemplate?.id,
           },
           metadata: {
             ...data.metadata,
@@ -398,6 +410,8 @@ export default function TryOnPage() {
             bodyProfileSnapshot: profileForGeneration,
             garmentTemplateSnapshot: selectedTemplate,
             garmentStructure,
+            garmentRegionSource: garmentRegionTemplate?.source,
+            defaultGarmentRegionTemplateId: garmentRegionTemplate?.id,
             revisionReason: nextRevisionReason,
           },
           assets: images.map((imageUrl, index) => ({
@@ -434,6 +448,8 @@ export default function TryOnPage() {
               tryOnPreview: currentPreference,
               resultIndex: index,
               shotType: "full-body",
+              garmentRegionSource: garmentRegionTemplate?.source,
+              defaultGarmentRegionTemplateId: garmentRegionTemplate?.id,
             },
             metadata: {
               ...data.metadata,
@@ -441,6 +457,8 @@ export default function TryOnPage() {
               bodyProfileSnapshot: profileForGeneration,
               garmentTemplateSnapshot: selectedTemplate,
               garmentStructure,
+              garmentRegionSource: garmentRegionTemplate?.source,
+              defaultGarmentRegionTemplateId: garmentRegionTemplate?.id,
               revisionReason: nextRevisionReason,
               fidelityMode,
               referenceMode,
@@ -619,9 +637,9 @@ export default function TryOnPage() {
                     detail={readiness.modelBaseReady ? "已读取身材参数" : "请填写身高体重"}
                   />
                   <ReadinessItem
-                    label="服装区域 mask"
+                    label="服装区域"
                     ready={readiness.maskReady}
-                    detail={readiness.maskReady ? "已准备服装区域素材" : "当前缺少 mask"}
+                    detail={readiness.maskDetail}
                   />
                 </div>
                 <div className="toModeGroup" role="radiogroup" aria-label="试穿模式">
@@ -1053,33 +1071,81 @@ function TryOnRailThumb({
   );
 }
 
-function buildTryOnReadiness(hasPattern: boolean, hasTemplate: boolean, bodyReady: boolean) {
-  const maskReady = false;
+function buildTryOnReadiness(hasPattern: boolean, template: StudioGarmentTemplate | undefined, bodyReady: boolean) {
+  const hasTemplate = Boolean(template);
+  const defaultRegionTemplate = resolveDefaultGarmentRegionTemplate(template);
+  const hasRealMask = Boolean((template as (StudioGarmentTemplate & { garmentRegionMaskUrl?: string }) | undefined)?.garmentRegionMaskUrl);
+  const maskReady = Boolean(hasRealMask || defaultRegionTemplate);
+  const providerReady = false;
   const missing = [
     !hasPattern ? "印花平铺图" : "",
     !hasTemplate ? "版型模板" : "",
     !bodyReady ? "模特体型 / 底图" : "",
-    !maskReady ? "服装区域素材（mask）" : "",
+    !maskReady ? "服装区域模板" : "",
   ].filter(Boolean);
-  const shortBlocker = !maskReady
-    ? "缺少服装区域 mask"
-    : missing.length > 0
-      ? `${missing[0]}待准备`
-      : "素材待补齐";
-  const blockerMessage = !maskReady
-    ? "当前缺少服装区域素材（mask），因此暂时不能进入高保真试穿。"
-    : `当前缺少${missing.join("、")}，因此暂时不能进入高保真试穿。`;
+  const shortBlocker = missing.length > 0
+    ? `${missing[0]}待准备`
+    : !providerReady
+      ? "高保真模型待接入"
+      : "准备完成";
+  const blockerMessage = missing.length > 0
+    ? `当前还需要准备${missing.join("、")}，因此暂时不能进入高保真试穿。`
+    : "当前已准备印花、版型和身材信息；高保真试穿模型还在接入中。";
   return {
     patternTileReady: hasPattern,
     garmentTemplateReady: hasTemplate,
     modelBaseReady: bodyReady,
     maskReady,
-    providerReady: true,
-    canRunMaskedTryOn: hasPattern && hasTemplate && bodyReady && maskReady,
+    maskSource: hasRealMask ? "real_mask" : defaultRegionTemplate ? "default_template" : "missing",
+    maskDetail: hasRealMask
+      ? "已准备服装区域"
+      : defaultRegionTemplate
+        ? "已准备（版型模板）"
+        : "请选择更完整的版型",
+    providerReady,
+    canRunMaskedTryOn: hasPattern && hasTemplate && bodyReady && maskReady && providerReady,
     missing,
     shortBlocker,
     blockerMessage,
   };
+}
+
+function resolveDefaultGarmentRegionTemplate(template?: StudioGarmentTemplate) {
+  if (!template) return undefined;
+  const key = [template.id, template.name, template.silhouette, template.closure, template.skirtLength]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (key.includes("wrap") || template.silhouette === "wrap" || template.id === "wrap-dress") {
+    return {
+      id: "default-mask-wrap-dress",
+      source: "default_template",
+      label: "裹身裙版型区域",
+    };
+  }
+  if (key.includes("a-line") || key.includes("a 字") || template.silhouette === "a-line") {
+    return {
+      id: "default-mask-a-line-dress",
+      source: "default_template",
+      label: "A 字裙版型区域",
+    };
+  }
+  if (key.includes("sheath") || key.includes("knit") || template.silhouette === "sheath") {
+    return {
+      id: "default-mask-sheath-dress",
+      source: "default_template",
+      label: "修身裙版型区域",
+    };
+  }
+  if (template.silhouette && template.silhouette !== "unknown") {
+    return {
+      id: `default-mask-${template.silhouette}`,
+      source: "default_template",
+      label: "默认版型区域",
+    };
+  }
+  return undefined;
 }
 
 function readTryOnFidelityMode(asset: StudioAsset): TryOnFidelityMode {

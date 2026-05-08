@@ -1070,6 +1070,8 @@ export function getTryOnReadiness(metadata: StudioWorkMetadata): {
   garmentTemplateReady: boolean;
   modelBaseReady: boolean;
   maskReady: boolean;
+  maskSource: "real_mask" | "default_template" | "missing";
+  defaultMaskTemplateId?: string;
   providerReady: boolean;
   canRunMaskedTryOn: boolean;
   fallbackMode: "reference_image" | "approximate";
@@ -1087,7 +1089,13 @@ export function getTryOnReadiness(metadata: StudioWorkMetadata): {
   const modelBaseReady = Boolean(
     normalized.bodyProfile.heightCm || normalized.bodyProfile.weightKg || normalized.bodyProfile.usualSize,
   );
-  const maskReady = Boolean(templateAsset?.garmentRegionMaskUrl);
+  const defaultMaskTemplate = resolveDefaultGarmentRegionTemplateAsset(templateAsset || template);
+  const maskReady = Boolean(templateAsset?.garmentRegionMaskUrl || defaultMaskTemplate);
+  const maskSource = templateAsset?.garmentRegionMaskUrl
+    ? "real_mask"
+    : defaultMaskTemplate
+      ? "default_template"
+      : "missing";
   const capability = normalized.providerCapabilities?.[0];
   const supportsMasked = Boolean(capability?.supportsGarmentTryOn && capability.supportsMask);
   const supportsReference = Boolean(
@@ -1107,11 +1115,42 @@ export function getTryOnReadiness(metadata: StudioWorkMetadata): {
     garmentTemplateReady: Boolean(template),
     modelBaseReady,
     maskReady,
+    maskSource,
+    defaultMaskTemplateId: defaultMaskTemplate?.id,
     providerReady: Boolean(supportsMasked || supportsReference || capability?.supportsTextToImage),
     canRunMaskedTryOn: Boolean(pattern?.imageUrl && template && modelBaseReady && maskReady && supportsMasked),
     fallbackMode: supportsReference ? "reference_image" : "approximate",
     missing,
   };
+}
+
+function resolveDefaultGarmentRegionTemplateAsset(template?: StudioGarmentTemplate | GarmentTemplateAsset) {
+  if (!template) return undefined;
+  const key = [
+    template.id,
+    template.name,
+    template.silhouette,
+    "closure" in template ? template.closure : undefined,
+    "skirtLength" in template ? template.skirtLength : undefined,
+    "dressLength" in template ? template.dressLength : undefined,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (key.includes("wrap") || template.silhouette === "wrap" || template.id === "wrap-dress") {
+    return { id: "default-mask-wrap-dress", source: "default_template" as const };
+  }
+  if (key.includes("a-line") || key.includes("a 字") || template.silhouette === "a-line") {
+    return { id: "default-mask-a-line-dress", source: "default_template" as const };
+  }
+  if (key.includes("sheath") || key.includes("knit") || template.silhouette === "sheath") {
+    return { id: "default-mask-sheath-dress", source: "default_template" as const };
+  }
+  if (template.silhouette && template.silhouette !== "unknown") {
+    return { id: `default-mask-${template.silhouette}`, source: "default_template" as const };
+  }
+  return undefined;
 }
 
 export function estimateTryOnQuality(input: {
