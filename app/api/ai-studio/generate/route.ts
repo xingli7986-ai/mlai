@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
 import { getAuthUser } from "@/lib/getAuthUser";
 import { uploadBufferToR2 } from "@/lib/upload";
-import { generateWithGPTImage2, getGPTImage2Config, getTryOnProviderCapability } from "@/lib/suchuang";
+import {
+  generateMaskedGarmentTryOn,
+  generateWithGPTImage2,
+  getGPTImage2Config,
+  getTryOnProviderCapability,
+} from "@/lib/suchuang";
 import {
   TOOL_PROMPT_MAP,
   type StudioTool,
@@ -136,6 +141,8 @@ type TryOnExecutionMode = {
   providerCapability: TryOnProviderCapability;
   jobId: string;
   blocked?: boolean;
+  blockCode?: string;
+  canDegrade?: boolean;
 };
 
 function resolveTryOnExecutionMode(
@@ -157,6 +164,71 @@ function resolveTryOnExecutionMode(
     hasPatternImage &&
     (capability.supportsImageReference || capability.supportsImageEdit || capability.supportsMultiImageInput);
   const warnings: string[] = [];
+
+  if (requested === "masked_garment_tryon") {
+    if (canMasked) {
+      return {
+        fidelityMode: "masked_garment_tryon",
+        referenceMode: "masked_tryon",
+        patternReferenceUsed: true,
+        maskUsed: true,
+        isProductionReady: false,
+        warnings: ["高保真试穿结果仍需后台确认工艺细节后才能进入生产。"],
+        providerCapability: capability,
+        jobId: `tryon-job-${Date.now()}`,
+      };
+    }
+
+    return {
+      fidelityMode: "masked_garment_tryon",
+      referenceMode: "masked_tryon",
+      patternReferenceUsed: false,
+      maskUsed: false,
+      isProductionReady: false,
+      warnings: [
+        hasPatternImage
+          ? "当前高保真试穿 provider 尚未接入真实服装 mask / garment try-on 能力。"
+          : "缺少当前印花图，无法进入高保真试穿。",
+      ],
+      providerCapability: capability,
+      jobId: `tryon-job-${Date.now()}`,
+      blocked: true,
+      blockCode: "HIGH_FIDELITY_PROVIDER_NOT_READY",
+      canDegrade: allowDegrade,
+    };
+  }
+
+  if (requested === "reference_image") {
+    if (canReference) {
+      warnings.push("当前使用真实参考图试穿，结果仍用于设计预览，生产前需要后台确认。");
+      return {
+        fidelityMode: "reference_image",
+        referenceMode: "true_image_reference",
+        patternReferenceUsed: true,
+        maskUsed: false,
+        isProductionReady: false,
+        warnings,
+        providerCapability: capability,
+        jobId: `tryon-job-${Date.now()}`,
+      };
+    }
+
+    if (!allowDegrade) {
+      return {
+        fidelityMode: "reference_image",
+        referenceMode: "true_image_reference",
+        patternReferenceUsed: false,
+        maskUsed: false,
+        isProductionReady: false,
+        warnings: ["当前 provider 尚未接入真实参考图输入能力。"],
+        providerCapability: capability,
+        jobId: `tryon-job-${Date.now()}`,
+        blocked: true,
+        blockCode: "REFERENCE_IMAGE_PROVIDER_NOT_READY",
+        canDegrade: true,
+      };
+    }
+  }
 
   if (canMasked) {
     return {
@@ -201,6 +273,8 @@ function resolveTryOnExecutionMode(
       providerCapability: capability,
       jobId: `tryon-job-${Date.now()}`,
       blocked: true,
+      blockCode: "HIGH_FIDELITY_PROVIDER_NOT_READY",
+      canDegrade: true,
     };
   }
   return {
@@ -404,10 +478,18 @@ export async function POST(req: Request) {
         ? estimateTryOnQualityScores(tryOnMode, finalPrompt.toLowerCase().includes("full-body") || finalPrompt.toLowerCase().includes("head to toe"))
         : undefined;
       if (tryOnMode?.blocked) {
+        const code = tryOnMode.blockCode || "HIGH_FIDELITY_PROVIDER_NOT_READY";
+        const message = code === "HIGH_FIDELITY_PROVIDER_NOT_READY"
+          ? "当前高保真试穿模型尚未接入，请先使用快速示意试穿。"
+          : "当前参考图试穿能力尚未接入，请先使用快速示意试穿。";
         return NextResponse.json(
           {
             success: false,
-            error: "当前高保真试穿条件未满足，请补充版型模板或稍后重试。",
+            ok: false,
+            code,
+            error: message,
+            message,
+            canDegrade: tryOnMode.canDegrade ?? true,
             fidelityMode: tryOnMode.fidelityMode,
             referenceMode: tryOnMode.referenceMode,
             patternReferenceUsed: tryOnMode.patternReferenceUsed,
@@ -419,6 +501,93 @@ export async function POST(req: Request) {
           },
           { status: 422 },
         );
+      }
+      if (tool === "pattern-apply" && tryOnMode?.fidelityMode === "masked_garment_tryon") {
+        try {
+          const params = (body.params || {}) as Record<string, unknown>;
+          const result = await generateMaskedGarmentTryOn({
+            patternImageUrl: body.patternImageUrl || sourceImageUrls[0] || "",
+            garmentTemplateImageUrl: typeof params.garmentTemplateImageUrl === "string" ? params.garmentTemplateImageUrl : undefined,
+            garmentRegionMaskUrl: typeof params.garmentRegionMaskUrl === "string" ? params.garmentRegionMaskUrl : undefined,
+            modelBaseImageUrl: typeof params.modelBaseImageUrl === "string" ? params.modelBaseImageUrl : undefined,
+            bodyProfile: body.bodyProfile,
+            garmentTemplate: body.garmentTemplate,
+            prompt: finalPrompt,
+            negativePrompt: typeof params.negativePrompt === "string" ? params.negativePrompt : undefined,
+          });
+          const imageUrl = await persistGeneratedImage(result.imageUrl, `studio/outputs/${batchId}_masked_tryon.png`);
+          const used = recordUsage(user.id);
+          return NextResponse.json({
+            success: true,
+            tool,
+            imageUrl,
+            images: [imageUrl],
+            resultType: resultTypeForTool(tool),
+            isFallback: false,
+            provider: result.provider,
+            model: result.model,
+            fidelityMode: "masked_garment_tryon",
+            referenceMode: "masked_tryon",
+            patternReferenceUsed: true,
+            maskUsed: true,
+            isProductionReady: false,
+            warnings: tryOnMode.warnings,
+            providerCapability: tryOnMode.providerCapability,
+            jobId: tryOnMode.jobId,
+            message: "高保真试穿生成完成",
+            metadata: {
+              role,
+              prompt: finalPrompt,
+              sourceImageUrls,
+              fidelityMode: "masked_garment_tryon",
+              referenceMode: "masked_tryon",
+              patternReferenceUsed: true,
+              maskUsed: true,
+              isProductionReady: false,
+              warnings: tryOnMode.warnings,
+              providerCapability: tryOnMode.providerCapability,
+              jobId: tryOnMode.jobId,
+              qualityScores: tryOnQualityScores,
+            },
+            used,
+            limit: aiDailyLimit,
+          });
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "";
+          if (message === "MASKED_GARMENT_TRYON_PROVIDER_NOT_CONFIGURED") {
+            return NextResponse.json(
+              {
+                success: false,
+                ok: false,
+                code: "HIGH_FIDELITY_PROVIDER_NOT_READY",
+                error: "当前高保真试穿模型尚未接入，请先使用快速示意试穿。",
+                message: "当前高保真试穿模型尚未接入，请先使用快速示意试穿。",
+                canDegrade: true,
+                fidelityMode: "masked_garment_tryon",
+                referenceMode: "masked_tryon",
+                patternReferenceUsed: false,
+                maskUsed: false,
+                isProductionReady: false,
+                warnings: ["当前 provider 未配置 masked garment try-on adapter。"],
+                providerCapability: tryOnMode.providerCapability,
+                jobId: tryOnMode.jobId,
+              },
+              { status: 422 },
+            );
+          }
+          console.error("[ai-studio/generate] masked garment try-on failed", err);
+          return NextResponse.json(
+            {
+              success: false,
+              ok: false,
+              code: "HIGH_FIDELITY_PROVIDER_FAILED",
+              error: "高保真试穿暂时失败，请先使用快速示意试穿。",
+              message: "高保真试穿暂时失败，请先使用快速示意试穿。",
+              canDegrade: true,
+            },
+            { status: 502 },
+          );
+        }
       }
       if (!IMAGE2_REAL_TOOLS.has(tool)) {
         const reason = tool === "pattern-apply"

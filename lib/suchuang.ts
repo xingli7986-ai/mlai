@@ -42,6 +42,24 @@ export function getTryOnProviderCapability(): TryOnProviderCapability {
   };
 }
 
+export async function generateMaskedGarmentTryOn(_input: {
+  patternImageUrl: string;
+  garmentTemplateImageUrl?: string;
+  garmentRegionMaskUrl?: string;
+  modelBaseImageUrl?: string;
+  bodyProfile?: unknown;
+  garmentTemplate?: unknown;
+  prompt: string;
+  negativePrompt?: string;
+}): Promise<{
+  imageUrl: string;
+  provider: string;
+  model: string;
+  raw?: unknown;
+}> {
+  throw new Error("MASKED_GARMENT_TRYON_PROVIDER_NOT_CONFIGURED");
+}
+
 interface OpenAIImageResponse {
   created?: number;
   data: Array<{

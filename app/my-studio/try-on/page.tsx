@@ -202,11 +202,6 @@ export default function TryOnPage() {
     () => buildTryOnReadiness(Boolean(selectedPattern?.imageUrl), selectedTemplate, bodyReady),
     [selectedPattern?.imageUrl, selectedTemplate, bodyReady],
   );
-  useEffect(() => {
-    if (requestedFidelityMode === "masked_garment_tryon" && !readiness.canRunMaskedTryOn) {
-      setRequestedFidelityMode("approximate");
-    }
-  }, [readiness.canRunMaskedTryOn, requestedFidelityMode]);
   const canRunRequestedMode =
     canGenerate && (requestedFidelityMode !== "masked_garment_tryon" || readiness.canRunMaskedTryOn);
   const nextHref = `/my-studio/confirm-design?workId=${encodeURIComponent(workId)}`;
@@ -324,6 +319,13 @@ export default function TryOnPage() {
         }),
       });
       const data = (await res.json()) as StudioGenerateResponse;
+      if (!res.ok && data.code === "HIGH_FIDELITY_PROVIDER_NOT_READY") {
+        const message = data.message || "高保真试穿能力正在接入中，你可以先使用快速示意试穿预览整体效果。";
+        setError(message);
+        setRequestedFidelityMode("approximate");
+        toast.show(message, { tone: "warning" });
+        return;
+      }
       const urls = (data.images || [])
         .map(generatedImageUrl)
         .filter((url): url is string => Boolean(url));
@@ -664,6 +666,9 @@ export default function TryOnPage() {
                 {!readiness.canRunMaskedTryOn && (
                   <p className="toFidelityHint">
                     {readiness.blockerMessage} 可先使用“快速示意试穿”预览整体感觉，印花位置和细节仍可能存在偏差。
+                    <button type="button" onClick={() => setRequestedFidelityMode("approximate")}>
+                      使用快速示意试穿
+                    </button>
                   </p>
                 )}
               </section>

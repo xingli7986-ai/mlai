@@ -521,6 +521,9 @@ export type StudioGenerateImage = string | StudioGenerateImageObject;
 
 export interface StudioGenerateResponse {
   success: boolean;
+  ok?: boolean;
+  code?: string;
+  canDegrade?: boolean;
   tool?: string;
   imageUrl?: string;
   images?: StudioGenerateImage[];

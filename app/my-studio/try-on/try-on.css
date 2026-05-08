@@ -365,6 +365,19 @@
   line-height: 1.6;
 }
 
+.toFidelityHint button {
+  display: inline-flex;
+  margin-left: 8px;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  background: transparent;
+  color: #234a58;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 0;
+}
+
 .toControlPanel {
   display: grid;
   gap: 14px;
