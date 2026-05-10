@@ -16,6 +16,7 @@ import {
 import {
   generateMaskedGarmentTryOn,
   generateWithGPTImage2,
+  generateWithGPTImage2Edit,
   getGPTImage2Config,
   getTryOnProviderCapability as getYxaiTryOnProviderCapability,
 } from "@/lib/suchuang";
@@ -161,7 +162,7 @@ function resolveTryOnExecutionMode(
   capability: TryOnProviderCapability,
   sourceImageUrls: string[],
 ): TryOnExecutionMode {
-  const requested = body.requestedFidelityMode || "masked_garment_tryon";
+  const requested = body.requestedFidelityMode || "reference_image";
   const allowDegrade = body.allowDegrade !== false;
   const hasPatternImage = Boolean(body.patternImageUrl || sourceImageUrls[0]);
   const isFashnMode = requested === "garment_tryon" || requested === "garment_tryon_high_quality";
@@ -257,8 +258,8 @@ function resolveTryOnExecutionMode(
       providerCapability: capability,
       jobId: `tryon-job-${Date.now()}`,
       blocked: true,
-      blockCode: "HIGH_FIDELITY_PROVIDER_NOT_READY",
-      canDegrade: allowDegrade,
+      blockCode: "MASKED_TRYON_PROVIDER_NOT_READY",
+      canDegrade: true,
     };
   }
 
@@ -414,6 +415,12 @@ function providerCapabilityForTryOn(requested?: TryOnFidelityMode): TryOnProvide
 }
 
 function tryOnBlockedMessage(code: string): string {
+  if (code === "MASKED_TRYON_PROVIDER_NOT_READY") {
+    return "服装区域 mask 级高保真试穿尚未接入，可先使用高保真参考试穿或快速示意试穿。";
+  }
+  if (code === "IMAGE2_EDIT_FAILED") {
+    return "参考图试穿暂时失败，可先使用快速示意试穿。";
+  }
   if (code === "FASHN_PROVIDER_NOT_CONFIGURED") {
     return "高保真试穿服务尚未配置，可先使用快速示意试穿。";
   }
@@ -427,6 +434,47 @@ function tryOnBlockedMessage(code: string): string {
     return "当前高保真试穿模型尚未接入，请先使用快速示意试穿。";
   }
   return "当前高保真能力暂时不可用，请先使用快速示意试穿。";
+}
+
+function textField(record: Record<string, unknown> | undefined, key: string): string {
+  const value = record?.[key];
+  return typeof value === "string" ? value : "";
+}
+
+function buildImage2EditTryOnPrompt(basePrompt: string, body: StudioGenerateRequest): string {
+  const template = body.garmentTemplate;
+  const bodyProfile = body.bodyProfile;
+  const templateParts = [
+    textField(template, "name"),
+    textField(template, "silhouette"),
+    textField(template, "neckline"),
+    textField(template, "sleeveLength") || textField(template, "sleeve"),
+    textField(template, "dressLength") || textField(template, "skirtLength"),
+    textField(template, "waistline"),
+    textField(template, "closure"),
+  ].filter(Boolean);
+  const bodyParts = [
+    bodyProfile?.heightCm ? `height ${bodyProfile.heightCm}cm` : "",
+    bodyProfile?.weightKg ? `weight ${bodyProfile.weightKg}kg` : "",
+    bodyProfile?.usualSize ? `usual size ${bodyProfile.usualSize}` : "",
+    bodyProfile?.fitPreference ? `fit preference ${bodyProfile.fitPreference}` : "",
+  ].filter(Boolean);
+  const wrapHint = templateParts.some((part) => /wrap|裹身/i.test(part))
+    ? "This is a wrap dress, not an A-line dress. Show wrap-front construction and waist tie. Do not replace it with an A-line silhouette."
+    : "";
+
+  return [
+    basePrompt,
+    "Use the uploaded image as the real visual reference for the fabric print.",
+    "Design a full-body fashion try-on preview of a model wearing a dress using this exact print as the main fabric inspiration.",
+    "Preserve the uploaded print's color palette, motif style, density, and background tone as much as possible.",
+    "Follow the selected garment silhouette and body profile.",
+    templateParts.length > 0 ? `Selected garment details: ${templateParts.join(", ")}.` : "",
+    bodyParts.length > 0 ? `Body profile reference: ${bodyParts.join(", ")}.` : "",
+    "Generate a full-body, head-to-toe, front-facing fashion preview with both feet visible.",
+    "Do not replace the print with a different floral pattern. Do not invent a different silhouette.",
+    wrapHint,
+  ].filter(Boolean).join("\n");
 }
 
 async function persistGeneratedImage(sourceUrl: string, key: string): Promise<string> {
@@ -616,7 +664,9 @@ export async function POST(req: Request) {
         if (
           code === "FASHN_PROVIDER_NOT_CONFIGURED" ||
           code === "GARMENT_IMAGE_NOT_READY" ||
-          code === "MODEL_BASE_NOT_READY"
+          code === "MODEL_BASE_NOT_READY" ||
+          code === "MASKED_TRYON_PROVIDER_NOT_READY" ||
+          code === "IMAGE2_EDIT_FAILED"
         ) {
           const message = tryOnBlockedMessage(code);
           return NextResponse.json(
@@ -795,6 +845,120 @@ export async function POST(req: Request) {
           );
         }
       }
+      if (tool === "pattern-apply" && tryOnMode?.fidelityMode === "reference_image") {
+        try {
+          const patternImageUrl = body.patternImageUrl || sourceImageUrls[0] || inputUrls[0] || "";
+          if (!patternImageUrl) {
+            return NextResponse.json(
+              {
+                success: false,
+                ok: false,
+                code: "IMAGE2_REFERENCE_IMAGE_NOT_READY",
+                error: "还没有找到当前印花图，请先回到印花创作中心选择印花。",
+                message: "还没有找到当前印花图，请先回到印花创作中心选择印花。",
+                canDegrade: false,
+                fidelityMode: "reference_image",
+                referenceMode: "true_image_reference",
+                patternReferenceUsed: false,
+                maskUsed: false,
+                isProductionReady: false,
+                warnings: ["缺少当前印花图，无法使用参考图试穿。"],
+                providerCapability: tryOnMode.providerCapability,
+                jobId: tryOnMode.jobId,
+              },
+              { status: 422 },
+            );
+          }
+
+          const editPrompt = buildImage2EditTryOnPrompt(finalPrompt, body);
+          const result = await generateWithGPTImage2Edit({
+            prompt: editPrompt,
+            imageUrl: patternImageUrl,
+            size,
+            n: 1,
+          });
+          const sourceUrl = result.imageUrl || result.base64 || "";
+          if (!sourceUrl) throw new Error("IMAGE2_EDIT_EMPTY_RESULT");
+
+          const persistedImageUrl = await persistGeneratedImage(
+            sourceUrl,
+            `studio/outputs/${batchId}_yxai_reference_tryon.png`,
+          );
+          const needsLongTermStorage = sourceUrl.startsWith("data:") && persistedImageUrl === sourceUrl;
+          const warnings = [
+            "已使用当前印花作为真实参考图生成试穿预览，生产前仍需确认版型与工艺细节。",
+            "服装区域 mask 尚未接入，因此当前不是最终生产级试穿。",
+            ...(needsLongTermStorage ? ["当前结果需转存为长期资产后再进入订单或工艺单。"] : []),
+            ...tryOnMode.warnings,
+          ];
+          const used = recordUsage(user.id);
+          return NextResponse.json({
+            success: true,
+            tool,
+            imageUrl: persistedImageUrl,
+            images: [persistedImageUrl],
+            resultType: resultTypeForTool(tool),
+            isFallback: false,
+            provider: result.provider,
+            model: result.model,
+            fidelityMode: "reference_image",
+            referenceMode: "true_image_reference",
+            patternReferenceUsed: true,
+            maskUsed: false,
+            isProductionReady: false,
+            warnings,
+            providerCapability: tryOnMode.providerCapability,
+            jobId: tryOnMode.jobId,
+            providerResultUrl: result.imageUrl || (result.base64 ? "base64:data-url" : undefined),
+            persistedImageUrl,
+            tryOnProvider: "yxai",
+            message: "高保真参考试穿已生成。",
+            metadata: {
+              role,
+              prompt: editPrompt,
+              sourceImageUrls: [patternImageUrl],
+              patternImageUrl,
+              fidelityMode: "reference_image",
+              referenceMode: "true_image_reference",
+              patternReferenceUsed: true,
+              maskUsed: false,
+              isProductionReady: false,
+              warnings,
+              providerCapability: tryOnMode.providerCapability,
+              jobId: tryOnMode.jobId,
+              providerResultUrl: result.imageUrl || (result.base64 ? "base64:data-url" : undefined),
+              persistedImageUrl,
+              tryOnProvider: "yxai",
+              qualityScores: tryOnQualityScores,
+            },
+            used,
+            limit: aiDailyLimit,
+          });
+        } catch (err) {
+          console.error("[ai-studio/generate] image2 edit try-on failed", err instanceof Error ? err.message : err);
+          const message = tryOnBlockedMessage("IMAGE2_EDIT_FAILED");
+          return NextResponse.json(
+            {
+              success: false,
+              ok: false,
+              code: "IMAGE2_EDIT_FAILED",
+              error: message,
+              message,
+              canDegrade: true,
+              fidelityMode: "reference_image",
+              referenceMode: "true_image_reference",
+              patternReferenceUsed: false,
+              maskUsed: false,
+              isProductionReady: false,
+              warnings: [message],
+              providerCapability: tryOnMode.providerCapability,
+              jobId: tryOnMode.jobId,
+            },
+            { status: 422 },
+          );
+        }
+      }
+
       if (tool === "pattern-apply" && tryOnMode?.fidelityMode === "masked_garment_tryon") {
         try {
           const params = (body.params || {}) as Record<string, unknown>;
@@ -852,9 +1016,9 @@ export async function POST(req: Request) {
               {
                 success: false,
                 ok: false,
-                code: "HIGH_FIDELITY_PROVIDER_NOT_READY",
-                error: "当前高保真试穿模型尚未接入，请先使用快速示意试穿。",
-                message: "当前高保真试穿模型尚未接入，请先使用快速示意试穿。",
+                code: "MASKED_TRYON_PROVIDER_NOT_READY",
+                error: "服装区域 mask 级高保真试穿尚未接入，可先使用高保真参考试穿或快速示意试穿。",
+                message: "服装区域 mask 级高保真试穿尚未接入，可先使用高保真参考试穿或快速示意试穿。",
                 canDegrade: true,
                 fidelityMode: "masked_garment_tryon",
                 referenceMode: "masked_tryon",

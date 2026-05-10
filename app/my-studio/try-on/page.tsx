@@ -94,7 +94,7 @@ export default function TryOnPage() {
   const [framing, setFraming] = useState<Framing>(DEFAULT_TRY_ON_PREFERENCE.framing);
   const [bodyProfile, setBodyProfile] = useState<StudioBodyProfile>({ ...DEFAULT_BODY_PROFILE });
   const [selectedTemplateId, setSelectedTemplateId] = useState(DEFAULT_GARMENT_TEMPLATES[0]?.id || "");
-  const [requestedFidelityMode, setRequestedFidelityMode] = useState<TryOnFidelityMode>("garment_tryon");
+  const [requestedFidelityMode, setRequestedFidelityMode] = useState<TryOnFidelityMode>("reference_image");
   const [showRevision, setShowRevision] = useState(false);
   const [revisionReason, setRevisionReason] = useState("");
   const [generating, setGenerating] = useState(false);
@@ -328,9 +328,17 @@ export default function TryOnPage() {
         !res.ok &&
         (data.code === "FASHN_PROVIDER_NOT_CONFIGURED" ||
           data.code === "GARMENT_IMAGE_NOT_READY" ||
-          data.code === "MODEL_BASE_NOT_READY")
+          data.code === "MODEL_BASE_NOT_READY" ||
+          data.code === "MASKED_TRYON_PROVIDER_NOT_READY")
       ) {
-        const message = data.message || "高保真试穿服务尚未配置，可先使用快速示意试穿。";
+        const message = data.message || "高保真服务尚未配置，可先使用高保真参考试穿或快速示意试穿。";
+        setError(message);
+        setRequestedFidelityMode(data.code === "MASKED_TRYON_PROVIDER_NOT_READY" ? "reference_image" : "approximate");
+        toast.show(message, { tone: "warning" });
+        return;
+      }
+      if (!res.ok && data.code === "IMAGE2_EDIT_FAILED") {
+        const message = data.message || "参考图试穿暂时失败，可先使用快速示意试穿。";
         setError(message);
         setRequestedFidelityMode("approximate");
         toast.show(message, { tone: "warning" });
@@ -688,12 +696,11 @@ export default function TryOnPage() {
                 <div className="toModeGroup" role="radiogroup" aria-label="试穿模式">
                   <button
                     type="button"
-                    className={requestedFidelityMode === "garment_tryon" ? "is-selected" : ""}
-                    disabled={!readiness.canRunMaskedTryOn}
-                    onClick={() => setRequestedFidelityMode("garment_tryon")}
+                    className={requestedFidelityMode === "reference_image" ? "is-selected" : ""}
+                    onClick={() => setRequestedFidelityMode("reference_image")}
                   >
-                    高保真试穿
-                    <span>{readiness.canRunMaskedTryOn ? "推荐" : readiness.shortBlocker}</span>
+                    高保真参考试穿
+                    <span>使用当前印花真实参考图</span>
                   </button>
                   <button
                     type="button"
@@ -706,7 +713,10 @@ export default function TryOnPage() {
                 </div>
                 {!readiness.canRunMaskedTryOn && (
                   <p className="toFidelityHint">
-                    {readiness.blockerMessage} 可先使用“快速示意试穿”预览整体感觉，印花位置和细节仍可能存在偏差。
+                    服装区域 mask 尚未接入，因此当前不是最终生产级试穿；你可以先使用“高保真参考试穿”或“快速示意试穿”预览整体效果。
+                    <button type="button" onClick={() => setRequestedFidelityMode("reference_image")}>
+                      使用高保真参考试穿
+                    </button>
                     <button type="button" onClick={() => setRequestedFidelityMode("approximate")}>
                       使用快速示意试穿
                     </button>
@@ -1213,7 +1223,7 @@ function tryOnFidelityLabel(asset: StudioAsset): string {
   if (asset.isFallback) return "示例预览";
   const mode = readTryOnFidelityMode(asset);
   if (mode === "masked_garment_tryon") return "高保真试穿";
-  if (mode === "reference_image") return "参考图试穿";
+  if (mode === "reference_image") return "高保真参考试穿";
   return "示意试穿";
 }
 
@@ -1227,6 +1237,9 @@ function tryOnFidelityNotice(asset: StudioAsset): string {
   }
   if (mode === "masked_garment_tryon") {
     return "已使用印花、版型和服装区域生成高保真试穿，生产前仍需后台确认工艺细节。";
+  }
+  if (mode === "reference_image") {
+    return "已使用当前印花作为真实参考图生成试穿预览，印花与版型细节仍需最终确认。";
   }
   return "当前结果用于设计预览，印花位置和细节仍可能存在偏差。";
 }
