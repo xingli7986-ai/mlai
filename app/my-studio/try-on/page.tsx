@@ -80,13 +80,36 @@ const TRY_ON_GENERATION_STAGES = [
   "渲染上身效果",
 ];
 const TRY_ON_GENERATION_TIMEOUT_MS = 90_000;
+const TRY_ON_GENERATION_TIMEOUT_REASON = "TRY_ON_GENERATION_TIMEOUT";
 const TRY_ON_TIMEOUT_MESSAGE = "生成时间较长，本次已自动停止。你可以重新生成，或先使用快速示意试穿。";
 const TRY_ON_REFERENCE_FAILED_MESSAGE = "参考图试穿暂时失败，可先使用快速示意试穿。";
 const TRY_ON_SAVE_FAILED_MESSAGE = "上身效果已生成，但保存失败，请稍后重试。";
 const TRY_ON_GENERIC_FAILED_MESSAGE = "虚拟试穿生成失败，请稍后重试。";
 
 function isAbortError(error: unknown): boolean {
-  return Boolean(error && typeof error === "object" && "name" in error && (error as { name?: unknown }).name === "AbortError");
+  if (error === TRY_ON_GENERATION_TIMEOUT_REASON) return true;
+  if (typeof error === "string") {
+    const normalized = error.toLowerCase();
+    return error.includes(TRY_ON_GENERATION_TIMEOUT_REASON) || normalized.includes("abort") || normalized.includes("aborted");
+  }
+  if (error && typeof error === "object") {
+    const record = error as { name?: unknown; message?: unknown; reason?: unknown };
+    if (record.reason === TRY_ON_GENERATION_TIMEOUT_REASON) return true;
+    if (record.name === "AbortError") return true;
+    if (typeof record.message === "string") {
+      const normalized = record.message.toLowerCase();
+      return record.message.includes(TRY_ON_GENERATION_TIMEOUT_REASON) || normalized.includes("abort") || normalized.includes("aborted");
+    }
+  }
+  return false;
+}
+
+function abortTryOnGeneration(controller: AbortController) {
+  if (typeof DOMException !== "undefined") {
+    controller.abort(new DOMException(TRY_ON_GENERATION_TIMEOUT_REASON, "AbortError"));
+    return;
+  }
+  controller.abort(TRY_ON_GENERATION_TIMEOUT_REASON);
 }
 
 export default function TryOnPage() {
@@ -270,7 +293,7 @@ export default function TryOnPage() {
     };
     setBodyProfile(profileForGeneration);
     const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), TRY_ON_GENERATION_TIMEOUT_MS);
+    const timeout = window.setTimeout(() => abortTryOnGeneration(controller), TRY_ON_GENERATION_TIMEOUT_MS);
 
     try {
       const persistedWork = await patchWorkSettings(profileForGeneration, selectedTemplate, controller.signal);
@@ -545,7 +568,9 @@ export default function TryOnPage() {
         tone: data.isFallback ? "warning" : "success",
       });
     } catch (err) {
-      console.error("[my-studio] try-on generation failed", err);
+      if (!isAbortError(err)) {
+        console.error("[my-studio] try-on generation failed", err);
+      }
       const message = isAbortError(err)
         ? TRY_ON_TIMEOUT_MESSAGE
         : err instanceof Error && err.message === TRY_ON_SAVE_FAILED_MESSAGE
