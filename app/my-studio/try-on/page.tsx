@@ -79,6 +79,15 @@ const TRY_ON_GENERATION_STAGES = [
   "贴合服装区域",
   "渲染上身效果",
 ];
+const TRY_ON_GENERATION_TIMEOUT_MS = 90_000;
+const TRY_ON_TIMEOUT_MESSAGE = "生成时间较长，本次已自动停止。你可以重新生成，或先使用快速示意试穿。";
+const TRY_ON_REFERENCE_FAILED_MESSAGE = "参考图试穿暂时失败，可先使用快速示意试穿。";
+const TRY_ON_SAVE_FAILED_MESSAGE = "上身效果已生成，但保存失败，请稍后重试。";
+const TRY_ON_GENERIC_FAILED_MESSAGE = "虚拟试穿生成失败，请稍后重试。";
+
+function isAbortError(error: unknown): boolean {
+  return Boolean(error && typeof error === "object" && "name" in error && (error as { name?: unknown }).name === "AbortError");
+}
 
 export default function TryOnPage() {
   const router = useRouter();
@@ -213,10 +222,11 @@ export default function TryOnPage() {
     setBodyProfile((current) => ({ ...current, [key]: value }));
   }
 
-  async function patchWorkSettings(nextBodyProfile: StudioBodyProfile, template: StudioGarmentTemplate) {
+  async function patchWorkSettings(nextBodyProfile: StudioBodyProfile, template: StudioGarmentTemplate, signal?: AbortSignal) {
     const res = await fetch(`/api/my-studio/works/${encodeURIComponent(workId)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
+      signal,
       body: JSON.stringify({
         bodyProfile: nextBodyProfile,
         selectedGarmentTemplateId: template.id,
@@ -259,9 +269,11 @@ export default function TryOnPage() {
       updatedAt: new Date().toISOString(),
     };
     setBodyProfile(profileForGeneration);
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), TRY_ON_GENERATION_TIMEOUT_MS);
 
     try {
-      const persistedWork = await patchWorkSettings(profileForGeneration, selectedTemplate);
+      const persistedWork = await patchWorkSettings(profileForGeneration, selectedTemplate, controller.signal);
       const prompt = buildTryOnPrompt(persistedWork, selectedPattern, currentPreference, profileForGeneration, selectedTemplate, nextRevisionReason);
       const garmentStructure = garmentStructureSnapshot(selectedTemplate);
       const garmentRegionTemplate = resolveDefaultGarmentRegionTemplate(selectedTemplate);
@@ -273,6 +285,7 @@ export default function TryOnPage() {
       const res = await fetch("/api/ai-studio/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           tool: "try-on",
           workId,
@@ -331,21 +344,21 @@ export default function TryOnPage() {
           data.code === "MODEL_BASE_NOT_READY" ||
           data.code === "MASKED_TRYON_PROVIDER_NOT_READY")
       ) {
-        const message = data.message || "高保真服务尚未配置，可先使用高保真参考试穿或快速示意试穿。";
+        const message = TRY_ON_REFERENCE_FAILED_MESSAGE;
         setError(message);
         setRequestedFidelityMode(data.code === "MASKED_TRYON_PROVIDER_NOT_READY" ? "reference_image" : "approximate");
         toast.show(message, { tone: "warning" });
         return;
       }
-      if (!res.ok && data.code === "IMAGE2_EDIT_FAILED") {
-        const message = data.message || "参考图试穿暂时失败，可先使用快速示意试穿。";
+      if (!res.ok && (data.code === "IMAGE2_EDIT_FAILED" || data.code === "IMAGE2_EDIT_TIMEOUT")) {
+        const message = data.message || TRY_ON_REFERENCE_FAILED_MESSAGE;
         setError(message);
         setRequestedFidelityMode("approximate");
         toast.show(message, { tone: "warning" });
         return;
       }
       if (!res.ok && data.code === "HIGH_FIDELITY_PROVIDER_NOT_READY") {
-        const message = data.message || "高保真试穿能力正在接入中，你可以先使用快速示意试穿预览整体效果。";
+        const message = TRY_ON_REFERENCE_FAILED_MESSAGE;
         setError(message);
         setRequestedFidelityMode("approximate");
         toast.show(message, { tone: "warning" });
@@ -356,7 +369,7 @@ export default function TryOnPage() {
         .filter((url): url is string => Boolean(url));
       const images = urls.length > 0 ? urls : data.imageUrl ? [data.imageUrl] : [];
       if (!res.ok || !data.success || images.length === 0) {
-        throw new Error("虚拟试穿生成失败，请稍后重试。");
+        throw new Error(TRY_ON_GENERIC_FAILED_MESSAGE);
       }
 
       const nextPreferenceMemory = {
@@ -376,6 +389,7 @@ export default function TryOnPage() {
       const saveRes = await fetch(`/api/my-studio/works/${encodeURIComponent(workId)}/results`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           kind: "tryOn",
           tool: "try-on",
@@ -523,7 +537,7 @@ export default function TryOnPage() {
         }),
       });
       const saved = (await saveRes.json().catch(() => ({}))) as { work?: StudioWorkDTO; error?: string };
-      if (!saveRes.ok || !saved.work) throw new Error("虚拟试穿生成失败，请稍后重试。");
+      if (!saveRes.ok || !saved.work) throw new Error(TRY_ON_SAVE_FAILED_MESSAGE);
       setWork(saved.work);
       setShowRevision(false);
       setRevisionReason("");
@@ -532,10 +546,15 @@ export default function TryOnPage() {
       });
     } catch (err) {
       console.error("[my-studio] try-on generation failed", err);
-      const message = "虚拟试穿生成失败，请稍后重试。";
+      const message = isAbortError(err)
+        ? TRY_ON_TIMEOUT_MESSAGE
+        : err instanceof Error && err.message === TRY_ON_SAVE_FAILED_MESSAGE
+          ? TRY_ON_SAVE_FAILED_MESSAGE
+          : TRY_ON_GENERIC_FAILED_MESSAGE;
       setError(message);
       toast.show(message, { tone: "error" });
     } finally {
+      window.clearTimeout(timeout);
       setGenerating(false);
     }
   }

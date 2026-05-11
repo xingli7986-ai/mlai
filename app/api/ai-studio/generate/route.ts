@@ -418,7 +418,7 @@ function tryOnBlockedMessage(code: string): string {
   if (code === "MASKED_TRYON_PROVIDER_NOT_READY") {
     return "服装区域 mask 级高保真试穿尚未接入，可先使用高保真参考试穿或快速示意试穿。";
   }
-  if (code === "IMAGE2_EDIT_FAILED") {
+  if (code === "IMAGE2_EDIT_FAILED" || code === "IMAGE2_EDIT_TIMEOUT") {
     return "参考图试穿暂时失败，可先使用快速示意试穿。";
   }
   if (code === "FASHN_PROVIDER_NOT_CONFIGURED") {
@@ -666,7 +666,8 @@ export async function POST(req: Request) {
           code === "GARMENT_IMAGE_NOT_READY" ||
           code === "MODEL_BASE_NOT_READY" ||
           code === "MASKED_TRYON_PROVIDER_NOT_READY" ||
-          code === "IMAGE2_EDIT_FAILED"
+          code === "IMAGE2_EDIT_FAILED" ||
+          code === "IMAGE2_EDIT_TIMEOUT"
         ) {
           const message = tryOnBlockedMessage(code);
           return NextResponse.json(
@@ -876,6 +877,7 @@ export async function POST(req: Request) {
             imageUrl: patternImageUrl,
             size,
             n: 1,
+            timeoutMs: 90_000,
           });
           const sourceUrl = result.imageUrl || result.base64 || "";
           if (!sourceUrl) throw new Error("IMAGE2_EDIT_EMPTY_RESULT");
@@ -935,13 +937,19 @@ export async function POST(req: Request) {
             limit: aiDailyLimit,
           });
         } catch (err) {
-          console.error("[ai-studio/generate] image2 edit try-on failed", err instanceof Error ? err.message : err);
-          const message = tryOnBlockedMessage("IMAGE2_EDIT_FAILED");
+          const errorMessage = err instanceof Error ? err.message : "";
+          const code = errorMessage === "IMAGE2_EDIT_TIMEOUT" ? "IMAGE2_EDIT_TIMEOUT" : "IMAGE2_EDIT_FAILED";
+          console.error(
+            code === "IMAGE2_EDIT_TIMEOUT"
+              ? "[my-studio/try-on] image2 edit timeout"
+              : "[my-studio/try-on] image2 edit failed",
+          );
+          const message = tryOnBlockedMessage(code);
           return NextResponse.json(
             {
               success: false,
               ok: false,
-              code: "IMAGE2_EDIT_FAILED",
+              code,
               error: message,
               message,
               canDegrade: true,
