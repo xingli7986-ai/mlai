@@ -42,6 +42,8 @@ export const runtime = "nodejs";
 export const maxDuration = 120;
 
 const GEMINI_MODEL_ID = "gemini-3-pro-image-preview";
+const IMAGE2_EDIT_TRY_ON_TIMEOUT_MS = 75_000;
+const IMAGE2_EDIT_TRY_ON_SIZE = "768x1024";
 
 type StudioModel = "gpt-image-2" | "gemini";
 
@@ -847,6 +849,7 @@ export async function POST(req: Request) {
         }
       }
       if (tool === "pattern-apply" && tryOnMode?.fidelityMode === "reference_image") {
+        const image2StartedAt = Date.now();
         try {
           const patternImageUrl = body.patternImageUrl || sourceImageUrls[0] || inputUrls[0] || "";
           if (!patternImageUrl) {
@@ -872,12 +875,18 @@ export async function POST(req: Request) {
           }
 
           const editPrompt = buildImage2EditTryOnPrompt(finalPrompt, body);
+          console.info("[ai-generate] image2 edit start", {
+            size: IMAGE2_EDIT_TRY_ON_SIZE,
+          });
           const result = await generateWithGPTImage2Edit({
             prompt: editPrompt,
             imageUrl: patternImageUrl,
-            size,
+            size: IMAGE2_EDIT_TRY_ON_SIZE,
             n: 1,
-            timeoutMs: 90_000,
+            timeoutMs: IMAGE2_EDIT_TRY_ON_TIMEOUT_MS,
+          });
+          console.info("[ai-generate] image2 edit end", {
+            ms: Date.now() - image2StartedAt,
           });
           const sourceUrl = result.imageUrl || result.base64 || "";
           if (!sourceUrl) throw new Error("IMAGE2_EDIT_EMPTY_RESULT");
@@ -944,6 +953,10 @@ export async function POST(req: Request) {
               ? "[my-studio/try-on] image2 edit timeout"
               : "[my-studio/try-on] image2 edit failed",
           );
+          console.info("[ai-generate] image2 edit end", {
+            ms: Date.now() - image2StartedAt,
+            status: code,
+          });
           const message = tryOnBlockedMessage(code);
           return NextResponse.json(
             {

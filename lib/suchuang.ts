@@ -8,6 +8,7 @@
 
 import { readFile } from "fs/promises";
 import path from "path";
+import sharp from "sharp";
 
 import type { TryOnProviderCapability } from "@/lib/my-studio/types";
 
@@ -15,6 +16,8 @@ const API_KEY = process.env.YXAI_API_KEY!;
 const BASE_URL = process.env.YXAI_BASE_URL || "https://yxai.anthropic.edu.pl/v1";
 const IMAGE_MODEL = process.env.YXAI_IMAGE_MODEL || "gpt-image-2";
 const IMAGE2_EDIT_TIMEOUT_MS = 90_000;
+const IMAGE2_EDIT_MAX_INPUT_DIMENSION = 1024;
+const IMAGE2_EDIT_TARGET_BYTES = 1_000_000;
 
 export const GPT_IMAGE2_PROVIDER = "yxai";
 
@@ -78,6 +81,14 @@ type ResolvedEditImage = {
   buffer: Buffer;
   mimeType: string;
   fileName: string;
+};
+
+type OptimizedEditImage = ResolvedEditImage & {
+  originalBytes: number;
+  optimizedBytes: number;
+  width?: number;
+  height?: number;
+  optimized: boolean;
 };
 
 type GPTImage2EditInput = {
@@ -210,6 +221,70 @@ function safeProviderError(status: number, text: string): string {
   return `IMAGE2_EDIT_FAILED:HTTP_${status}:${compact}`;
 }
 
+async function optimizeEditImage(input: ResolvedEditImage): Promise<OptimizedEditImage> {
+  const originalBytes = input.buffer.byteLength;
+
+  try {
+    const image = sharp(input.buffer, { failOn: "none" }).rotate();
+    const metadata = await image.metadata();
+    const width = metadata.width;
+    const height = metadata.height;
+    const needsResize = Boolean(width && height && Math.max(width, height) > IMAGE2_EDIT_MAX_INPUT_DIMENSION);
+    const needsCompress = originalBytes > IMAGE2_EDIT_TARGET_BYTES;
+
+    if (!needsResize && !needsCompress) {
+      return {
+        ...input,
+        originalBytes,
+        optimizedBytes: originalBytes,
+        width,
+        height,
+        optimized: false,
+      };
+    }
+
+    const resized = image.resize({
+      width: IMAGE2_EDIT_MAX_INPUT_DIMENSION,
+      height: IMAGE2_EDIT_MAX_INPUT_DIMENSION,
+      fit: "inside",
+      withoutEnlargement: true,
+    });
+    const qualities = [84, 76, 68];
+    let output = await resized.jpeg({ quality: qualities[0], mozjpeg: true }).toBuffer();
+
+    for (const quality of qualities.slice(1)) {
+      if (output.byteLength <= IMAGE2_EDIT_TARGET_BYTES) break;
+      output = await image
+        .resize({
+          width: IMAGE2_EDIT_MAX_INPUT_DIMENSION,
+          height: IMAGE2_EDIT_MAX_INPUT_DIMENSION,
+          fit: "inside",
+          withoutEnlargement: true,
+        })
+        .jpeg({ quality, mozjpeg: true })
+        .toBuffer();
+    }
+
+    return {
+      buffer: output,
+      mimeType: "image/jpeg",
+      fileName: `${input.fileName.replace(/\.[^.]+$/, "") || "reference"}.jpg`,
+      originalBytes,
+      optimizedBytes: output.byteLength,
+      width,
+      height,
+      optimized: true,
+    };
+  } catch {
+    return {
+      ...input,
+      originalBytes,
+      optimizedBytes: originalBytes,
+      optimized: false,
+    };
+  }
+}
+
 export async function generateWithGPTImage2Edit(input: GPTImage2EditInput): Promise<GPTImage2EditResult> {
   if (!API_KEY) {
     throw new Error("IMAGE2_EDIT_API_KEY_MISSING");
@@ -217,9 +292,31 @@ export async function generateWithGPTImage2Edit(input: GPTImage2EditInput): Prom
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), input.timeoutMs ?? IMAGE2_EDIT_TIMEOUT_MS);
+  let editFetchStartedAt = 0;
 
   try {
+    const resolveStartedAt = Date.now();
+    console.info("[suchuang] download input image start");
     const resolvedImage = await resolveEditImage(input, controller.signal);
+    console.info("[suchuang] download input image end", {
+      ms: Date.now() - resolveStartedAt,
+      size: resolvedImage.buffer.byteLength,
+    });
+    const optimizedImage = await optimizeEditImage(resolvedImage);
+    if (optimizedImage.optimized) {
+      console.info("[suchuang] input image optimized", {
+        originalSize: optimizedImage.originalBytes,
+        optimizedSize: optimizedImage.optimizedBytes,
+        width: optimizedImage.width,
+        height: optimizedImage.height,
+      });
+    } else {
+      console.info("[suchuang] input image unchanged", {
+        size: optimizedImage.optimizedBytes,
+        width: optimizedImage.width,
+        height: optimizedImage.height,
+      });
+    }
     const size = normalizeSize(input.size);
     const n = Math.max(1, Math.min(input.n ?? 1, 4));
     const form = new FormData();
@@ -228,9 +325,14 @@ export async function generateWithGPTImage2Edit(input: GPTImage2EditInput): Prom
     form.append("size", size);
     form.append("n", String(n));
 
-    const imageBytes = Uint8Array.from(resolvedImage.buffer);
-    form.append("image", new Blob([imageBytes], { type: resolvedImage.mimeType }), resolvedImage.fileName);
+    const imageBytes = Uint8Array.from(optimizedImage.buffer);
+    form.append("image", new Blob([imageBytes], { type: optimizedImage.mimeType }), optimizedImage.fileName);
 
+    editFetchStartedAt = Date.now();
+    console.info("[suchuang] image2 edit fetch start", {
+      size,
+      inputSize: optimizedImage.optimizedBytes,
+    });
     const res = await fetch(`${normalizeBaseUrl(BASE_URL)}/images/edits`, {
       method: "POST",
       headers: {
@@ -238,6 +340,10 @@ export async function generateWithGPTImage2Edit(input: GPTImage2EditInput): Prom
       },
       body: form,
       signal: controller.signal,
+    });
+    console.info("[suchuang] image2 edit fetch end", {
+      ms: Date.now() - editFetchStartedAt,
+      status: res.status,
     });
 
     if (!res.ok) {
@@ -268,6 +374,12 @@ export async function generateWithGPTImage2Edit(input: GPTImage2EditInput): Prom
     };
   } catch (error) {
     if (isAbortLikeError(error)) {
+      if (editFetchStartedAt) {
+        console.info("[suchuang] image2 edit fetch end", {
+          ms: Date.now() - editFetchStartedAt,
+          status: "timeout",
+        });
+      }
       const timeoutError = new Error("IMAGE2_EDIT_TIMEOUT");
       timeoutError.name = "Image2EditTimeoutError";
       throw timeoutError;

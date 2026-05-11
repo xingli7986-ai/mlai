@@ -79,7 +79,7 @@ const TRY_ON_GENERATION_STAGES = [
   "贴合服装区域",
   "渲染上身效果",
 ];
-const TRY_ON_GENERATION_TIMEOUT_MS = 90_000;
+const TRY_ON_GENERATION_TIMEOUT_MS = 95_000;
 const TRY_ON_TIMEOUT_MESSAGE = "生成时间较长，本次已自动停止。你可以重新生成，或先使用快速示意试穿。";
 const TRY_ON_REFERENCE_FAILED_MESSAGE = "参考图试穿暂时失败，可先使用快速示意试穿。";
 const TRY_ON_SAVE_FAILED_MESSAGE = "上身效果已生成，但保存失败，请稍后重试。";
@@ -274,7 +274,12 @@ export default function TryOnPage() {
     }, TRY_ON_GENERATION_TIMEOUT_MS);
 
     try {
+      const patchStartedAt = performance.now();
+      console.info("[try-on] patch settings start");
       const persistedWork = await patchWorkSettings(profileForGeneration, selectedTemplate);
+      console.info("[try-on] patch settings end", {
+        ms: Math.round(performance.now() - patchStartedAt),
+      });
       if (timedOut) return;
       const prompt = buildTryOnPrompt(persistedWork, selectedPattern, currentPreference, profileForGeneration, selectedTemplate, nextRevisionReason);
       const garmentStructure = garmentStructureSnapshot(selectedTemplate);
@@ -284,6 +289,8 @@ export default function TryOnPage() {
         : selectedPattern.source?.type?.includes("remix")
           ? "remix-pattern-try-on"
           : "direct-pattern-try-on";
+      const generateStartedAt = performance.now();
+      console.info("[try-on] image2 edit request start");
       const res = await fetch("/api/ai-studio/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -337,6 +344,10 @@ export default function TryOnPage() {
           size: "2:3",
         }),
       });
+      console.info("[try-on] image2 edit request end", {
+        ms: Math.round(performance.now() - generateStartedAt),
+        status: res.status,
+      });
       const data = (await res.json()) as StudioGenerateResponse;
       if (timedOut) return;
       if (
@@ -388,6 +399,8 @@ export default function TryOnPage() {
           ? metadataRecord.warnings.filter((item): item is string => typeof item === "string")
           : [];
       const qualityScores = isRecord(metadataRecord.qualityScores) ? metadataRecord.qualityScores : undefined;
+      const saveStartedAt = performance.now();
+      console.info("[try-on] save result start");
       const saveRes = await fetch(`/api/my-studio/works/${encodeURIComponent(workId)}/results`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -536,6 +549,10 @@ export default function TryOnPage() {
             },
           })),
         }),
+      });
+      console.info("[try-on] save result end", {
+        ms: Math.round(performance.now() - saveStartedAt),
+        status: saveRes.status,
       });
       const saved = (await saveRes.json().catch(() => ({}))) as { work?: StudioWorkDTO; error?: string };
       if (timedOut) return;
