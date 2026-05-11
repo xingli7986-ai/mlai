@@ -43,7 +43,7 @@ export const maxDuration = 120;
 
 const GEMINI_MODEL_ID = "gemini-3-pro-image-preview";
 const IMAGE2_EDIT_TRY_ON_TIMEOUT_MS = 75_000;
-const IMAGE2_EDIT_TRY_ON_SIZE = "768x1024";
+const IMAGE2_EDIT_TRY_ON_SIZE = "1024x1024";
 
 type StudioModel = "gpt-image-2" | "gemini";
 
@@ -444,6 +444,7 @@ function textField(record: Record<string, unknown> | undefined, key: string): st
 }
 
 function buildImage2EditTryOnPrompt(basePrompt: string, body: StudioGenerateRequest): string {
+  void basePrompt;
   const template = body.garmentTemplate;
   const bodyProfile = body.bodyProfile;
   const templateParts = [
@@ -461,20 +462,17 @@ function buildImage2EditTryOnPrompt(basePrompt: string, body: StudioGenerateRequ
     bodyProfile?.usualSize ? `usual size ${bodyProfile.usualSize}` : "",
     bodyProfile?.fitPreference ? `fit preference ${bodyProfile.fitPreference}` : "",
   ].filter(Boolean);
+  void bodyParts;
   const wrapHint = templateParts.some((part) => /wrap|裹身/i.test(part))
-    ? "This is a wrap dress, not an A-line dress. Show wrap-front construction and waist tie. Do not replace it with an A-line silhouette."
+    ? "The dress should be a wrap dress with wrap-front construction and a waist tie."
     : "";
 
   return [
-    basePrompt,
-    "Use the uploaded image as the real visual reference for the fabric print.",
-    "Design a full-body fashion try-on preview of a model wearing a dress using this exact print as the main fabric inspiration.",
-    "Preserve the uploaded print's color palette, motif style, density, and background tone as much as possible.",
-    "Follow the selected garment silhouette and body profile.",
-    templateParts.length > 0 ? `Selected garment details: ${templateParts.join(", ")}.` : "",
-    bodyParts.length > 0 ? `Body profile reference: ${bodyParts.join(", ")}.` : "",
-    "Generate a full-body, head-to-toe, front-facing fashion preview with both feet visible.",
-    "Do not replace the print with a different floral pattern. Do not invent a different silhouette.",
+    "Use the uploaded image as the real fabric print reference.",
+    "Create a full-body fashion try-on preview of a woman wearing a dress inspired by this exact print.",
+    "Preserve the print colors, motif style, density, and soft background tone as much as possible.",
+    "Keep the garment elegant, realistic, and suitable for a premium womenswear brand.",
+    "Full-body, front-facing, clean studio lighting.",
     wrapHint,
   ].filter(Boolean).join("\n");
 }
@@ -875,9 +873,7 @@ export async function POST(req: Request) {
           }
 
           const editPrompt = buildImage2EditTryOnPrompt(finalPrompt, body);
-          console.info("[ai-generate] image2 edit start", {
-            size: IMAGE2_EDIT_TRY_ON_SIZE,
-          });
+          console.info(`[ai-generate] image2 edit start size=${IMAGE2_EDIT_TRY_ON_SIZE}`);
           const result = await generateWithGPTImage2Edit({
             prompt: editPrompt,
             imageUrl: patternImageUrl,
@@ -885,9 +881,7 @@ export async function POST(req: Request) {
             n: 1,
             timeoutMs: IMAGE2_EDIT_TRY_ON_TIMEOUT_MS,
           });
-          console.info("[ai-generate] image2 edit end", {
-            ms: Date.now() - image2StartedAt,
-          });
+          console.info(`[ai-generate] image2 edit end ms=${Date.now() - image2StartedAt}`);
           const sourceUrl = result.imageUrl || result.base64 || "";
           if (!sourceUrl) throw new Error("IMAGE2_EDIT_EMPTY_RESULT");
 
@@ -953,10 +947,7 @@ export async function POST(req: Request) {
               ? "[my-studio/try-on] image2 edit timeout"
               : "[my-studio/try-on] image2 edit failed",
           );
-          console.info("[ai-generate] image2 edit end", {
-            ms: Date.now() - image2StartedAt,
-            status: code,
-          });
+          console.info(`[ai-generate] image2 edit end ms=${Date.now() - image2StartedAt} status=${code}`);
           const message = tryOnBlockedMessage(code);
           return NextResponse.json(
             {

@@ -88,6 +88,8 @@ type OptimizedEditImage = ResolvedEditImage & {
   optimizedBytes: number;
   width?: number;
   height?: number;
+  optimizedWidth?: number;
+  optimizedHeight?: number;
   optimized: boolean;
 };
 
@@ -239,6 +241,8 @@ async function optimizeEditImage(input: ResolvedEditImage): Promise<OptimizedEdi
         optimizedBytes: originalBytes,
         width,
         height,
+        optimizedWidth: width,
+        optimizedHeight: height,
         optimized: false,
       };
     }
@@ -265,6 +269,8 @@ async function optimizeEditImage(input: ResolvedEditImage): Promise<OptimizedEdi
         .toBuffer();
     }
 
+    const optimizedMetadata = await sharp(output, { failOn: "none" }).metadata().catch(() => undefined);
+
     return {
       buffer: output,
       mimeType: "image/jpeg",
@@ -273,6 +279,8 @@ async function optimizeEditImage(input: ResolvedEditImage): Promise<OptimizedEdi
       optimizedBytes: output.byteLength,
       width,
       height,
+      optimizedWidth: optimizedMetadata?.width,
+      optimizedHeight: optimizedMetadata?.height,
       optimized: true,
     };
   } catch {
@@ -280,6 +288,8 @@ async function optimizeEditImage(input: ResolvedEditImage): Promise<OptimizedEdi
       ...input,
       originalBytes,
       optimizedBytes: originalBytes,
+      optimizedWidth: undefined,
+      optimizedHeight: undefined,
       optimized: false,
     };
   }
@@ -298,24 +308,18 @@ export async function generateWithGPTImage2Edit(input: GPTImage2EditInput): Prom
     const resolveStartedAt = Date.now();
     console.info("[suchuang] download input image start");
     const resolvedImage = await resolveEditImage(input, controller.signal);
-    console.info("[suchuang] download input image end", {
-      ms: Date.now() - resolveStartedAt,
-      size: resolvedImage.buffer.byteLength,
-    });
+    console.info(`[suchuang] download input image end ms=${Date.now() - resolveStartedAt} bytes=${resolvedImage.buffer.byteLength}`);
     const optimizedImage = await optimizeEditImage(resolvedImage);
-    if (optimizedImage.optimized) {
-      console.info("[suchuang] input image optimized", {
-        originalSize: optimizedImage.originalBytes,
-        optimizedSize: optimizedImage.optimizedBytes,
-        width: optimizedImage.width,
-        height: optimizedImage.height,
-      });
-    } else {
-      console.info("[suchuang] input image unchanged", {
-        size: optimizedImage.optimizedBytes,
-        width: optimizedImage.width,
-        height: optimizedImage.height,
-      });
+    console.info(
+      `[suchuang] input image original bytes=${optimizedImage.originalBytes} width=${optimizedImage.width ?? "unknown"} height=${optimizedImage.height ?? "unknown"}`,
+    );
+    console.info(
+      `[suchuang] input image optimized bytes=${optimizedImage.optimizedBytes} width=${optimizedImage.optimizedWidth ?? optimizedImage.width ?? "unknown"} height=${optimizedImage.optimizedHeight ?? optimizedImage.height ?? "unknown"} mime=${optimizedImage.mimeType} optimized=${optimizedImage.optimized}`,
+    );
+    if (optimizedImage.optimizedBytes > IMAGE2_EDIT_TARGET_BYTES) {
+      console.info(
+        `[suchuang] input image optimized bytes still above target bytes=${optimizedImage.optimizedBytes} target=${IMAGE2_EDIT_TARGET_BYTES}`,
+      );
     }
     const size = normalizeSize(input.size);
     const n = Math.max(1, Math.min(input.n ?? 1, 4));
@@ -329,10 +333,7 @@ export async function generateWithGPTImage2Edit(input: GPTImage2EditInput): Prom
     form.append("image", new Blob([imageBytes], { type: optimizedImage.mimeType }), optimizedImage.fileName);
 
     editFetchStartedAt = Date.now();
-    console.info("[suchuang] image2 edit fetch start", {
-      size,
-      inputSize: optimizedImage.optimizedBytes,
-    });
+    console.info(`[suchuang] image2 edit fetch start size=${size} inputBytes=${optimizedImage.optimizedBytes}`);
     const res = await fetch(`${normalizeBaseUrl(BASE_URL)}/images/edits`, {
       method: "POST",
       headers: {
@@ -341,10 +342,7 @@ export async function generateWithGPTImage2Edit(input: GPTImage2EditInput): Prom
       body: form,
       signal: controller.signal,
     });
-    console.info("[suchuang] image2 edit fetch end", {
-      ms: Date.now() - editFetchStartedAt,
-      status: res.status,
-    });
+    console.info(`[suchuang] image2 edit fetch end ms=${Date.now() - editFetchStartedAt} status=${res.status}`);
 
     if (!res.ok) {
       const text = await res.text().catch(() => "");
@@ -375,10 +373,7 @@ export async function generateWithGPTImage2Edit(input: GPTImage2EditInput): Prom
   } catch (error) {
     if (isAbortLikeError(error)) {
       if (editFetchStartedAt) {
-        console.info("[suchuang] image2 edit fetch end", {
-          ms: Date.now() - editFetchStartedAt,
-          status: "timeout",
-        });
+        console.info(`[suchuang] image2 edit fetch end ms=${Date.now() - editFetchStartedAt} status=timeout`);
       }
       const timeoutError = new Error("IMAGE2_EDIT_TIMEOUT");
       timeoutError.name = "Image2EditTimeoutError";
