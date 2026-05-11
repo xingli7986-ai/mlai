@@ -268,7 +268,9 @@ export async function generateWithGPTImage2Edit(input: GPTImage2EditInput): Prom
     };
   } catch (error) {
     if (isAbortLikeError(error)) {
-      throw new Error("IMAGE2_EDIT_TIMEOUT");
+      const timeoutError = new Error("IMAGE2_EDIT_TIMEOUT");
+      timeoutError.name = "Image2EditTimeoutError";
+      throw timeoutError;
     }
     throw error;
   } finally {

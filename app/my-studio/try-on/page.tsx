@@ -80,37 +80,10 @@ const TRY_ON_GENERATION_STAGES = [
   "渲染上身效果",
 ];
 const TRY_ON_GENERATION_TIMEOUT_MS = 90_000;
-const TRY_ON_GENERATION_TIMEOUT_REASON = "TRY_ON_GENERATION_TIMEOUT";
 const TRY_ON_TIMEOUT_MESSAGE = "生成时间较长，本次已自动停止。你可以重新生成，或先使用快速示意试穿。";
 const TRY_ON_REFERENCE_FAILED_MESSAGE = "参考图试穿暂时失败，可先使用快速示意试穿。";
 const TRY_ON_SAVE_FAILED_MESSAGE = "上身效果已生成，但保存失败，请稍后重试。";
 const TRY_ON_GENERIC_FAILED_MESSAGE = "虚拟试穿生成失败，请稍后重试。";
-
-function isAbortError(error: unknown): boolean {
-  if (error === TRY_ON_GENERATION_TIMEOUT_REASON) return true;
-  if (typeof error === "string") {
-    const normalized = error.toLowerCase();
-    return error.includes(TRY_ON_GENERATION_TIMEOUT_REASON) || normalized.includes("abort") || normalized.includes("aborted");
-  }
-  if (error && typeof error === "object") {
-    const record = error as { name?: unknown; message?: unknown; reason?: unknown };
-    if (record.reason === TRY_ON_GENERATION_TIMEOUT_REASON) return true;
-    if (record.name === "AbortError") return true;
-    if (typeof record.message === "string") {
-      const normalized = record.message.toLowerCase();
-      return record.message.includes(TRY_ON_GENERATION_TIMEOUT_REASON) || normalized.includes("abort") || normalized.includes("aborted");
-    }
-  }
-  return false;
-}
-
-function abortTryOnGeneration(controller: AbortController) {
-  if (typeof DOMException !== "undefined") {
-    controller.abort(new DOMException(TRY_ON_GENERATION_TIMEOUT_REASON, "AbortError"));
-    return;
-  }
-  controller.abort(TRY_ON_GENERATION_TIMEOUT_REASON);
-}
 
 export default function TryOnPage() {
   const router = useRouter();
@@ -245,11 +218,10 @@ export default function TryOnPage() {
     setBodyProfile((current) => ({ ...current, [key]: value }));
   }
 
-  async function patchWorkSettings(nextBodyProfile: StudioBodyProfile, template: StudioGarmentTemplate, signal?: AbortSignal) {
+  async function patchWorkSettings(nextBodyProfile: StudioBodyProfile, template: StudioGarmentTemplate) {
     const res = await fetch(`/api/my-studio/works/${encodeURIComponent(workId)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      signal,
       body: JSON.stringify({
         bodyProfile: nextBodyProfile,
         selectedGarmentTemplateId: template.id,
@@ -292,11 +264,18 @@ export default function TryOnPage() {
       updatedAt: new Date().toISOString(),
     };
     setBodyProfile(profileForGeneration);
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => abortTryOnGeneration(controller), TRY_ON_GENERATION_TIMEOUT_MS);
+    let timedOut = false;
+    const timeout = window.setTimeout(() => {
+      timedOut = true;
+      setError(TRY_ON_TIMEOUT_MESSAGE);
+      setRequestedFidelityMode("approximate");
+      setGenerating(false);
+      toast.show(TRY_ON_TIMEOUT_MESSAGE, { tone: "warning" });
+    }, TRY_ON_GENERATION_TIMEOUT_MS);
 
     try {
-      const persistedWork = await patchWorkSettings(profileForGeneration, selectedTemplate, controller.signal);
+      const persistedWork = await patchWorkSettings(profileForGeneration, selectedTemplate);
+      if (timedOut) return;
       const prompt = buildTryOnPrompt(persistedWork, selectedPattern, currentPreference, profileForGeneration, selectedTemplate, nextRevisionReason);
       const garmentStructure = garmentStructureSnapshot(selectedTemplate);
       const garmentRegionTemplate = resolveDefaultGarmentRegionTemplate(selectedTemplate);
@@ -308,7 +287,6 @@ export default function TryOnPage() {
       const res = await fetch("/api/ai-studio/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        signal: controller.signal,
         body: JSON.stringify({
           tool: "try-on",
           workId,
@@ -360,6 +338,7 @@ export default function TryOnPage() {
         }),
       });
       const data = (await res.json()) as StudioGenerateResponse;
+      if (timedOut) return;
       if (
         !res.ok &&
         (data.code === "FASHN_PROVIDER_NOT_CONFIGURED" ||
@@ -412,7 +391,6 @@ export default function TryOnPage() {
       const saveRes = await fetch(`/api/my-studio/works/${encodeURIComponent(workId)}/results`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        signal: controller.signal,
         body: JSON.stringify({
           kind: "tryOn",
           tool: "try-on",
@@ -560,6 +538,7 @@ export default function TryOnPage() {
         }),
       });
       const saved = (await saveRes.json().catch(() => ({}))) as { work?: StudioWorkDTO; error?: string };
+      if (timedOut) return;
       if (!saveRes.ok || !saved.work) throw new Error(TRY_ON_SAVE_FAILED_MESSAGE);
       setWork(saved.work);
       setShowRevision(false);
@@ -568,19 +547,22 @@ export default function TryOnPage() {
         tone: data.isFallback ? "warning" : "success",
       });
     } catch (err) {
-      if (!isAbortError(err)) {
-        console.error("[my-studio] try-on generation failed", err);
+      if (timedOut) {
+        setError(TRY_ON_TIMEOUT_MESSAGE);
+        setRequestedFidelityMode("approximate");
+        return;
       }
-      const message = isAbortError(err)
-        ? TRY_ON_TIMEOUT_MESSAGE
-        : err instanceof Error && err.message === TRY_ON_SAVE_FAILED_MESSAGE
+      console.error("[my-studio] try-on generation failed", err);
+      const message = err instanceof Error && err.message === TRY_ON_SAVE_FAILED_MESSAGE
           ? TRY_ON_SAVE_FAILED_MESSAGE
           : TRY_ON_GENERIC_FAILED_MESSAGE;
       setError(message);
       toast.show(message, { tone: "error" });
     } finally {
       window.clearTimeout(timeout);
-      setGenerating(false);
+      if (!timedOut) {
+        setGenerating(false);
+      }
     }
   }
 
