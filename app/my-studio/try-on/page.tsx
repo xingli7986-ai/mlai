@@ -80,10 +80,28 @@ const TRY_ON_GENERATION_STAGES = [
   "渲染上身效果",
 ];
 const TRY_ON_GENERATION_TIMEOUT_MS = 95_000;
-const TRY_ON_TIMEOUT_MESSAGE = "生成时间较长，本次已自动停止。你可以重新生成，或先使用快速示意试穿。";
-const TRY_ON_REFERENCE_FAILED_MESSAGE = "参考图试穿暂时失败，可先使用快速示意试穿。";
+const TRY_ON_TIMEOUT_MESSAGE = "本次参考图试穿未能完成，请稍后重试。我们没有生成替代示意图，以避免与你选择的印花产生偏差。";
+const TRY_ON_REFERENCE_FAILED_MESSAGE = "本次参考图试穿未能完成，请稍后重试。我们没有生成替代示意图，以避免与你选择的印花产生偏差。";
 const TRY_ON_SAVE_FAILED_MESSAGE = "上身效果已生成，但保存失败，请稍后重试。";
+const TRY_ON_SETTINGS_SAVE_FAILED_MESSAGE = "试穿参数保存失败，请稍后重试。";
 const TRY_ON_GENERIC_FAILED_MESSAGE = "虚拟试穿生成失败，请稍后重试。";
+
+function tryOnErrorMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : typeof error === "string" ? error : "";
+  if (
+    message === TRY_ON_TIMEOUT_MESSAGE ||
+    message === TRY_ON_REFERENCE_FAILED_MESSAGE ||
+    message === TRY_ON_SAVE_FAILED_MESSAGE ||
+    message === TRY_ON_SETTINGS_SAVE_FAILED_MESSAGE ||
+    message === TRY_ON_GENERIC_FAILED_MESSAGE
+  ) {
+    return message;
+  }
+  if (/failed to fetch|networkerror|load failed/i.test(message)) {
+    return "当前网络连接不稳定，请稍后重试。";
+  }
+  return TRY_ON_GENERIC_FAILED_MESSAGE;
+}
 
 export default function TryOnPage() {
   const router = useRouter();
@@ -237,19 +255,20 @@ export default function TryOnPage() {
       }),
     });
     const data = (await res.json().catch(() => ({}))) as { work?: StudioWorkDTO; error?: string };
-    if (!res.ok || !data.work) throw new Error(data.error || "身材和版型保存失败，请稍后重试。");
+    if (!res.ok || !data.work) throw new Error(data.error || TRY_ON_SETTINGS_SAVE_FAILED_MESSAGE);
     setWork(data.work);
     return data.work;
   }
 
   async function generateTryOn(nextRevisionReason?: string) {
     if (!workId || !work || !selectedPattern || !selectedTemplate) return;
+    const generationFidelityMode = requestedFidelityMode;
     if (!bodyReady) {
       setError("请先填写身高和体重，再生成我的上身效果图。");
       return;
     }
     if (
-      (requestedFidelityMode === "masked_garment_tryon" || requestedFidelityMode === "garment_tryon") &&
+      (generationFidelityMode === "masked_garment_tryon" || generationFidelityMode === "garment_tryon") &&
       !readiness.canRunMaskedTryOn
     ) {
       setError(readiness.blockerMessage);
@@ -269,7 +288,6 @@ export default function TryOnPage() {
     const timeout = window.setTimeout(() => {
       timedOut = true;
       setError(TRY_ON_TIMEOUT_MESSAGE);
-      setRequestedFidelityMode("approximate");
       setGenerating(false);
       toast.show(TRY_ON_TIMEOUT_MESSAGE, { tone: "warning" });
     }, TRY_ON_GENERATION_TIMEOUT_MS);
@@ -278,9 +296,7 @@ export default function TryOnPage() {
       const patchStartedAt = performance.now();
       console.info("[try-on] patch settings start");
       const persistedWork = await patchWorkSettings(profileForGeneration, selectedTemplate);
-      console.info("[try-on] patch settings end", {
-        ms: Math.round(performance.now() - patchStartedAt),
-      });
+      console.info(`[try-on] patch settings end ms=${Math.round(performance.now() - patchStartedAt)}`);
       if (timedOut) return;
       const prompt = buildTryOnPrompt(persistedWork, selectedPattern, currentPreference, profileForGeneration, selectedTemplate, nextRevisionReason);
       const garmentStructure = garmentStructureSnapshot(selectedTemplate);
@@ -300,8 +316,8 @@ export default function TryOnPage() {
           workId,
           patternAssetId: selectedPattern.id,
           patternImageUrl: selectedPattern.imageUrl,
-          requestedFidelityMode,
-          allowDegrade: requestedFidelityMode !== "masked_garment_tryon" && requestedFidelityMode !== "garment_tryon",
+          requestedFidelityMode: generationFidelityMode,
+          allowDegrade: false,
           bodyProfile: profileForGeneration,
           garmentTemplate: selectedTemplate,
           fitPreference: profileForGeneration.fitPreference,
@@ -314,8 +330,8 @@ export default function TryOnPage() {
             workId,
             patternAssetId: selectedPattern.id,
             patternImageUrl: selectedPattern.imageUrl,
-            requestedFidelityMode,
-            allowDegrade: requestedFidelityMode !== "masked_garment_tryon" && requestedFidelityMode !== "garment_tryon",
+            requestedFidelityMode: generationFidelityMode,
+            allowDegrade: false,
             bodyProfile: profileForGeneration,
             garmentTemplate: selectedTemplate,
             fitPreference: profileForGeneration.fitPreference,
@@ -345,37 +361,24 @@ export default function TryOnPage() {
           size: "2:3",
         }),
       });
-      console.info("[try-on] image2 edit request end", {
-        ms: Math.round(performance.now() - generateStartedAt),
-        status: res.status,
-      });
-      const data = (await res.json()) as StudioGenerateResponse;
+      console.info(`[try-on] image2 edit request end ms=${Math.round(performance.now() - generateStartedAt)} status=${res.status}`);
+      const data = (await res.json().catch(() => ({
+        success: false,
+        code: "TRY_ON_BAD_RESPONSE",
+        message: TRY_ON_GENERIC_FAILED_MESSAGE,
+      }))) as StudioGenerateResponse;
       if (timedOut) return;
-      if (
-        !res.ok &&
-        (data.code === "FASHN_PROVIDER_NOT_CONFIGURED" ||
-          data.code === "GARMENT_IMAGE_NOT_READY" ||
-          data.code === "MODEL_BASE_NOT_READY" ||
-          data.code === "MASKED_TRYON_PROVIDER_NOT_READY")
-      ) {
-        const message = TRY_ON_REFERENCE_FAILED_MESSAGE;
-        setError(message);
-        setRequestedFidelityMode(data.code === "MASKED_TRYON_PROVIDER_NOT_READY" ? "reference_image" : "approximate");
-        toast.show(message, { tone: "warning" });
-        return;
-      }
-      if (!res.ok && (data.code === "IMAGE2_EDIT_FAILED" || data.code === "IMAGE2_EDIT_TIMEOUT")) {
+      const canRetry = Boolean((data as StudioGenerateResponse & { canRetry?: boolean }).canRetry);
+      if (!res.ok && (canRetry || data.code)) {
         const message = data.message || TRY_ON_REFERENCE_FAILED_MESSAGE;
         setError(message);
-        setRequestedFidelityMode("approximate");
         toast.show(message, { tone: "warning" });
         return;
       }
-      if (!res.ok && data.code === "HIGH_FIDELITY_PROVIDER_NOT_READY") {
-        const message = TRY_ON_REFERENCE_FAILED_MESSAGE;
+      if (!res.ok && data.code) {
+        const message = data.message || TRY_ON_GENERIC_FAILED_MESSAGE;
         setError(message);
-        setRequestedFidelityMode("approximate");
-        toast.show(message, { tone: "warning" });
+        toast.show(message, { tone: "error" });
         return;
       }
       const urls = (data.images || [])
@@ -391,7 +394,7 @@ export default function TryOnPage() {
         tryOnPreview: currentPreference,
       };
       const displayLabels = tryOnLabelParts(currentPreference);
-      const fidelityMode = data.fidelityMode || (data.isFallback ? "approximate" : requestedFidelityMode);
+      const fidelityMode = data.fidelityMode || (data.isFallback ? "approximate" : generationFidelityMode);
       const referenceMode = data.referenceMode || (fidelityMode === "masked_garment_tryon" ? "masked_tryon" : fidelityMode === "reference_image" || fidelityMode === "garment_tryon" || fidelityMode === "garment_tryon_high_quality" ? "true_image_reference" : "prompt_url_only");
       const metadataRecord = isRecord(data.metadata) ? data.metadata : {};
       const fidelityWarnings = Array.isArray(data.warnings)
@@ -551,10 +554,7 @@ export default function TryOnPage() {
           })),
         }),
       });
-      console.info("[try-on] save result end", {
-        ms: Math.round(performance.now() - saveStartedAt),
-        status: saveRes.status,
-      });
+      console.info(`[try-on] save result end ms=${Math.round(performance.now() - saveStartedAt)} status=${saveRes.status}`);
       const saved = (await saveRes.json().catch(() => ({}))) as { work?: StudioWorkDTO; error?: string };
       if (timedOut) return;
       if (!saveRes.ok || !saved.work) throw new Error(TRY_ON_SAVE_FAILED_MESSAGE);
@@ -567,13 +567,10 @@ export default function TryOnPage() {
     } catch (err) {
       if (timedOut) {
         setError(TRY_ON_TIMEOUT_MESSAGE);
-        setRequestedFidelityMode("approximate");
         return;
       }
-      console.error("[my-studio] try-on generation failed", err);
-      const message = err instanceof Error && err.message === TRY_ON_SAVE_FAILED_MESSAGE
-          ? TRY_ON_SAVE_FAILED_MESSAGE
-          : TRY_ON_GENERIC_FAILED_MESSAGE;
+      const message = tryOnErrorMessage(err);
+      console.warn(`[my-studio] try-on generation failed: ${message}`);
       setError(message);
       toast.show(message, { tone: "error" });
     } finally {
@@ -724,19 +721,11 @@ export default function TryOnPage() {
                 <div className="toModeGroup" role="radiogroup" aria-label="试穿模式">
                   <button
                     type="button"
-                    className={requestedFidelityMode === "reference_image" ? "is-selected" : ""}
+                    className="is-selected"
                     onClick={() => setRequestedFidelityMode("reference_image")}
                   >
                     高保真参考试穿
-                    <span>使用当前印花作为真实参考图，生成更接近印花风格的上身效果。</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={requestedFidelityMode === "approximate" ? "is-selected" : ""}
-                    onClick={() => setRequestedFidelityMode("approximate")}
-                  >
-                    快速示意试穿
-                    <span>用于快速预览整体感觉，印花位置和细节可能有偏差。</span>
+                    <span>使用当前印花作为真实参考图，生成更接近所选印花的上身效果。</span>
                   </button>
                 </div>
                 <div className="toReadinessSummary">
@@ -881,20 +870,11 @@ export default function TryOnPage() {
                       : "请先填写身高和体重，再生成我的上身效果图。"}
                 </p>
                 <button type="button" className="toGenerateButton" disabled={generating || !canRunRequestedMode} onClick={() => generateTryOn()}>
-                  {generating
-                    ? "正在生成..."
-                    : requestedFidelityMode === "approximate"
-                      ? "生成快速示意试穿"
-                      : "生成高保真参考试穿"}
+                  {generating ? "正在生成..." : "生成高保真参考试穿"}
                 </button>
                 {error && (
                   <div className="toErrorStack">
                     <p className="toError">{error}</p>
-                    {requestedFidelityMode !== "approximate" && (
-                      <button type="button" className="toInlineFallbackButton" onClick={() => setRequestedFidelityMode("approximate")}>
-                        使用快速示意试穿
-                      </button>
-                    )}
                   </div>
                 )}
                 <button
@@ -1277,7 +1257,7 @@ function tryOnFidelityLabel(asset: StudioAsset): string {
   const mode = readTryOnFidelityMode(asset);
   if (mode === "masked_garment_tryon") return "高保真试穿";
   if (mode === "reference_image") return "高保真参考试穿";
-  return "示意试穿";
+  return "历史预览";
 }
 
 function tryOnFidelityNotice(asset: StudioAsset): string {

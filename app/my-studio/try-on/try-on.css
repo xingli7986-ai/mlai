@@ -746,20 +746,6 @@
   gap: 10px;
 }
 
-.toInlineFallbackButton {
-  border: 1px solid rgba(192, 106, 115, 0.28);
-  border-radius: 999px;
-  background: #fff;
-  color: #c06a73;
-  cursor: pointer;
-  font-weight: 700;
-  padding: 10px 14px;
-}
-
-.toInlineFallbackButton:hover {
-  background: rgba(192, 106, 115, 0.08);
-}
-
 .toGenerateButton:not(:disabled):hover,
 .toNextButton:not(:disabled):hover,
 .toRegenerateButton:not(:disabled):hover {

@@ -261,7 +261,7 @@ function resolveTryOnExecutionMode(
       jobId: `tryon-job-${Date.now()}`,
       blocked: true,
       blockCode: "MASKED_TRYON_PROVIDER_NOT_READY",
-      canDegrade: true,
+      canDegrade: false,
     };
   }
 
@@ -292,7 +292,7 @@ function resolveTryOnExecutionMode(
         jobId: `tryon-job-${Date.now()}`,
         blocked: true,
         blockCode: "REFERENCE_IMAGE_PROVIDER_NOT_READY",
-        canDegrade: true,
+        canDegrade: false,
       };
     }
   }
@@ -326,8 +326,8 @@ function resolveTryOnExecutionMode(
 
   warnings.push(
     hasPatternImage
-      ? "当前供应商只支持文生图，印花图不会作为真实图像输入，结果为示意试穿。"
-      : "缺少当前印花图，结果为示意试穿。",
+      ? "当前供应商只支持文生图，印花图不会作为真实图像输入，结果不可用于定制判断。"
+      : "缺少当前印花图，结果不可用于定制判断。",
   );
   if (!allowDegrade && requested !== "approximate") {
     return {
@@ -341,7 +341,7 @@ function resolveTryOnExecutionMode(
       jobId: `tryon-job-${Date.now()}`,
       blocked: true,
       blockCode: "HIGH_FIDELITY_PROVIDER_NOT_READY",
-      canDegrade: true,
+      canDegrade: false,
     };
   }
   return {
@@ -418,24 +418,24 @@ function providerCapabilityForTryOn(requested?: TryOnFidelityMode): TryOnProvide
 
 function tryOnBlockedMessage(code: string): string {
   if (code === "MASKED_TRYON_PROVIDER_NOT_READY") {
-    return "服装区域 mask 级高保真试穿尚未接入，可先使用高保真参考试穿或快速示意试穿。";
+    return "服装区域级高保真试穿尚未接入，请先使用高保真参考试穿。";
   }
-  if (code === "IMAGE2_EDIT_FAILED" || code === "IMAGE2_EDIT_TIMEOUT") {
-    return "参考图试穿暂时失败，可先使用快速示意试穿。";
+  if (code === "IMAGE2_EDIT_FAILED" || code === "IMAGE2_EDIT_TIMEOUT" || code === "IMAGE2_INPUT_DOWNLOAD_FAILED") {
+    return "本次参考图试穿未能完成，请稍后重试。我们没有生成替代示意图，以避免与你选择的印花产生偏差。";
   }
   if (code === "FASHN_PROVIDER_NOT_CONFIGURED") {
-    return "高保真试穿服务尚未配置，可先使用快速示意试穿。";
+    return "高保真试穿服务尚未配置，请稍后重试。";
   }
   if (code === "GARMENT_IMAGE_NOT_READY") {
-    return "服装图还没有准备好，可先使用快速示意试穿。";
+    return "服装图还没有准备好，请稍后重试。";
   }
   if (code === "MODEL_BASE_NOT_READY") {
-    return "模特底图还没有准备好，可先使用快速示意试穿。";
+    return "模特底图还没有准备好，请稍后重试。";
   }
   if (code === "HIGH_FIDELITY_PROVIDER_NOT_READY") {
-    return "当前高保真试穿模型尚未接入，请先使用快速示意试穿。";
+    return "当前高保真试穿模型尚未接入，请稍后重试。";
   }
-  return "当前高保真能力暂时不可用，请先使用快速示意试穿。";
+  return "当前高保真能力暂时不可用，请稍后重试。";
 }
 
 function textField(record: Record<string, unknown> | undefined, key: string): string {
@@ -667,7 +667,8 @@ export async function POST(req: Request) {
           code === "MODEL_BASE_NOT_READY" ||
           code === "MASKED_TRYON_PROVIDER_NOT_READY" ||
           code === "IMAGE2_EDIT_FAILED" ||
-          code === "IMAGE2_EDIT_TIMEOUT"
+          code === "IMAGE2_EDIT_TIMEOUT" ||
+          code === "IMAGE2_INPUT_DOWNLOAD_FAILED"
         ) {
           const message = tryOnBlockedMessage(code);
           return NextResponse.json(
@@ -677,7 +678,8 @@ export async function POST(req: Request) {
               code,
               error: message,
               message,
-              canDegrade: tryOnMode.canDegrade ?? true,
+              canDegrade: false,
+              canRetry: true,
               fidelityMode: tryOnMode.fidelityMode,
               referenceMode: tryOnMode.referenceMode,
               patternReferenceUsed: tryOnMode.patternReferenceUsed,
@@ -691,8 +693,8 @@ export async function POST(req: Request) {
           );
         }
         const message = code === "HIGH_FIDELITY_PROVIDER_NOT_READY"
-          ? "当前高保真试穿模型尚未接入，请先使用快速示意试穿。"
-          : "当前参考图试穿能力尚未接入，请先使用快速示意试穿。";
+          ? "当前高保真试穿模型尚未接入，请稍后重试。"
+          : "当前参考图试穿能力尚未接入，请稍后重试。";
         return NextResponse.json(
           {
             success: false,
@@ -700,7 +702,8 @@ export async function POST(req: Request) {
             code,
             error: message,
             message,
-            canDegrade: tryOnMode.canDegrade ?? true,
+            canDegrade: false,
+            canRetry: true,
             fidelityMode: tryOnMode.fidelityMode,
             referenceMode: tryOnMode.referenceMode,
             patternReferenceUsed: tryOnMode.patternReferenceUsed,
@@ -821,9 +824,9 @@ export async function POST(req: Request) {
               ? code
               : "FASHN_TRYON_FAILED";
           const message = safeCode === "FASHN_TRYON_TIMEOUT"
-            ? "高保真试穿生成超时，可先使用快速示意试穿。"
+            ? "高保真试穿生成超时，请稍后重试。"
             : safeCode === "FASHN_TRYON_FAILED"
-              ? "高保真试穿暂时失败，可先使用快速示意试穿。"
+              ? "高保真试穿暂时失败，请稍后重试。"
               : tryOnBlockedMessage(safeCode);
           return NextResponse.json(
             {
@@ -832,7 +835,8 @@ export async function POST(req: Request) {
               code: safeCode,
               error: message,
               message,
-              canDegrade: true,
+              canDegrade: false,
+              canRetry: true,
               fidelityMode: tryOnMode.fidelityMode,
               referenceMode: tryOnMode.referenceMode,
               patternReferenceUsed: false,
@@ -941,11 +945,17 @@ export async function POST(req: Request) {
           });
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : "";
-          const code = errorMessage === "IMAGE2_EDIT_TIMEOUT" ? "IMAGE2_EDIT_TIMEOUT" : "IMAGE2_EDIT_FAILED";
-          console.error(
+          const code = errorMessage === "IMAGE2_EDIT_TIMEOUT"
+            ? "IMAGE2_EDIT_TIMEOUT"
+            : errorMessage.startsWith("IMAGE2_EDIT_INPUT_FETCH_FAILED")
+              ? "IMAGE2_INPUT_DOWNLOAD_FAILED"
+              : "IMAGE2_EDIT_FAILED";
+          console.warn(
             code === "IMAGE2_EDIT_TIMEOUT"
               ? "[my-studio/try-on] image2 edit timeout"
-              : "[my-studio/try-on] image2 edit failed",
+              : code === "IMAGE2_INPUT_DOWNLOAD_FAILED"
+                ? "[my-studio/try-on] image2 input download failed"
+                : "[my-studio/try-on] image2 edit failed",
           );
           console.info(`[ai-generate] image2 edit end ms=${Date.now() - image2StartedAt} status=${code}`);
           const message = tryOnBlockedMessage(code);
@@ -956,7 +966,8 @@ export async function POST(req: Request) {
               code,
               error: message,
               message,
-              canDegrade: true,
+              canDegrade: false,
+              canRetry: true,
               fidelityMode: "reference_image",
               referenceMode: "true_image_reference",
               patternReferenceUsed: false,
@@ -1029,9 +1040,10 @@ export async function POST(req: Request) {
                 success: false,
                 ok: false,
                 code: "MASKED_TRYON_PROVIDER_NOT_READY",
-                error: "服装区域 mask 级高保真试穿尚未接入，可先使用高保真参考试穿或快速示意试穿。",
-                message: "服装区域 mask 级高保真试穿尚未接入，可先使用高保真参考试穿或快速示意试穿。",
-                canDegrade: true,
+                error: "服装区域级高保真试穿尚未接入，请先使用高保真参考试穿。",
+                message: "服装区域级高保真试穿尚未接入，请先使用高保真参考试穿。",
+                canDegrade: false,
+                canRetry: true,
                 fidelityMode: "masked_garment_tryon",
                 referenceMode: "masked_tryon",
                 patternReferenceUsed: false,
@@ -1050,9 +1062,10 @@ export async function POST(req: Request) {
               success: false,
               ok: false,
               code: "HIGH_FIDELITY_PROVIDER_FAILED",
-              error: "高保真试穿暂时失败，请先使用快速示意试穿。",
-              message: "高保真试穿暂时失败，请先使用快速示意试穿。",
-              canDegrade: true,
+              error: "高保真试穿暂时失败，请稍后重试。",
+              message: "高保真试穿暂时失败，请稍后重试。",
+              canDegrade: false,
+              canRetry: true,
             },
             { status: 502 },
           );
@@ -1309,14 +1322,14 @@ export async function POST(req: Request) {
       limit: aiDailyLimit,
     });
   } catch (err) {
-    console.error("AI Studio generate error:", err);
+    console.warn("AI Studio generate error:", err instanceof Error ? err.name : "UnknownError");
     return fallbackResponse({
       tool,
       count,
       userId: user.id,
       limit: aiDailyLimit,
       role,
-      reason: err instanceof Error ? err.message : "generation-error",
+      reason: "generation-error",
       prompt: finalPrompt,
       message: fallbackMessageForReason(tool, "generation-error"),
     });
