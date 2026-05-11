@@ -54,6 +54,7 @@
 
 .toWorkCard,
 .toApplicationCard,
+.toFidelityPanel,
 .toBodyPanel,
 .toTemplatePanel,
 .toControlPanel,
@@ -84,7 +85,7 @@
   margin: 0;
   color: #234a58;
   font-family: var(--font-playfair, "Noto Serif SC", serif);
-  font-size: 34px;
+  font-size: 30px;
   font-weight: 600;
   line-height: 1.08;
 }
@@ -94,6 +95,47 @@
   color: #65757c;
   font-size: 14px;
   line-height: 1.65;
+}
+
+.toDecisionBlock {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.toWorkbenchSectionLabel {
+  margin: 0 0 10px;
+  color: #234a58;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.toCompactMeta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.toCompactMeta div {
+  min-width: 0;
+  border: 1px solid rgba(35, 74, 88, 0.08);
+  border-radius: 14px;
+  background: rgba(243, 246, 246, 0.68);
+  padding: 9px 10px;
+}
+
+.toCompactMeta dt {
+  color: #8b7777;
+  font-size: 11px;
+  margin-bottom: 4px;
+}
+
+.toCompactMeta dd {
+  margin: 0;
+  color: #234a58;
+  font-weight: 700;
+  font-size: 13px;
 }
 
 .toProgress {
@@ -277,6 +319,27 @@
   background: linear-gradient(180deg, rgba(252, 253, 253, 0.98), rgba(248, 244, 242, 0.96));
 }
 
+.toReadinessSummary {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(243, 246, 246, 0.72);
+  border: 1px solid rgba(35, 74, 88, 0.08);
+}
+
+.toReadinessSummary span {
+  color: #8b7777;
+  font-size: 12px;
+}
+
+.toReadinessSummary small,
+.toReadinessSummary strong {
+  color: #234a58;
+  font-size: 13px;
+}
+
 .toReadinessGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -398,7 +461,8 @@
 }
 
 .toBodyInput input,
-.toBodyInline select {
+.toBodyInline select,
+.toSizeSelect select {
   width: 100%;
   min-height: 36px;
   border: 1px solid rgba(35, 74, 88, 0.12);
@@ -411,9 +475,51 @@
 }
 
 .toBodyInput input:focus,
-.toBodyInline select:focus {
+.toBodyInline select:focus,
+.toSizeSelect select:focus {
   border-color: rgba(192, 106, 115, 0.36);
   box-shadow: 0 0 0 3px rgba(192, 106, 115, 0.09);
+}
+
+.toSizeSelect {
+  display: grid;
+  gap: 5px;
+  margin: 12px 0;
+  color: #586970;
+  font-size: 12px;
+}
+
+.toBodySummary {
+  margin: 0 0 12px;
+  padding: 11px 12px;
+  border-radius: 14px;
+  background: rgba(243, 246, 246, 0.72);
+  color: #234a58;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.toBodyToggle {
+  width: auto;
+  min-height: 40px;
+  border: 1px solid rgba(35, 74, 88, 0.14);
+  border-radius: 999px;
+  background: #fff;
+  color: #234a58;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-weight: 700;
+  padding: 0 14px;
+  transition:
+    border-color 0.18s ease,
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.toBodyToggle:hover {
+  color: #c06a73;
+  border-color: rgba(192, 106, 115, 0.34);
+  transform: translateY(-1px);
 }
 
 .toBodyInline {
@@ -583,6 +689,7 @@
   line-height: 1.6;
 }
 
+.toGenerateButton,
 .toNextButton,
 .toRegenerateButton {
   width: 100%;
@@ -596,6 +703,7 @@
     box-shadow 0.18s ease;
 }
 
+.toGenerateButton,
 .toNextButton {
   border: 0;
   background: #234a58;
@@ -633,11 +741,32 @@
   margin: 0;
 }
 
+.toErrorStack {
+  display: grid;
+  gap: 10px;
+}
+
+.toInlineFallbackButton {
+  border: 1px solid rgba(192, 106, 115, 0.28);
+  border-radius: 999px;
+  background: #fff;
+  color: #c06a73;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 10px 14px;
+}
+
+.toInlineFallbackButton:hover {
+  background: rgba(192, 106, 115, 0.08);
+}
+
+.toGenerateButton:not(:disabled):hover,
 .toNextButton:not(:disabled):hover,
 .toRegenerateButton:not(:disabled):hover {
   transform: translateY(-1px);
 }
 
+.toGenerateButton:disabled,
 .toNextButton:disabled,
 .toRegenerateButton:disabled {
   cursor: not-allowed;

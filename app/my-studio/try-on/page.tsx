@@ -106,6 +106,7 @@ export default function TryOnPage() {
   const [generationStage, setGenerationStage] = useState(0);
   const [selectingId, setSelectingId] = useState("");
   const [error, setError] = useState("");
+  const [bodyEditorOpen, setBodyEditorOpen] = useState(false);
 
   useEffect(() => {
     if (!workId) return;
@@ -646,7 +647,7 @@ export default function TryOnPage() {
 
         {work && selectedPattern && (
           <div className="toStudioFrame">
-            <aside className="toWorkbench" aria-label="工作台参数区">
+            <aside className="toWorkbench" aria-label="试穿工作台">
               <section className="toPanel toWorkCard">
                 <nav className="toCrumb" aria-label="面包屑">
                   <Link href="/my-studio">我的设计工作室</Link>
@@ -655,7 +656,7 @@ export default function TryOnPage() {
                 </nav>
                 <div className="toWorkbenchTitle">
                   <h1>虚拟试穿</h1>
-                  <p>查看印花穿在衣服上的效果，确认后开始定制。</p>
+                  <p>按当前印花、版型和身材参数生成上身效果。</p>
                 </div>
                 <div className="toProgress" aria-label="设计流程进度">
                   {FLOW_STEPS.map((step, index) => (
@@ -665,20 +666,27 @@ export default function TryOnPage() {
                     </span>
                   ))}
                 </div>
-                <div className="toSectionTitle">
-                  <span>当前设计</span>
+                <div className="toDecisionBlock">
+                  <p className="toWorkbenchSectionLabel">当前设计</p>
                   <strong>{work.title}</strong>
-                </div>
-                <h2>款式与版型</h2>
-                <div className="toMetaGrid">
-                  <span>{work.config.garmentType || "连衣裙"}</span>
-                  <span>{work.config.silhouette || "A 字裙"}</span>
-                  <span>{work.config.occasion || "通勤"}</span>
-                  <span>{work.config.size || "M"}</span>
-                </div>
-                <div className="toAssetCounts" aria-label="作品资产统计">
-                  <span>印花 {work.assetCounts.patterns}</span>
-                  <span>试穿 {work.assetCounts.tryOns}</span>
+                  <dl className="toCompactMeta">
+                    <div>
+                      <dt>款式</dt>
+                      <dd>{work.config.garmentType || "连衣裙"}</dd>
+                    </div>
+                    <div>
+                      <dt>版型</dt>
+                      <dd>{selectedTemplate?.name || work.config.silhouette || "A 字裙"}</dd>
+                    </div>
+                    <div>
+                      <dt>尺码</dt>
+                      <dd>{bodyProfile.usualSize || work.config.size || "M"}</dd>
+                    </div>
+                    <div>
+                      <dt>场景</dt>
+                      <dd>{work.config.occasion || "通勤"}</dd>
+                    </div>
+                  </dl>
                 </div>
               </section>
 
@@ -686,7 +694,7 @@ export default function TryOnPage() {
                 <div className="toPanelHead">
                   <div>
                     <p className="toEyebrow">当前印花</p>
-                    <h2>用于上身效果的印花</h2>
+                    <h2>用于本次上身效果生成</h2>
                   </div>
                   <Link className="toTextLink" href={`/my-studio/pattern-generate?workId=${encodeURIComponent(workId)}`}>
                     更换
@@ -695,8 +703,8 @@ export default function TryOnPage() {
                 <div className="toSourceCard">
                   <img src={selectedPattern.imageUrl} alt="当前印花" />
                   <div>
-                    <strong>用于本次试穿的印花</strong>
-                    <span>{patternSummary(selectedPattern)}</span>
+                    <strong>{patternSummary(selectedPattern)}</strong>
+                    <span>系统会以这张印花作为参考生成上身效果。</span>
                     <small>
                       {selectedPattern.generatedAt
                         ? `保存于 ${formatDateTime(selectedPattern.generatedAt)}`
@@ -709,32 +717,9 @@ export default function TryOnPage() {
               <section className="toPanel toFidelityPanel">
                 <div className="toPanelHead">
                   <div>
-                    <p className="toEyebrow">高保真试穿准备</p>
-                    <h2>生成模式</h2>
-                    <p>高保真需要印花、版型模板、模特体型和服装区域都准备好；条件不足时会降级为示意试穿。</p>
+                    <p className="toEyebrow">试穿模式</p>
+                    <h2>选择生成方式</h2>
                   </div>
-                </div>
-                <div className="toReadinessGrid">
-                  <ReadinessItem
-                    label="印花平铺图"
-                    ready={readiness.patternTileReady}
-                    detail={readiness.patternTileReady ? "已读取当前印花" : "请先选择当前印花"}
-                  />
-                  <ReadinessItem
-                    label="版型模板"
-                    ready={readiness.garmentTemplateReady}
-                    detail={readiness.garmentTemplateReady ? "已选择版型结构" : "请选择版型"}
-                  />
-                  <ReadinessItem
-                    label="模特体型 / 底图"
-                    ready={readiness.modelBaseReady}
-                    detail={readiness.modelBaseReady ? "已读取身材参数" : "请填写身高体重"}
-                  />
-                  <ReadinessItem
-                    label="服装区域"
-                    ready={readiness.maskReady}
-                    detail={readiness.maskDetail}
-                  />
                 </div>
                 <div className="toModeGroup" role="radiogroup" aria-label="试穿模式">
                   <button
@@ -743,7 +728,7 @@ export default function TryOnPage() {
                     onClick={() => setRequestedFidelityMode("reference_image")}
                   >
                     高保真参考试穿
-                    <span>使用当前印花真实参考图</span>
+                    <span>使用当前印花作为真实参考图，生成更接近印花风格的上身效果。</span>
                   </button>
                   <button
                     type="button"
@@ -751,73 +736,20 @@ export default function TryOnPage() {
                     onClick={() => setRequestedFidelityMode("approximate")}
                   >
                     快速示意试穿
-                    <span>可先预览整体感觉</span>
+                    <span>用于快速预览整体感觉，印花位置和细节可能有偏差。</span>
                   </button>
                 </div>
-                {!readiness.canRunMaskedTryOn && (
-                  <p className="toFidelityHint">
-                    服装区域 mask 尚未接入，因此当前不是最终生产级试穿；你可以先使用“高保真参考试穿”或“快速示意试穿”预览整体效果。
-                    <button type="button" onClick={() => setRequestedFidelityMode("reference_image")}>
-                      使用高保真参考试穿
-                    </button>
-                    <button type="button" onClick={() => setRequestedFidelityMode("approximate")}>
-                      使用快速示意试穿
-                    </button>
-                  </p>
-                )}
-              </section>
-
-              <section className="toPanel toBodyPanel">
-                <div className="toPanelHead">
-                  <div>
-                    <p className="toEyebrow">我的身材比例</p>
-                    <h2>身高体重与尺码</h2>
-                    <p>用于让上身效果更贴近你的比例。</p>
-                  </div>
-                </div>
-                <div className="toBodyGrid">
-                  <BodyInput label="身高 cm" value={bodyProfile.heightCm} onChange={(value) => updateBodyProfile("heightCm", value)} />
-                  <BodyInput label="体重 kg" value={bodyProfile.weightKg} onChange={(value) => updateBodyProfile("weightKg", value)} />
-                  <BodyInput label="肩宽 cm" value={bodyProfile.shoulderCm} onChange={(value) => updateBodyProfile("shoulderCm", value)} />
-                  <BodyInput label="胸围 cm" value={bodyProfile.bustCm} onChange={(value) => updateBodyProfile("bustCm", value)} />
-                  <BodyInput label="腰围 cm" value={bodyProfile.waistCm} onChange={(value) => updateBodyProfile("waistCm", value)} />
-                  <BodyInput label="臀围 cm" value={bodyProfile.hipCm} onChange={(value) => updateBodyProfile("hipCm", value)} />
-                </div>
-                <div className="toBodyInline">
-                  <label>
-                    常穿尺码
-                    <select
-                      value={bodyProfile.usualSize || "M"}
-                      onChange={(event) => updateBodyProfile("usualSize", event.target.value)}
-                    >
-                      {["S", "M", "L", "XL"].map((size) => (
-                        <option key={size} value={size}>{size}</option>
-                      ))}
-                    </select>
-                  </label>
-                  <div>
-                    <span>穿着松量</span>
-                    <div className="toFitGroup">
-                      {FIT_OPTIONS.map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          className={bodyProfile.fitPreference === item.id ? "is-selected" : ""}
-                          onClick={() => updateBodyProfile("fitPreference", item.id)}
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                <div className="toReadinessSummary">
+                  <span>{bodyReady ? "已准备：印花、版型、身材参数" : "已准备：印花、版型；请补充身高体重"}</span>
+                  <small>服装区域：{readiness.maskReady ? "已根据版型模板准备" : "待根据版型模板准备"}</small>
                 </div>
               </section>
 
               <section className="toPanel toTemplatePanel">
                 <div className="toPanelHead">
                   <div>
-                    <p className="toEyebrow">选择版型</p>
-                    <h2>这件衣服的轮廓</h2>
+                    <p className="toEyebrow">款式与尺码</p>
+                    <h2>确认这件衣服的轮廓</h2>
                   </div>
                 </div>
                 <div className="toTemplateList">
@@ -833,18 +765,84 @@ export default function TryOnPage() {
                     </button>
                   ))}
                 </div>
+                <label className="toSizeSelect">
+                  尺码
+                  <select
+                    value={bodyProfile.usualSize || work.config.size || "M"}
+                    onChange={(event) => updateBodyProfile("usualSize", event.target.value)}
+                  >
+                    {["S", "M", "L", "XL"].map((size) => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </select>
+                </label>
+              </section>
+
+              <section className="toPanel toBodyPanel">
+                <div className="toPanelHead">
+                  <div>
+                    <p className="toEyebrow">我的身材</p>
+                    <h2>身材参数</h2>
+                    <p className="toBodySummary">
+                      身高 {bodyProfile.heightCm || "--"}cm / 体重 {bodyProfile.weightKg || "--"}kg / 常穿 {bodyProfile.usualSize || "M"} / {fitLabel(bodyProfile.fitPreference)}
+                    </p>
+                  </div>
+                  <button type="button" className="toBodyToggle" onClick={() => setBodyEditorOpen((value) => !value)}>
+                    {bodyEditorOpen ? "收起" : "编辑身材"}
+                  </button>
+                </div>
+                {bodyEditorOpen && (
+                  <>
+                    <div className="toBodyGrid">
+                      <BodyInput label="身高 cm" value={bodyProfile.heightCm} onChange={(value) => updateBodyProfile("heightCm", value)} />
+                      <BodyInput label="体重 kg" value={bodyProfile.weightKg} onChange={(value) => updateBodyProfile("weightKg", value)} />
+                      <BodyInput label="肩宽 cm" value={bodyProfile.shoulderCm} onChange={(value) => updateBodyProfile("shoulderCm", value)} />
+                      <BodyInput label="胸围 cm" value={bodyProfile.bustCm} onChange={(value) => updateBodyProfile("bustCm", value)} />
+                      <BodyInput label="腰围 cm" value={bodyProfile.waistCm} onChange={(value) => updateBodyProfile("waistCm", value)} />
+                      <BodyInput label="臀围 cm" value={bodyProfile.hipCm} onChange={(value) => updateBodyProfile("hipCm", value)} />
+                    </div>
+                    <div className="toBodyInline">
+                      <label>
+                        常穿尺码
+                        <select
+                          value={bodyProfile.usualSize || "M"}
+                          onChange={(event) => updateBodyProfile("usualSize", event.target.value)}
+                        >
+                          {["S", "M", "L", "XL"].map((size) => (
+                            <option key={size} value={size}>{size}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <div>
+                        <span>穿着松量</span>
+                        <div className="toFitGroup">
+                          {FIT_OPTIONS.map((item) => (
+                            <button
+                              key={item.id}
+                              type="button"
+                              className={bodyProfile.fitPreference === item.id ? "is-selected" : ""}
+                              onClick={() => updateBodyProfile("fitPreference", item.id)}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
               </section>
 
               <section className="toPanel toControlPanel" id="generate-try-on">
                 <div className="toPanelHead">
                   <div>
-                    <h2>试穿参数</h2>
-                    <p>选择希望看到的呈现方式，生成我的上身效果图。</p>
+                    <p className="toEyebrow">呈现效果</p>
+                    <h2>画面风格</h2>
                   </div>
                 </div>
 
                 <div className="toControlGroup">
-                  <h3>试穿呈现风格</h3>
+                  <h3>风格</h3>
                   <div className="toOptionList">
                     {MODEL_STYLE_OPTIONS.map((item) => (
                       <button
@@ -861,19 +859,17 @@ export default function TryOnPage() {
                 </div>
 
                 <OptionGroup
-                  title="拍摄氛围"
+                  title="画面"
                   options={ATMOSPHERE_OPTIONS}
                   value={atmosphere}
                   onChange={(value) => setAtmosphere(value as Atmosphere)}
                 />
                 <OptionGroup
-                  title="服装展示"
+                  title="角度"
                   options={FRAMING_OPTIONS}
                   value={framing}
                   onChange={(value) => setFraming(value as Framing)}
                 />
-
-                {error && <p className="toError">{error}</p>}
               </section>
 
               <section className="toPanel toNextPanel">
@@ -881,19 +877,33 @@ export default function TryOnPage() {
                   {hasSelectedTryOn
                     ? "当前上身效果将用于下一步定制信息填写。"
                     : bodyReady
-                      ? "请先生成或选择一张上身效果图。"
+                      ? "确认参数后生成一张上身效果图。"
                       : "请先填写身高和体重，再生成我的上身效果图。"}
                 </p>
+                <button type="button" className="toGenerateButton" disabled={generating || !canRunRequestedMode} onClick={() => generateTryOn()}>
+                  {generating
+                    ? "正在生成..."
+                    : requestedFidelityMode === "approximate"
+                      ? "生成快速示意试穿"
+                      : "生成高保真参考试穿"}
+                </button>
+                {error && (
+                  <div className="toErrorStack">
+                    <p className="toError">{error}</p>
+                    {requestedFidelityMode !== "approximate" && (
+                      <button type="button" className="toInlineFallbackButton" onClick={() => setRequestedFidelityMode("approximate")}>
+                        使用快速示意试穿
+                      </button>
+                    )}
+                  </div>
+                )}
                 <button
                   type="button"
-                  className="toNextButton"
+                  className="toRegenerateButton"
                   disabled={!hasSelectedTryOn}
                   onClick={() => router.push(nextHref)}
                 >
                   下一步：开始定制
-                </button>
-                <button type="button" className="toRegenerateButton" disabled={generating || !canRunRequestedMode} onClick={() => generateTryOn()}>
-                  {generating ? TRY_ON_GENERATION_STAGES[generationStage] : tryOnAssets.length > 0 ? "重新生成我的上身效果图" : "生成我的上身效果图"}
                 </button>
                 {hasSelectedTryOn && (
                   <button type="button" className="toRevisionToggle" onClick={() => setShowRevision((value) => !value)}>
