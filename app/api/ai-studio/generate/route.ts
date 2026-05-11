@@ -878,6 +878,7 @@ export async function POST(req: Request) {
 
           const editPrompt = buildImage2EditTryOnPrompt(finalPrompt, body);
           console.info(`[ai-generate] image2 edit start size=${IMAGE2_EDIT_TRY_ON_SIZE}`);
+          console.log('[try-on-debug] calling image2 edit', { promptLength: editPrompt.length, imageUrl: patternImageUrl, size: IMAGE2_EDIT_TRY_ON_SIZE, n: 1 });
           const result = await generateWithGPTImage2Edit({
             prompt: editPrompt,
             imageUrl: patternImageUrl,
@@ -888,6 +889,7 @@ export async function POST(req: Request) {
           console.info(`[ai-generate] image2 edit end ms=${Date.now() - image2StartedAt}`);
           const sourceUrl = result.imageUrl || result.base64 || "";
           if (!sourceUrl) throw new Error("IMAGE2_EDIT_EMPTY_RESULT");
+          console.log('[try-on-debug] image2 edit success', { resultCount: sourceUrl ? 1 : 0 });
 
           const persistedImageUrl = await persistGeneratedImage(
             sourceUrl,
@@ -945,6 +947,7 @@ export async function POST(req: Request) {
           });
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : "";
+          console.log('[try-on-debug] image2 edit failed', { code: errorMessage || String(err) });
           const code = errorMessage === "IMAGE2_EDIT_TIMEOUT"
             ? "IMAGE2_EDIT_TIMEOUT"
             : errorMessage.startsWith("IMAGE2_EDIT_INPUT_FETCH_FAILED")
