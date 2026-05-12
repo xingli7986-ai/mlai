@@ -62,7 +62,7 @@ const STATS = [
     label: "我的作品",
     value: 28,
     icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <rect x="4" y="6" width="20" height="16" rx="2" />
         <path d="M4 11h20" />
         <path d="M9 6V3.5h6V6" />
@@ -73,7 +73,7 @@ const STATS = [
     label: "已定制",
     value: 6,
     icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M5 8h18l-2 13H7z" />
         <path d="M10 8V5a4 4 0 0 1 8 0v3" />
       </svg>
@@ -83,7 +83,7 @@ const STATS = [
     label: "已发布",
     value: 8,
     icon: (
-      <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 4l16 16-7 1-1 7-8-8" />
         <path d="M14 4L4 14l8 8 7-7" />
       </svg>

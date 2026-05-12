@@ -6,8 +6,66 @@
  * 实际后端已切换到永鑫科技。
  */
 
+import { readFile } from "fs/promises";
+import path from "path";
+import sharp from "sharp";
+
+import type { TryOnProviderCapability } from "@/lib/my-studio/types";
+
 const API_KEY = process.env.YXAI_API_KEY!;
 const BASE_URL = process.env.YXAI_BASE_URL || "https://yxai.anthropic.edu.pl/v1";
+const IMAGE_MODEL = process.env.YXAI_IMAGE_MODEL || "gpt-image-2";
+const IMAGE2_EDIT_TIMEOUT_MS = 90_000;
+const IMAGE2_EDIT_MAX_INPUT_DIMENSION = 1024;
+const IMAGE2_EDIT_TARGET_BYTES = 1_000_000;
+
+export const GPT_IMAGE2_PROVIDER = "yxai";
+
+export function getGPTImage2Config() {
+  return {
+    provider: GPT_IMAGE2_PROVIDER,
+    baseUrl: BASE_URL,
+    model: IMAGE_MODEL,
+    hasApiKey: Boolean(process.env.YXAI_API_KEY),
+  };
+}
+
+export function getTryOnProviderCapability(): TryOnProviderCapability {
+  return {
+    provider: GPT_IMAGE2_PROVIDER,
+    model: IMAGE_MODEL,
+    supportsTextToImage: Boolean(process.env.YXAI_API_KEY),
+    supportsImageReference: Boolean(process.env.YXAI_API_KEY),
+    supportsImageEdit: Boolean(process.env.YXAI_API_KEY),
+    supportsMask: false,
+    supportsGarmentTryOn: false,
+    supportsPoseControl: false,
+    supportsMultiImageInput: false,
+    notes: [
+      "YXAI image2 supports text-to-image through /images/generations.",
+      "YXAI image2 supports a single real image input through /images/edits multipart form-data.",
+      "Mask and dedicated garment try-on are not enabled in the current verified YXAI integration.",
+    ],
+  };
+}
+
+export async function generateMaskedGarmentTryOn(_input: {
+  patternImageUrl: string;
+  garmentTemplateImageUrl?: string;
+  garmentRegionMaskUrl?: string;
+  modelBaseImageUrl?: string;
+  bodyProfile?: unknown;
+  garmentTemplate?: unknown;
+  prompt: string;
+  negativePrompt?: string;
+}): Promise<{
+  imageUrl: string;
+  provider: string;
+  model: string;
+  raw?: unknown;
+}> {
+  throw new Error("MASKED_GARMENT_TRYON_PROVIDER_NOT_CONFIGURED");
+}
 
 interface OpenAIImageResponse {
   created?: number;
@@ -18,6 +76,41 @@ interface OpenAIImageResponse {
   }>;
   error?: { message?: string; type?: string; code?: string };
 }
+
+type ResolvedEditImage = {
+  buffer: Buffer;
+  mimeType: string;
+  fileName: string;
+};
+
+type OptimizedEditImage = ResolvedEditImage & {
+  originalBytes: number;
+  optimizedBytes: number;
+  width?: number;
+  height?: number;
+  optimizedWidth?: number;
+  optimizedHeight?: number;
+  optimized: boolean;
+};
+
+type GPTImage2EditInput = {
+  prompt: string;
+  imageUrl?: string;
+  imagePath?: string;
+  imageBuffer?: Buffer;
+  imageMimeType?: string;
+  size?: string;
+  n?: number;
+  timeoutMs?: number;
+};
+
+type GPTImage2EditResult = {
+  imageUrl?: string;
+  base64?: string;
+  provider: string;
+  model: string;
+  raw?: unknown;
+};
 
 const SIZE_MAP: Record<string, string> = {
   "1:1": "1024x1024",
@@ -34,6 +127,262 @@ function normalizeSize(input?: string): string {
   if (SIZE_MAP[input]) return SIZE_MAP[input];
   if (/^\d+x\d+$/.test(input)) return input;
   return "1024x1024";
+}
+
+function normalizeBaseUrl(input: string): string {
+  return input.replace(/\/+$/, "");
+}
+
+function isAbortLikeError(error: unknown): boolean {
+  return Boolean(error && typeof error === "object" && "name" in error && (error as { name?: unknown }).name === "AbortError");
+}
+
+function mimeTypeFromName(fileName: string, fallback = "image/png"): string {
+  const ext = path.extname(fileName).toLowerCase();
+  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+  if (ext === ".webp") return "image/webp";
+  if (ext === ".gif") return "image/gif";
+  if (ext === ".png") return "image/png";
+  return fallback;
+}
+
+function parseDataUrl(input: string): ResolvedEditImage | null {
+  const match = input.match(/^data:([^;,]+);base64,(.+)$/);
+  if (!match) return null;
+  return {
+    buffer: Buffer.from(match[2], "base64"),
+    mimeType: match[1] || "image/png",
+    fileName: "reference.png",
+  };
+}
+
+async function resolveEditImage(input: GPTImage2EditInput, signal?: AbortSignal): Promise<ResolvedEditImage> {
+  if (input.imageBuffer) {
+    return {
+      buffer: input.imageBuffer,
+      mimeType: input.imageMimeType || "image/png",
+      fileName: "reference.png",
+    };
+  }
+
+  if (input.imagePath) {
+    const resolvedPath = path.isAbsolute(input.imagePath)
+      ? input.imagePath
+      : path.join(process.cwd(), input.imagePath);
+    const buffer = await readFile(resolvedPath);
+    return {
+      buffer,
+      mimeType: input.imageMimeType || mimeTypeFromName(resolvedPath),
+      fileName: path.basename(resolvedPath) || "reference.png",
+    };
+  }
+
+  if (input.imageUrl) {
+    const dataUrl = parseDataUrl(input.imageUrl);
+    if (dataUrl) return dataUrl;
+
+    if (input.imageUrl.startsWith("/")) {
+      const localPublicPath = path.join(process.cwd(), "public", input.imageUrl.replace(/^\/+/, ""));
+      const buffer = await readFile(localPublicPath);
+      return {
+        buffer,
+        mimeType: input.imageMimeType || mimeTypeFromName(localPublicPath),
+        fileName: path.basename(localPublicPath) || "reference.png",
+      };
+    }
+
+    const res = await fetch(input.imageUrl, { signal });
+    if (!res.ok) {
+      throw new Error(`IMAGE2_EDIT_INPUT_FETCH_FAILED:${res.status}`);
+    }
+    const arrayBuffer = await res.arrayBuffer();
+    const contentType = res.headers.get("content-type") || input.imageMimeType || "image/png";
+    const urlFileName = (() => {
+      try {
+        const parsed = new URL(input.imageUrl || "");
+        return path.basename(parsed.pathname) || "reference.png";
+      } catch {
+        return "reference.png";
+      }
+    })();
+    return {
+      buffer: Buffer.from(arrayBuffer),
+      mimeType: contentType.split(";")[0] || "image/png",
+      fileName: urlFileName,
+    };
+  }
+
+  throw new Error("IMAGE2_EDIT_INPUT_REQUIRED");
+}
+
+function safeProviderError(status: number, text: string): string {
+  const compact = text
+    .replace(/Bearer\s+[A-Za-z0-9._-]+/g, "Bearer ***")
+    .replace(/"api[_-]?key"\s*:\s*"[^"]+"/gi, '"apiKey":"***"')
+    .slice(0, 240);
+  return `IMAGE2_EDIT_FAILED:HTTP_${status}:${compact}`;
+}
+
+async function optimizeEditImage(input: ResolvedEditImage): Promise<OptimizedEditImage> {
+  const originalBytes = input.buffer.byteLength;
+
+  try {
+    const image = sharp(input.buffer, { failOn: "none" }).rotate();
+    const metadata = await image.metadata();
+    const width = metadata.width;
+    const height = metadata.height;
+    const needsResize = Boolean(width && height && Math.max(width, height) > IMAGE2_EDIT_MAX_INPUT_DIMENSION);
+    const needsCompress = originalBytes > IMAGE2_EDIT_TARGET_BYTES;
+
+    if (!needsResize && !needsCompress) {
+      return {
+        ...input,
+        originalBytes,
+        optimizedBytes: originalBytes,
+        width,
+        height,
+        optimizedWidth: width,
+        optimizedHeight: height,
+        optimized: false,
+      };
+    }
+
+    const resized = image.resize({
+      width: IMAGE2_EDIT_MAX_INPUT_DIMENSION,
+      height: IMAGE2_EDIT_MAX_INPUT_DIMENSION,
+      fit: "inside",
+      withoutEnlargement: true,
+    });
+    const qualities = [84, 76, 68];
+    let output = await resized.jpeg({ quality: qualities[0], mozjpeg: true }).toBuffer();
+
+    for (const quality of qualities.slice(1)) {
+      if (output.byteLength <= IMAGE2_EDIT_TARGET_BYTES) break;
+      output = await image
+        .resize({
+          width: IMAGE2_EDIT_MAX_INPUT_DIMENSION,
+          height: IMAGE2_EDIT_MAX_INPUT_DIMENSION,
+          fit: "inside",
+          withoutEnlargement: true,
+        })
+        .jpeg({ quality, mozjpeg: true })
+        .toBuffer();
+    }
+
+    const optimizedMetadata = await sharp(output, { failOn: "none" }).metadata().catch(() => undefined);
+
+    return {
+      buffer: output,
+      mimeType: "image/jpeg",
+      fileName: `${input.fileName.replace(/\.[^.]+$/, "") || "reference"}.jpg`,
+      originalBytes,
+      optimizedBytes: output.byteLength,
+      width,
+      height,
+      optimizedWidth: optimizedMetadata?.width,
+      optimizedHeight: optimizedMetadata?.height,
+      optimized: true,
+    };
+  } catch {
+    return {
+      ...input,
+      originalBytes,
+      optimizedBytes: originalBytes,
+      optimizedWidth: undefined,
+      optimizedHeight: undefined,
+      optimized: false,
+    };
+  }
+}
+
+export async function generateWithGPTImage2Edit(input: GPTImage2EditInput): Promise<GPTImage2EditResult> {
+  if (!API_KEY) {
+    throw new Error("IMAGE2_EDIT_API_KEY_MISSING");
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), input.timeoutMs ?? IMAGE2_EDIT_TIMEOUT_MS);
+  let editFetchStartedAt = 0;
+
+  try {
+    const resolveStartedAt = Date.now();
+    console.info("[suchuang] download input image start");
+    const resolvedImage = await resolveEditImage(input, controller.signal);
+    console.info(`[suchuang] download input image end ms=${Date.now() - resolveStartedAt} bytes=${resolvedImage.buffer.byteLength}`);
+    const optimizedImage = await optimizeEditImage(resolvedImage);
+    console.info(
+      `[suchuang] input image original bytes=${optimizedImage.originalBytes} width=${optimizedImage.width ?? "unknown"} height=${optimizedImage.height ?? "unknown"}`,
+    );
+    console.info(
+      `[suchuang] input image optimized bytes=${optimizedImage.optimizedBytes} width=${optimizedImage.optimizedWidth ?? optimizedImage.width ?? "unknown"} height=${optimizedImage.optimizedHeight ?? optimizedImage.height ?? "unknown"} mime=${optimizedImage.mimeType} optimized=${optimizedImage.optimized}`,
+    );
+    if (optimizedImage.optimizedBytes > IMAGE2_EDIT_TARGET_BYTES) {
+      console.info(
+        `[suchuang] input image optimized bytes still above target bytes=${optimizedImage.optimizedBytes} target=${IMAGE2_EDIT_TARGET_BYTES}`,
+      );
+    }
+    const size = normalizeSize(input.size);
+    const n = Math.max(1, Math.min(input.n ?? 1, 4));
+    const form = new FormData();
+    form.append("model", IMAGE_MODEL);
+    form.append("prompt", input.prompt);
+    form.append("size", size);
+    form.append("n", String(n));
+
+    const imageBytes = Uint8Array.from(optimizedImage.buffer);
+    form.append("image", new Blob([imageBytes], { type: optimizedImage.mimeType }), optimizedImage.fileName);
+
+    editFetchStartedAt = Date.now();
+    console.info(`[suchuang] image2 edit fetch start size=${size} inputBytes=${optimizedImage.optimizedBytes}`);
+    const res = await fetch(`${normalizeBaseUrl(BASE_URL)}/images/edits`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${API_KEY}`,
+      },
+      body: form,
+      signal: controller.signal,
+    });
+    console.info(`[suchuang] image2 edit fetch end ms=${Date.now() - editFetchStartedAt} status=${res.status}`);
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      throw new Error(safeProviderError(res.status, text));
+    }
+
+    const data = (await res.json()) as OpenAIImageResponse;
+    if (data.error) {
+      throw new Error(`IMAGE2_EDIT_FAILED:${data.error.code || data.error.type || data.error.message || "provider_error"}`);
+    }
+
+    const first = Array.isArray(data.data) ? data.data[0] : undefined;
+    if (!first?.url && !first?.b64_json) {
+      throw new Error("IMAGE2_EDIT_EMPTY_RESULT");
+    }
+
+    return {
+      imageUrl: first.url,
+      base64: first.b64_json ? `data:image/png;base64,${first.b64_json}` : undefined,
+      provider: GPT_IMAGE2_PROVIDER,
+      model: IMAGE_MODEL,
+      raw: {
+        created: data.created,
+        revised_prompt: first.revised_prompt,
+        output: first.url ? "url" : "base64",
+      },
+    };
+  } catch (error) {
+    if (isAbortLikeError(error)) {
+      if (editFetchStartedAt) {
+        console.info(`[suchuang] image2 edit fetch end ms=${Date.now() - editFetchStartedAt} status=timeout`);
+      }
+      const timeoutError = new Error("IMAGE2_EDIT_TIMEOUT");
+      timeoutError.name = "Image2EditTimeoutError";
+      throw timeoutError;
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 /**
@@ -69,7 +418,7 @@ export async function generateWithGPTImage2(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "gpt-image-2",
+      model: IMAGE_MODEL,
       prompt: finalPrompt,
       size,
       n,

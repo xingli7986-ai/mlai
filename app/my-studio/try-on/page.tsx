@@ -1,631 +1,1419 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import ConsumerNav from "@/components/ConsumerNav";
+import StudioStepGate from "@/components/my-studio/StudioStepGate";
 import { useToast } from "@/components/ui/Toast";
+import { generatedImageUrl } from "@/lib/my-studio/generate-response";
+import { DEFAULT_BODY_PROFILE, DEFAULT_GARMENT_TEMPLATES } from "@/lib/my-studio/work";
+import type {
+  StudioBodyProfile,
+  StudioAsset,
+  StudioGenerateResponse,
+  StudioGarmentTemplate,
+  StudioTryOnGenerationGroup,
+  StudioTryOnPreviewPreference,
+  TryOnFidelityMode,
+  StudioWorkDTO,
+} from "@/lib/my-studio/types";
 import "./try-on.css";
 
-/* ----------------------------------------------------------------
-   spec/11 §3 + 设计稿 10_my-studio-try-on.png
-   消费者版 /my-studio/try-on(上身试穿) — Step 2:
-   - 接入 POST /api/ai-studio/generate(tool=pattern-apply)
-   - 4 阶段状态机:idle / loading / result / error
-   - useToast + useRouter:save/order/publish/sketch
-   - 401/503/网络异常 → mock 4 张模特图 fallback
-   ---------------------------------------------------------------- */
+type ModelStyle = StudioTryOnPreviewPreference["modelStyle"];
+type Atmosphere = StudioTryOnPreviewPreference["atmosphere"];
+type Framing = StudioTryOnPreviewPreference["framing"];
 
-const A_TRY  = "/assets/my-studio/05_try_on_results";
-const A_WORK = "/assets/my-studio/04_work_thumbnails";
+const FLOW_STEPS = ["印花创作", "虚拟试穿", "开始定制"];
+const WORK_NOT_FOUND_MESSAGE = "当前作品不存在或无权访问，请回到我的设计工作室重新选择作品。";
+const TRY_ON_PLACEHOLDER = "/assets/my-studio/try-on/try-on-preview-placeholder.svg";
+const TRY_ON_LOADING_ELEGANT = "/assets/my-studio/try-on/try-on-loading-elegant.png";
+const EMPTY_HISTORY_IMAGE = "/assets/my-studio/empty/empty-try-on-history.svg";
+const DIGITAL_ASSETS_ICON = "/assets/my-studio/icons/icon-digital-assets.svg";
+const SELECTED_ICON = "/assets/my-studio/icons/icon-tryon-selected.svg";
 
-/* try-on 结果图(纯模特/成衣上身,Step 1 mock 用现有 3 张 + summer-garden-dress) */
-const TRYON_FRONT     = `${A_TRY}/tryon-floral-fullbody-front-1080x1440.png`;
-const TRYON_SIDE      = `${A_TRY}/tryon-floral-portrait-side-1080x1440.png`;
-const TRYON_WRAP      = `${A_TRY}/tryon-floral-wrap-front-1080x1440.png`;
-const TRYON_GARDEN    = `${A_WORK}/maxlulu-my-studio-work-summer-garden-dress-1080x1440.png`;
+const MODEL_STYLE_OPTIONS: { id: ModelStyle; label: string; desc: string }[] = [
+  { id: "commute", label: "通勤自然", desc: "干净、日常，适合判断真实穿着感。" },
+  { id: "resort", label: "度假轻松", desc: "舒展明亮，适合轻松场景。" },
+  { id: "evening", label: "晚宴精致", desc: "更有仪式感，突出优雅线条。" },
+];
 
-/* 花型来源缩略图(必须为纯花型,不能用模特图) */
-const SOURCE_PATTERN_THUMB = `${A_WORK}/maxlulu-my-studio-work-rose-vine-print-1080x1440.png`;
+const ATMOSPHERE_OPTIONS: { id: Atmosphere; label: string }[] = [
+  { id: "studio", label: "棚拍干净" },
+  { id: "natural-light", label: "自然光" },
+  { id: "city", label: "城市街拍" },
+];
 
-const SOURCE_PATTERN = {
-  title: "玫瑰藤蔓印花",
-  param: "铺排方向:中长款 · 无袖",
-  code:  "PF10232",
-  thumb: SOURCE_PATTERN_THUMB,
+const FRAMING_OPTIONS: { id: Framing; label: string }[] = [
+  { id: "front", label: "正面展示" },
+  { id: "side", label: "侧身展示" },
+  { id: "full-body", label: "全身展示" },
+];
+
+const FIT_OPTIONS: { id: NonNullable<StudioBodyProfile["fitPreference"]>; label: string }[] = [
+  { id: "slim", label: "修身" },
+  { id: "regular", label: "合身" },
+  { id: "relaxed", label: "微宽松" },
+];
+
+const REVISION_REASONS = [
+  "印花不准确",
+  "版型不喜欢",
+  "裙长不合适",
+  "腰线不合适",
+  "袖长不合适",
+  "身材比例不像我",
+  "想换模特姿态",
+  "想换拍摄风格",
+];
+
+const DEFAULT_TRY_ON_PREFERENCE: StudioTryOnPreviewPreference = {
+  modelStyle: "commute",
+  atmosphere: "studio",
+  framing: "full-body",
 };
 
-/* 版型(Step 2 §三 映射:UI id 即 API silhouette) */
-type TemplateId = "a-line" | "wrap" | "straight";
-const TEMPLATES: { id: TemplateId; title: string; desc: string }[] = [
-  { id: "a-line",   title: "A 字裙",   desc: "腰线收 / 裙摆张" },
-  { id: "wrap",     title: "裹身裙",   desc: "侧系带 / 修身" },
-  { id: "straight", title: "直筒裙",   desc: "通直版型 / 简约" },
+const TRY_ON_GENERATION_STAGES = [
+  "读取当前印花",
+  "匹配版型模板",
+  "贴合服装区域",
+  "渲染上身效果",
 ];
+const TRY_ON_GENERATION_TIMEOUT_MS = 95_000;
+const TRY_ON_TIMEOUT_MESSAGE = "本次参考图试穿未能完成，请稍后重试。我们没有生成替代示意图，以避免与你选择的印花产生偏差。";
+const TRY_ON_REFERENCE_FAILED_MESSAGE = "本次参考图试穿未能完成，请稍后重试。我们没有生成替代示意图，以避免与你选择的印花产生偏差。";
+const TRY_ON_SAVE_FAILED_MESSAGE = "上身效果已生成，但保存失败，请稍后重试。";
+const TRY_ON_SETTINGS_SAVE_FAILED_MESSAGE = "试穿参数保存失败，请稍后重试。";
+const TRY_ON_GENERIC_FAILED_MESSAGE = "虚拟试穿生成失败，请稍后重试。";
 
-/* 袖长 — UI id 与 API 不一致需映射:none → sleeveless,其余同字符串 */
-type Sleeve = "none" | "short" | "mid" | "long";
-const SLEEVE_TO_API: Record<Sleeve, "sleeveless" | "short" | "mid" | "long"> = {
-  none:  "sleeveless",
-  short: "short",
-  mid:   "mid",
-  long:  "long",
-};
-const SLEEVES: { id: Sleeve; label: string }[] = [
-  { id: "none",  label: "无袖" },
-  { id: "short", label: "短袖" },
-  { id: "mid",   label: "中袖" },
-  { id: "long",  label: "长袖" },
-];
-
-/* 裙长 — UI id midi 映射 API midi(spec §三 short/midi/long) */
-type SkirtLen = "short" | "midi" | "long";
-const SKIRT_LENS: { id: SkirtLen; label: string }[] = [
-  { id: "short", label: "短款" },
-  { id: "midi",  label: "中长款" },
-  { id: "long",  label: "长款" },
-];
-
-interface HistoryItem { id: string; title: string; param: string; time: string; thumb: string }
-const SEED_HISTORY: HistoryItem[] = [
-  { id: "h1", title: "玫瑰藤蔓 · A 字裙",   param: "中长款 · 无袖", time: "今天 11:32",  thumb: TRYON_FRONT  },
-  { id: "h2", title: "粉调牡丹 · 裹身裙",   param: "中长款 · 中袖", time: "昨天 18:08",  thumb: TRYON_SIDE   },
-  { id: "h3", title: "夏日花园 · A 字裙",   param: "长款 · 无袖",   time: "4 月 28 日",  thumb: TRYON_GARDEN },
-  { id: "h4", title: "蓝韵繁花 · 直筒裙",   param: "中长款 · 短袖", time: "4 月 24 日",  thumb: TRYON_WRAP   },
-];
-
-type Phase = "idle" | "loading" | "result" | "error" | "auth-required";
-
-/* mock fallback:模特+花卉成衣上身图按版型挑选(严禁纯花型/线稿) */
-function pickMockMain(template: TemplateId): string {
-  if (template === "wrap")     return TRYON_WRAP;
-  if (template === "straight") return TRYON_GARDEN;
-  return TRYON_FRONT;
-}
-function pickMockSide(template: TemplateId): string {
-  return template === "a-line" ? TRYON_SIDE : TRYON_FRONT;
-}
-
-function nowLabel(): string {
-  const d = new Date();
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `今天 ${hh}:${mm}`;
-}
-
-/* 版型线稿 SVG icon(不用真实模特图,符合 spec 要求)*/
-function TemplateIcon({ id }: { id: TemplateId }) {
-  if (id === "a-line") {
-    return (
-      <svg viewBox="0 0 48 64" fill="none">
-        <g stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M16 6h16l3 8-3 4v6l8 36H8l8-36v-6l-3-4z" />
-          <path d="M19 6c1 2 3 3 5 3s4-1 5-3" />
-        </g>
-      </svg>
-    );
+function tryOnErrorMessage(error: unknown): string {
+  const message = error instanceof Error ? error.message : typeof error === "string" ? error : "";
+  if (
+    message === TRY_ON_TIMEOUT_MESSAGE ||
+    message === TRY_ON_REFERENCE_FAILED_MESSAGE ||
+    message === TRY_ON_SAVE_FAILED_MESSAGE ||
+    message === TRY_ON_SETTINGS_SAVE_FAILED_MESSAGE ||
+    message === TRY_ON_GENERIC_FAILED_MESSAGE
+  ) {
+    return message;
   }
-  if (id === "wrap") {
-    return (
-      <svg viewBox="0 0 48 64" fill="none">
-        <g stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M16 6h16l3 6-7 6 7 4-2 38H10l-2-38 7-4-7-6z" />
-          <path d="M21 24l-3 14M27 24l3 14" opacity="0.6" />
-          <circle cx="33" cy="22" r="1.4" fill="currentColor" stroke="none" />
-        </g>
-      </svg>
-    );
+  if (/failed to fetch|networkerror|load failed/i.test(message)) {
+    return "当前网络连接不稳定，请稍后重试。";
   }
-  return (
-    <svg viewBox="0 0 48 64" fill="none">
-      <g stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M16 6h16l2 6-2 4v44H14V16l-2-4z" />
-        <path d="M19 6c1 2 3 3 5 3s4-1 5-3" />
-      </g>
-    </svg>
-  );
+  return TRY_ON_GENERIC_FAILED_MESSAGE;
 }
 
 export default function TryOnPage() {
   const router = useRouter();
-  const toast  = useToast();
+  const searchParams = useSearchParams();
+  const toast = useToast();
+  const workId = searchParams.get("workId") || "";
 
-  const [template, setTemplate] = useState<TemplateId>("a-line");
-  const [sleeve, setSleeve]     = useState<Sleeve>("none");
-  const [skirt, setSkirt]       = useState<SkirtLen>("midi");
-  const [phase, setPhase]       = useState<Phase>("idle");
-  const [mainImg, setMainImg]   = useState<string>(TRYON_FRONT);
-  const [sideImg, setSideImg]   = useState<string>(TRYON_SIDE);
-  const [history, setHistory]   = useState<HistoryItem[]>(SEED_HISTORY);
-  const [carousel, setCarousel] = useState(0);
-  const [resultId, setResultId] = useState<string>("");
-  const [errorMsg, setErrorMsg] = useState<string>("");
+  const [work, setWork] = useState<StudioWorkDTO | null>(null);
+  const [loadingWork, setLoadingWork] = useState(Boolean(workId));
+  const [workLoadError, setWorkLoadError] = useState("");
+  const [modelStyle, setModelStyle] = useState<ModelStyle>(DEFAULT_TRY_ON_PREFERENCE.modelStyle);
+  const [atmosphere, setAtmosphere] = useState<Atmosphere>(DEFAULT_TRY_ON_PREFERENCE.atmosphere);
+  const [framing, setFraming] = useState<Framing>(DEFAULT_TRY_ON_PREFERENCE.framing);
+  const [bodyProfile, setBodyProfile] = useState<StudioBodyProfile>({ ...DEFAULT_BODY_PROFILE });
+  const [selectedTemplateId, setSelectedTemplateId] = useState(DEFAULT_GARMENT_TEMPLATES[0]?.id || "");
+  const [requestedFidelityMode, setRequestedFidelityMode] = useState<TryOnFidelityMode>("reference_image");
+  const [showRevision, setShowRevision] = useState(false);
+  const [revisionReason, setRevisionReason] = useState("");
+  const [generating, setGenerating] = useState(false);
+  const [generationStage, setGenerationStage] = useState(0);
+  const [selectingId, setSelectingId] = useState("");
+  const [error, setError] = useState("");
+  const [bodyEditorOpen, setBodyEditorOpen] = useState(false);
 
-  const abortRef = useRef<AbortController | null>(null);
-  useEffect(() => () => { abortRef.current?.abort(); }, []);
-
-  async function runTryOn() {
-    if (phase === "loading") return;
-    abortRef.current?.abort();
-    const ac = new AbortController();
-    abortRef.current = ac;
-
-    setPhase("loading");
-    setErrorMsg("");
-
-    /* 接入 POST /api/ai-studio/generate
-       后端 schema(实际):tool / prompt / params / images / count / size
-       try-on 对应 tool="pattern-apply"(spec lib/ai-studio-prompts.ts §16)
-       params 同时携带用户字段(silhouette/sleeve/length)+ 后端 prompt builder 字段(skirtType/placement/scale)*/
-    const sleeveApi = SLEEVE_TO_API[sleeve];
-    const body = {
-      tool: "pattern-apply" as const,
-      prompt: `Apply the source floral print to a ${template} dress with ${sleeveApi} sleeves and ${skirt} length.`,
-      params: {
-        /* 用户 §一 schema 字段 */
-        silhouette: template,
-        sleeve: sleeveApi,
-        length: skirt,
-        /* 后端 buildPatternApplyPrompt 字段 */
-        skirtType: template,
-        placement: "full",
-        scale: "natural",
-      },
-      /* sourceImageUrl 占位:Step 3 接 sourceWorkId → 拉 base64 → images[0] */
-      count: 1,
-      size: "3:4",
+  useEffect(() => {
+    if (!workId) return;
+    let alive = true;
+    setLoadingWork(true);
+    setWorkLoadError("");
+    fetch(`/api/my-studio/works/${encodeURIComponent(workId)}`, { cache: "no-store" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { work?: StudioWorkDTO } | null) => {
+        if (!alive) return;
+        if (!data?.work) {
+          setWork(null);
+          setWorkLoadError(WORK_NOT_FOUND_MESSAGE);
+          return;
+        }
+        setWork(data.work);
+        const savedPreference = data.work.preferenceMemory.tryOnPreview;
+        if (savedPreference) {
+          setModelStyle(savedPreference.modelStyle);
+          setAtmosphere(savedPreference.atmosphere);
+          setFraming(savedPreference.framing);
+        }
+        setBodyProfile({
+          ...DEFAULT_BODY_PROFILE,
+          ...(data.work.bodyProfile || {}),
+          usualSize: data.work.bodyProfile?.usualSize || data.work.config.size || "M",
+        });
+        setSelectedTemplateId(
+          data.work.selectedAssets.garmentTemplateId ||
+            data.work.garmentTemplates[0]?.id ||
+            DEFAULT_GARMENT_TEMPLATES[0]?.id ||
+            "",
+        );
+      })
+      .catch(() => {
+        if (alive) setWorkLoadError(WORK_NOT_FOUND_MESSAGE);
+      })
+      .finally(() => {
+        if (alive) setLoadingWork(false);
+      });
+    return () => {
+      alive = false;
     };
+  }, [workId]);
+
+  useEffect(() => {
+    if (!generating) {
+      setGenerationStage(0);
+      return;
+    }
+    setGenerationStage(0);
+    const timer = window.setInterval(() => {
+      setGenerationStage((stage) => Math.min(stage + 1, TRY_ON_GENERATION_STAGES.length - 1));
+    }, 1800);
+    return () => window.clearInterval(timer);
+  }, [generating]);
+
+  const selectedPattern = useMemo(() => {
+    const selectedId = work?.selectedAssets.patternResultId;
+    if (!selectedId) return undefined;
+    return work?.assets.patterns.find((asset) => asset.id === selectedId);
+  }, [work]);
+  const garmentTemplates = useMemo(
+    () => (work?.garmentTemplates?.length ? work.garmentTemplates : DEFAULT_GARMENT_TEMPLATES),
+    [work?.garmentTemplates],
+  );
+  const selectedTemplate = useMemo(
+    () => garmentTemplates.find((item) => item.id === selectedTemplateId) || garmentTemplates[0],
+    [garmentTemplates, selectedTemplateId],
+  );
+
+  const tryOnAssets = work?.assets.tryOns ?? [];
+  const selectedTryOn = useMemo(() => {
+    const selectedId = work?.selectedAssets.tryOnResultId;
+    if (!selectedId) return undefined;
+    return tryOnAssets.find((asset) => asset.id === selectedId);
+  }, [tryOnAssets, work?.selectedAssets.tryOnResultId]);
+
+  const historyGroups = useMemo(
+    () => buildTryOnGroups(tryOnAssets, work?.tryOnGenerationGroups ?? []),
+    [tryOnAssets, work?.tryOnGenerationGroups],
+  );
+
+  const historyThumbs = useMemo(
+    () =>
+      [...tryOnAssets].sort(
+        (a, b) => new Date(b.generatedAt).getTime() - new Date(a.generatedAt).getTime(),
+      ),
+    [tryOnAssets],
+  );
+
+  const currentPreference: StudioTryOnPreviewPreference = { modelStyle, atmosphere, framing };
+  const previewAsset = selectedTryOn ?? historyThumbs[0];
+  const previewImage = previewAsset?.imageUrl ?? TRY_ON_PLACEHOLDER;
+  const hasSelectedTryOn = Boolean(selectedTryOn);
+  const bodyReady = Boolean(bodyProfile.heightCm && bodyProfile.weightKg);
+  const canGenerate = Boolean(selectedPattern && selectedTemplate && bodyReady);
+  const readiness = useMemo(
+    () => buildTryOnReadiness(Boolean(selectedPattern?.imageUrl), selectedTemplate, bodyReady),
+    [selectedPattern?.imageUrl, selectedTemplate, bodyReady],
+  );
+  const canRunRequestedMode =
+    canGenerate &&
+    ((requestedFidelityMode !== "masked_garment_tryon" && requestedFidelityMode !== "garment_tryon") ||
+      readiness.canRunMaskedTryOn);
+  const nextHref = `/my-studio/confirm-design?workId=${encodeURIComponent(workId)}`;
+  const digitalAssetsHref = "/my-studio#my-design-works";
+
+  function updateBodyProfile<K extends keyof StudioBodyProfile>(key: K, value: StudioBodyProfile[K]) {
+    setBodyProfile((current) => ({ ...current, [key]: value }));
+  }
+
+  async function patchWorkSettings(nextBodyProfile: StudioBodyProfile, template: StudioGarmentTemplate) {
+    const res = await fetch(`/api/my-studio/works/${encodeURIComponent(workId)}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        bodyProfile: nextBodyProfile,
+        selectedGarmentTemplateId: template.id,
+        config: {
+          size: nextBodyProfile.usualSize || work?.config.size,
+          silhouette: template.silhouette,
+          neckline: template.neckline,
+          sleeveType: template.sleeve,
+          skirtLength: template.skirtLength,
+          waistline: template.waistline,
+        },
+      }),
+    });
+    const data = (await res.json().catch(() => ({}))) as { work?: StudioWorkDTO; error?: string };
+    if (!res.ok || !data.work) throw new Error(data.error || TRY_ON_SETTINGS_SAVE_FAILED_MESSAGE);
+    setWork(data.work);
+    return data.work;
+  }
+
+  async function generateTryOn(nextRevisionReason?: string) {
+    if (!workId || !work || !selectedPattern || !selectedTemplate) return;
+    const generationFidelityMode = requestedFidelityMode;
+    if (!bodyReady) {
+      setError("请先填写身高和体重，再生成我的上身效果图。");
+      return;
+    }
+    if (
+      (generationFidelityMode === "masked_garment_tryon" || generationFidelityMode === "garment_tryon") &&
+      !readiness.canRunMaskedTryOn
+    ) {
+      setError(readiness.blockerMessage);
+      return;
+    }
+    setGenerating(true);
+    setError("");
+    const groupId = `tryon-${Date.now()}`;
+    const profileForGeneration: StudioBodyProfile = {
+      ...bodyProfile,
+      bodyShape: bodyProfile.bodyShape || inferBodyShape(bodyProfile.heightCm, bodyProfile.weightKg),
+      measurementMode: bodyProfile.measurementMode || "quick",
+      updatedAt: new Date().toISOString(),
+    };
+    setBodyProfile(profileForGeneration);
+    let timedOut = false;
+    const timeout = window.setTimeout(() => {
+      timedOut = true;
+      setError(TRY_ON_TIMEOUT_MESSAGE);
+      setGenerating(false);
+      toast.show(TRY_ON_TIMEOUT_MESSAGE, { tone: "warning" });
+    }, TRY_ON_GENERATION_TIMEOUT_MS);
 
     try {
+      const patchStartedAt = performance.now();
+      console.info("[try-on] patch settings start");
+      const persistedWork = await patchWorkSettings(profileForGeneration, selectedTemplate);
+      console.info(`[try-on] patch settings end ms=${Math.round(performance.now() - patchStartedAt)}`);
+      if (timedOut) return;
+      const prompt = buildTryOnPrompt(persistedWork, selectedPattern, currentPreference, profileForGeneration, selectedTemplate, nextRevisionReason);
+      const garmentStructure = garmentStructureSnapshot(selectedTemplate);
+      const garmentRegionTemplate = resolveDefaultGarmentRegionTemplate(selectedTemplate);
+      const tryOnSource: "direct-pattern-try-on" | "remix-pattern-try-on" | "regenerate-fit" = nextRevisionReason
+        ? "regenerate-fit"
+        : selectedPattern.source?.type?.includes("remix")
+          ? "remix-pattern-try-on"
+          : "direct-pattern-try-on";
+      const generateStartedAt = performance.now();
+      console.info("[try-on] image2 edit request start");
       const res = await fetch("/api/ai-studio/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-        signal: ac.signal,
+        body: JSON.stringify({
+          tool: "try-on",
+          workId,
+          patternAssetId: selectedPattern.id,
+          patternImageUrl: selectedPattern.imageUrl,
+          requestedFidelityMode: generationFidelityMode,
+          allowDegrade: false,
+          bodyProfile: profileForGeneration,
+          garmentTemplate: selectedTemplate,
+          fitPreference: profileForGeneration.fitPreference,
+          revisionReason: nextRevisionReason,
+          prompt,
+          sourceWorkId: workId,
+          sourceImageUrl: selectedPattern.imageUrl,
+          sourceImageUrls: [selectedPattern.imageUrl],
+          params: {
+            workId,
+            patternAssetId: selectedPattern.id,
+            patternImageUrl: selectedPattern.imageUrl,
+            requestedFidelityMode: generationFidelityMode,
+            allowDegrade: false,
+            bodyProfile: profileForGeneration,
+            garmentTemplate: selectedTemplate,
+            fitPreference: profileForGeneration.fitPreference,
+            revisionReason: nextRevisionReason,
+            sourcePatternResultId: selectedPattern.id,
+            skirtType: selectedTemplate.name,
+            placement: "full",
+            scale: "preserve original print scale and density",
+            fabricName: "exact selected floral print fabric",
+            shotType: "full-body",
+            garmentStructure,
+            garmentRegionSource: garmentRegionTemplate?.source,
+            defaultGarmentRegionTemplateId: garmentRegionTemplate?.id,
+            strictPatternReference: true,
+            garmentType: persistedWork.config.garmentType,
+            silhouette: selectedTemplate.silhouette,
+            neckline: selectedTemplate.neckline,
+            waist: selectedTemplate.waistline,
+            closure: selectedTemplate.closure,
+            sleeveLength: selectedTemplate.sleeve,
+            dressLength: selectedTemplate.skirtLength,
+            occasion: persistedWork.config.occasion,
+            size: profileForGeneration.usualSize || persistedWork.config.size,
+            tryOnPreview: currentPreference,
+          },
+          count: 4,
+          size: "2:3",
+        }),
       });
-
-      // 401 未登录 → 显式登录引导
-      if (res.status === 401) {
-        setPhase("auth-required");
-        toast.show("请先登录,即可使用 AI 创作工具", { tone: "warning" });
+      console.info(`[try-on] image2 edit request end ms=${Math.round(performance.now() - generateStartedAt)} status=${res.status}`);
+      const data = (await res.json().catch(() => ({
+        success: false,
+        code: "TRY_ON_BAD_RESPONSE",
+        message: TRY_ON_GENERIC_FAILED_MESSAGE,
+      }))) as StudioGenerateResponse;
+      if (timedOut) return;
+      const canRetry = Boolean((data as StudioGenerateResponse & { canRetry?: boolean }).canRetry);
+      if (!res.ok && (canRetry || data.code)) {
+        const message = data.message || TRY_ON_REFERENCE_FAILED_MESSAGE;
+        setError(message);
+        toast.show(message, { tone: "warning" });
         return;
       }
-      // 503 服务不可用 → mock fallback
-      if (res.status === 503) {
-        useMockFallback("接口暂不可用,展示示例试穿");
+      if (!res.ok && data.code) {
+        const message = data.message || TRY_ON_GENERIC_FAILED_MESSAGE;
+        setError(message);
+        toast.show(message, { tone: "error" });
         return;
       }
-
-      const data = (await res.json()) as
-        | { success: true; images: { url: string }[] }
-        | { success: false; error: string };
-
-      if (!res.ok || !("success" in data) || !data.success) {
-        setPhase("error");
-        setErrorMsg("试穿生成失败,可以换一个版型再试一次");
-        toast.show("试穿生成失败,可以换一个版型再试一次", { tone: "error" });
-        return;
+      const urls = (data.images || [])
+        .map(generatedImageUrl)
+        .filter((url): url is string => Boolean(url));
+      const images = urls.length > 0 ? urls : data.imageUrl ? [data.imageUrl] : [];
+      if (!res.ok || !data.success || images.length === 0) {
+        throw new Error(TRY_ON_GENERIC_FAILED_MESSAGE);
       }
 
-      const url = data.images[0]?.url;
-      if (!url) {
-        setPhase("error");
-        setErrorMsg("试穿生成失败,可以换一个版型再试一次");
-        toast.show("试穿生成失败,可以换一个版型再试一次", { tone: "error" });
-        return;
-      }
-
-      /* 真实接口仅返主图;侧图沿用 mock 池里同版型的 side(等 step 3 接多 angle 接口再调) */
-      finishWithResult(url, pickMockSide(template), false);
+      const nextPreferenceMemory = {
+        ...work.preferenceMemory,
+        tryOnPreview: currentPreference,
+      };
+      const displayLabels = tryOnLabelParts(currentPreference);
+      const fidelityMode = data.fidelityMode || (data.isFallback ? "approximate" : generationFidelityMode);
+      const referenceMode = data.referenceMode || (fidelityMode === "masked_garment_tryon" ? "masked_tryon" : fidelityMode === "reference_image" || fidelityMode === "garment_tryon" || fidelityMode === "garment_tryon_high_quality" ? "true_image_reference" : "prompt_url_only");
+      const metadataRecord = isRecord(data.metadata) ? data.metadata : {};
+      const fidelityWarnings = Array.isArray(data.warnings)
+        ? data.warnings
+        : Array.isArray(metadataRecord.warnings)
+          ? metadataRecord.warnings.filter((item): item is string => typeof item === "string")
+          : [];
+      const qualityScores = isRecord(metadataRecord.qualityScores) ? metadataRecord.qualityScores : undefined;
+      const saveStartedAt = performance.now();
+      console.info("[try-on] save result start");
+      const saveRes = await fetch(`/api/my-studio/works/${encodeURIComponent(workId)}/results`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "tryOn",
+          tool: "try-on",
+          resultType: "tryOn",
+          prompt: "生成我的上身效果图",
+          provider: data.provider,
+          model: data.model,
+          isFallback: Boolean(data.isFallback),
+          inputAssetId: selectedPattern.id,
+          patternAssetId: selectedPattern.id,
+          bodyProfile: profileForGeneration,
+          garmentTemplate: selectedTemplate,
+          fitPreference: profileForGeneration.fitPreference,
+          revisionReason: nextRevisionReason,
+          tryOnSource,
+          fidelityMode,
+          referenceMode,
+          patternReferenceUsed: Boolean(data.patternReferenceUsed),
+          maskUsed: Boolean(data.maskUsed),
+          isProductionReady: Boolean(data.isProductionReady),
+          fidelityWarnings,
+          qualityScores,
+          sourcePatternResultId: selectedPattern.id,
+          garmentImageAsset: data.garmentImageAsset,
+          modelBaseSource: data.modelBaseSource,
+          tryOnProvider: data.tryOnProvider,
+          providerJobId: data.providerJobId,
+          providerResultUrl: data.providerResultUrl,
+          persistedImageUrl: data.persistedImageUrl,
+          groupId,
+          selectFirst: true,
+          preferenceMemory: nextPreferenceMemory,
+          preferenceSnapshot: {
+            tryOnPreview: currentPreference,
+            sourcePatternResultId: selectedPattern.id,
+            bodyProfile: profileForGeneration,
+            garmentTemplate: selectedTemplate,
+            revisionReason: nextRevisionReason,
+            fidelityMode,
+            referenceMode,
+            patternReferenceUsed: Boolean(data.patternReferenceUsed),
+            maskUsed: Boolean(data.maskUsed),
+            isProductionReady: Boolean(data.isProductionReady),
+            fidelityWarnings,
+            qualityScores,
+            garmentImageAsset: data.garmentImageAsset,
+            modelBaseSource: data.modelBaseSource,
+            tryOnProvider: data.tryOnProvider,
+            providerJobId: data.providerJobId,
+            providerResultUrl: data.providerResultUrl,
+            persistedImageUrl: data.persistedImageUrl,
+            garmentRegionSource: garmentRegionTemplate?.source,
+            defaultGarmentRegionTemplateId: garmentRegionTemplate?.id,
+          },
+          params: {
+            sourcePatternResultId: selectedPattern.id,
+            patternAssetId: selectedPattern.id,
+            bodyProfile: profileForGeneration,
+            garmentTemplate: selectedTemplate,
+            garmentStructure,
+            fitPreference: profileForGeneration.fitPreference,
+            revisionReason: nextRevisionReason,
+            tryOnPreview: currentPreference,
+            shotType: "full-body",
+            garmentRegionSource: garmentRegionTemplate?.source,
+            defaultGarmentRegionTemplateId: garmentRegionTemplate?.id,
+          },
+          metadata: {
+            ...data.metadata,
+            displayLabels,
+            bodyProfileSnapshot: profileForGeneration,
+            garmentTemplateSnapshot: selectedTemplate,
+            garmentStructure,
+            garmentRegionSource: garmentRegionTemplate?.source,
+            defaultGarmentRegionTemplateId: garmentRegionTemplate?.id,
+            revisionReason: nextRevisionReason,
+          },
+          assets: images.map((imageUrl, index) => ({
+            imageUrl,
+            images: [imageUrl],
+            prompt: "生成我的上身效果图",
+            provider: data.provider,
+            model: data.model,
+            isFallback: Boolean(data.isFallback),
+            inputAssetId: selectedPattern.id,
+            patternAssetId: selectedPattern.id,
+            bodyProfileSnapshot: profileForGeneration,
+            garmentTemplateSnapshot: selectedTemplate,
+            fitPreference: profileForGeneration.fitPreference,
+            revisionReason: nextRevisionReason,
+            tryOnSource,
+            tryOnStatus: data.isFallback ? "fallback" : "generated",
+            fidelityMode,
+            referenceMode,
+            patternReferenceUsed: Boolean(data.patternReferenceUsed),
+            maskUsed: Boolean(data.maskUsed),
+            isProductionReady: Boolean(data.isProductionReady),
+            fidelityWarnings,
+            qualityScores,
+            garmentImageAsset: data.garmentImageAsset,
+            modelBaseSource: data.modelBaseSource,
+            tryOnProvider: data.tryOnProvider,
+            providerJobId: data.providerJobId,
+            providerResultUrl: data.providerResultUrl,
+            persistedImageUrl: data.persistedImageUrl,
+            groupId,
+            params: {
+              sourcePatternResultId: selectedPattern.id,
+              patternAssetId: selectedPattern.id,
+              bodyProfile: profileForGeneration,
+              garmentTemplate: selectedTemplate,
+              garmentStructure,
+              fitPreference: profileForGeneration.fitPreference,
+              revisionReason: nextRevisionReason,
+              tryOnPreview: currentPreference,
+              resultIndex: index,
+              shotType: "full-body",
+              garmentRegionSource: garmentRegionTemplate?.source,
+              defaultGarmentRegionTemplateId: garmentRegionTemplate?.id,
+            },
+            metadata: {
+              ...data.metadata,
+              displayLabels,
+              bodyProfileSnapshot: profileForGeneration,
+              garmentTemplateSnapshot: selectedTemplate,
+              garmentStructure,
+              garmentRegionSource: garmentRegionTemplate?.source,
+              defaultGarmentRegionTemplateId: garmentRegionTemplate?.id,
+              revisionReason: nextRevisionReason,
+              fidelityMode,
+              referenceMode,
+              patternReferenceUsed: Boolean(data.patternReferenceUsed),
+              maskUsed: Boolean(data.maskUsed),
+              isProductionReady: Boolean(data.isProductionReady),
+              fidelityWarnings,
+              qualityScores,
+              garmentImageAsset: data.garmentImageAsset,
+              modelBaseSource: data.modelBaseSource,
+              tryOnProvider: data.tryOnProvider,
+              providerJobId: data.providerJobId,
+              providerResultUrl: data.providerResultUrl,
+              persistedImageUrl: data.persistedImageUrl,
+            },
+          })),
+        }),
+      });
+      console.info(`[try-on] save result end ms=${Math.round(performance.now() - saveStartedAt)} status=${saveRes.status}`);
+      const saved = (await saveRes.json().catch(() => ({}))) as { work?: StudioWorkDTO; error?: string };
+      if (timedOut) return;
+      if (!saveRes.ok || !saved.work) throw new Error(TRY_ON_SAVE_FAILED_MESSAGE);
+      setWork(saved.work);
+      setShowRevision(false);
+      setRevisionReason("");
+      toast.show(data.isFallback ? "示例预览已保存为当前上身效果。" : "上身效果图已保存。", {
+        tone: data.isFallback ? "warning" : "success",
+      });
     } catch (err) {
-      if ((err as Error).name === "AbortError") return;
-      console.error("[try-on] api error, fallback to mock:", err);
-      useMockFallback("接口暂不可用,展示示例试穿");
+      if (timedOut) {
+        setError(TRY_ON_TIMEOUT_MESSAGE);
+        return;
+      }
+      const message = tryOnErrorMessage(err);
+      console.warn(`[my-studio] try-on generation failed: ${message}`);
+      setError(message);
+      toast.show(message, { tone: "error" });
+    } finally {
+      window.clearTimeout(timeout);
+      if (!timedOut) {
+        setGenerating(false);
+      }
     }
   }
 
-  function useMockFallback(toastMsg: string) {
-    finishWithResult(pickMockMain(template), pickMockSide(template), true, toastMsg);
+  async function selectTryOn(assetId: string) {
+    if (!workId || selectingId) return;
+    setSelectingId(assetId);
+    try {
+      const res = await fetch(`/api/my-studio/works/${encodeURIComponent(workId)}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ selectAsset: { kind: "tryOn", assetId } }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { work?: StudioWorkDTO; error?: string };
+      if (!res.ok || !data.work) throw new Error("选择当前上身效果失败，请稍后重试。");
+      setWork(data.work);
+      toast.show("已设为当前上身效果。", { tone: "success" });
+    } catch (err) {
+      toast.show(err instanceof Error ? err.message : "选择当前上身效果失败，请稍后重试。", {
+        tone: "warning",
+      });
+    } finally {
+      setSelectingId("");
+    }
   }
 
-  function finishWithResult(main: string, side: string, isMock: boolean, mockMsg?: string) {
-    const id = `r-${Date.now()}`;
-    setMainImg(main);
-    setSideImg(side);
-    setResultId(id);
-    setCarousel(0);
-    setPhase("result");
-
-    if (isMock && mockMsg) {
-      toast.show(mockMsg, { tone: "warning" });
-    } else {
-      toast.show("已为你生成上身效果预览", { tone: "info" });
-    }
-
-    const sleeveLabel = SLEEVES.find((s) => s.id === sleeve)?.label ?? "";
-    const skirtLabel  = SKIRT_LENS.find((s) => s.id === skirt)?.label  ?? "";
-    const tplLabel    = TEMPLATES.find((t) => t.id === template)?.title ?? "";
-    setHistory((prev) =>
-      [
-        {
-          id,
-          title: `${SOURCE_PATTERN.title} · ${tplLabel}`,
-          param: `${skirtLabel} · ${sleeveLabel}`,
-          time: nowLabel(),
-          thumb: main,
-        },
-        ...prev,
-      ].slice(0, 5)
+  if (!workId) {
+    return (
+      <StudioStepGate
+        title="请先从“我的设计工作室”选择一件作品。"
+        description="虚拟试穿需要读取同一件作品里的当前印花。"
+        actionHref="/my-studio"
+        actionLabel="返回我的设计工作室"
+      />
     );
   }
 
-  function handleSave() {
-    if (phase !== "result") return;
-    /* TODO step 3:接入真实 POST /api/designs/save 提交 mainImg + 来源 workId + params */
-    toast.show("已保存到我的作品", { tone: "success" });
-  }
-  function handleOrder() {
-    if (phase !== "result") return;
-    /* TODO step 3:跳 /products/[id]/custom?fromTryOn=... */
-    toast.show("定制下单功能即将接入", { tone: "info" });
-  }
-  function handlePublish() {
-    if (phase !== "result") return;
-    /* TODO step 3:POST /api/inspiration with mainImg + tags */
-    toast.show("已准备发布到灵感广场", { tone: "info" });
-  }
-  function handleSketch() {
-    if (phase !== "result") return;
-    /* TODO step 3:用真实 saved workId 替代临时 resultId */
-    const id = resultId || `r-${Date.now()}`;
-    router.push(`/my-studio/sketch?from=try-on&workId=${encodeURIComponent(id)}`);
-  }
-  function handleReplaceSource() {
-    /* TODO step 3:打开作品选择 modal */
-    toast.show("选择花型功能将在下一步接入", { tone: "info" });
-  }
-  function handleRetry() {
-    runTryOn();
+  if (!loadingWork && workLoadError) {
+    return (
+      <StudioStepGate
+        title={WORK_NOT_FOUND_MESSAGE}
+        description="你仍然可以回到工作室重新选择作品。"
+        actionHref="/my-studio"
+        actionLabel="返回我的设计工作室"
+      />
+    );
   }
 
-  const isLoading = phase === "loading";
-  const hasResult = phase === "result";
-  const hasError  = phase === "error";
-  const needsAuth = phase === "auth-required";
+  if (!loadingWork && work && !selectedPattern) {
+    return (
+      <StudioStepGate
+        title="你还没有为这件衣服选定印花。"
+        description="请先回到印花创作中心，选择一张当前印花，再进入虚拟试穿。"
+        actionHref={`/my-studio/pattern-generate?workId=${encodeURIComponent(workId)}`}
+        actionLabel="返回印花创作中心"
+      />
+    );
+  }
 
   return (
     <div className="toPage">
       <ConsumerNav variant="solid" />
-
       <div className="toContainer">
-        {/* 页面标题区 */}
-        <header className="toHeader">
-          <p className="toHeader__brand">MAXLULU AI</p>
-          <h1 className="toHeader__title">
-            上身试穿
-            <span className="toHeader__route"> / try-on</span>
-          </h1>
-          <p className="toHeader__sub">
-            将你的花型印花预览在服装版型上,直观看看上身效果
-          </p>
-        </header>
+        {loadingWork && <div className="toNotice">正在读取作品和当前印花...</div>}
 
-        {/* 面包屑 */}
-        <nav className="toCrumb" aria-label="面包屑">
-          <Link href="/my-studio">我的设计工作室</Link>
-          <span className="toCrumb__sep" aria-hidden>/</span>
-          <span className="toCrumb__cur">上身试穿</span>
-        </nav>
-
-        {/* 外层大工作台壳 */}
-        <div className="toStudioShell">
-        <div className="toWorkspace">
-
-          {/* ========== 左:控制面板 ========== */}
-          <section className="toPanel toControlPanel" aria-label="试穿参数">
-
-            {/* A. 选择版型 */}
-            <section className="toSection">
-              <header className="toSection__head">
-                <h2 className="toSection__title">选择版型</h2>
-                <button type="button" className="toSection__more">更多版型 →</button>
-              </header>
-              <div className="toTemplates" role="radiogroup" aria-label="版型">
-                {TEMPLATES.map((t) => {
-                  const sel = template === t.id;
-                  return (
-                    <button
-                      key={t.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={sel}
-                      className={`toTemplateCard${sel ? " is-selected" : ""}`}
-                      onClick={() => setTemplate(t.id)}
-                    >
-                      <span className="toTemplateCard__icon" aria-hidden>
-                        <TemplateIcon id={t.id} />
-                      </span>
-                      <span className="toTemplateCard__title">{t.title}</span>
-                      {sel && (
-                        <span className="toTemplateCard__badge" aria-hidden>
-                          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M5 10l4 4 7-7" />
-                          </svg>
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </section>
-
-            {/* B. 袖长 */}
-            <section className="toSection">
-              <h2 className="toSection__title">袖长</h2>
-              <div className="toChips" role="radiogroup" aria-label="袖长">
-                {SLEEVES.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={sleeve === s.id}
-                    className={`toChip${sleeve === s.id ? " is-selected" : ""}`}
-                    onClick={() => setSleeve(s.id)}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* C. 裙长 */}
-            <section className="toSection">
-              <h2 className="toSection__title">裙长</h2>
-              <div className="toChips" role="radiogroup" aria-label="裙长">
-                {SKIRT_LENS.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={skirt === s.id}
-                    className={`toChip${skirt === s.id ? " is-selected" : ""}`}
-                    onClick={() => setSkirt(s.id)}
-                  >
-                    {s.label}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* D. 花型来源 */}
-            <section className="toSection">
-              <header className="toSection__head">
-                <h2 className="toSection__title">花型来源</h2>
-                <button type="button" className="toSection__more" onClick={handleReplaceSource}>更换花型 →</button>
-              </header>
-              <div className="toSourceCard">
-                <span className="toSourceCard__thumb">
-                  <img src={SOURCE_PATTERN.thumb} alt="" />
-                </span>
-                <div className="toSourceCard__meta">
-                  <p className="toSourceCard__title">{SOURCE_PATTERN.title}</p>
-                  <p className="toSourceCard__param">{SOURCE_PATTERN.param}</p>
-                  <p className="toSourceCard__code">花型编号 {SOURCE_PATTERN.code}</p>
+        {work && selectedPattern && (
+          <div className="toStudioFrame">
+            <aside className="toWorkbench" aria-label="试穿工作台">
+              <section className="toPanel toWorkCard">
+                <nav className="toCrumb" aria-label="面包屑">
+                  <Link href="/my-studio">我的设计工作室</Link>
+                  <span aria-hidden>/</span>
+                  <span>虚拟试穿</span>
+                </nav>
+                <div className="toWorkbenchTitle">
+                  <h1>虚拟试穿</h1>
+                  <p>按当前印花、版型和身材参数生成上身效果。</p>
                 </div>
-              </div>
-            </section>
+                <div className="toProgress" aria-label="设计流程进度">
+                  {FLOW_STEPS.map((step, index) => (
+                    <span key={step} className={index === 1 ? "is-active" : index < 1 ? "is-done" : ""}>
+                      <b>{index + 1}</b>
+                      {step}
+                    </span>
+                  ))}
+                </div>
+                <div className="toDecisionBlock">
+                  <p className="toWorkbenchSectionLabel">当前设计</p>
+                  <strong>{work.title}</strong>
+                  <dl className="toCompactMeta">
+                    <div>
+                      <dt>款式</dt>
+                      <dd>{work.config.garmentType || "连衣裙"}</dd>
+                    </div>
+                    <div>
+                      <dt>版型</dt>
+                      <dd>{selectedTemplate?.name || work.config.silhouette || "A 字裙"}</dd>
+                    </div>
+                    <div>
+                      <dt>尺码</dt>
+                      <dd>{bodyProfile.usualSize || work.config.size || "M"}</dd>
+                    </div>
+                    <div>
+                      <dt>场景</dt>
+                      <dd>{work.config.occasion || "通勤"}</dd>
+                    </div>
+                  </dl>
+                </div>
+              </section>
 
-            {/* E. 主按钮 */}
-            <button
-              type="button"
-              className="toPrimary toPrimary--full"
-              onClick={runTryOn}
-              disabled={isLoading || needsAuth}
-            >
-              {isLoading ? "试穿中…" : "开始试穿"}
-            </button>
-            <p className="toQuota">今日剩余次数:<b>8</b> 次</p>
-          </section>
+              <section className="toPanel toApplicationCard">
+                <div className="toPanelHead">
+                  <div>
+                    <p className="toEyebrow">当前印花</p>
+                    <h2>用于本次上身效果生成</h2>
+                  </div>
+                  <Link className="toTextLink" href={`/my-studio/pattern-generate?workId=${encodeURIComponent(workId)}`}>
+                    更换
+                  </Link>
+                </div>
+                <div className="toSourceCard">
+                  <img src={selectedPattern.imageUrl} alt="当前印花" />
+                  <div>
+                    <strong>{patternSummary(selectedPattern)}</strong>
+                    <span>系统会以这张印花作为参考生成上身效果。</span>
+                    <small>
+                      {selectedPattern.generatedAt
+                        ? `保存于 ${formatDateTime(selectedPattern.generatedAt)}`
+                        : "已保存到当前作品"}
+                    </small>
+                  </div>
+                </div>
+              </section>
 
-          {/* ========== 中:预览面板 ========== */}
-          <section className="toPanel toPreviewPanel" aria-label="试穿效果">
-            <header className="toPreviewHead">
-              <h2 className="toPanel__title">AI 上身效果预览</h2>
-            </header>
+              <section className="toPanel toFidelityPanel">
+                <div className="toPanelHead">
+                  <div>
+                    <p className="toEyebrow">试穿模式</p>
+                    <h2>选择生成方式</h2>
+                  </div>
+                </div>
+                <div className="toModeGroup" role="radiogroup" aria-label="试穿模式">
+                  <button
+                    type="button"
+                    className="is-selected"
+                    onClick={() => setRequestedFidelityMode("reference_image")}
+                  >
+                    高保真参考试穿
+                    <span>使用当前印花作为真实参考图，生成更接近所选印花的上身效果。</span>
+                  </button>
+                </div>
+                <div className="toReadinessSummary">
+                  <span>{bodyReady ? "已准备：印花、版型、身材参数" : "已准备：印花、版型；请补充身高体重"}</span>
+                  <small>服装区域：{readiness.maskReady ? "已根据版型模板准备" : "待根据版型模板准备"}</small>
+                </div>
+              </section>
 
-            {hasResult && (
-              <div className="toAdvice" role="status">
-                <span className="toAdvice__dot" aria-hidden />
-                <span>已为你<b>自动贴合</b>花型与版型,效果可直接用于定制参考</span>
-              </div>
-            )}
-            {hasError && (
-              <div className="toAdvice toAdvice--error" role="alert">
-                <span className="toAdvice__dot toAdvice__dot--error" aria-hidden />
-                <span>{errorMsg || "试穿生成失败,可以换一个版型再试一次"}</span>
-                <button type="button" className="toGhost toGhost--error" onClick={handleRetry}>
-                  重试
+              <section className="toPanel toTemplatePanel">
+                <div className="toPanelHead">
+                  <div>
+                    <p className="toEyebrow">款式与尺码</p>
+                    <h2>确认这件衣服的轮廓</h2>
+                  </div>
+                </div>
+                <div className="toTemplateList">
+                  {garmentTemplates.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={selectedTemplate?.id === item.id ? "is-selected" : ""}
+                      onClick={() => setSelectedTemplateId(item.id)}
+                    >
+                      <b>{item.name}</b>
+                      <span>{[item.neckline, item.sleeve, item.skirtLength, item.waistline].filter(Boolean).join(" / ")}</span>
+                    </button>
+                  ))}
+                </div>
+                <label className="toSizeSelect">
+                  尺码
+                  <select
+                    value={bodyProfile.usualSize || work.config.size || "M"}
+                    onChange={(event) => updateBodyProfile("usualSize", event.target.value)}
+                  >
+                    {["S", "M", "L", "XL"].map((size) => (
+                      <option key={size} value={size}>{size}</option>
+                    ))}
+                  </select>
+                </label>
+              </section>
+
+              <section className="toPanel toBodyPanel">
+                <div className="toPanelHead">
+                  <div>
+                    <p className="toEyebrow">我的身材</p>
+                    <h2>身材参数</h2>
+                    <p className="toBodySummary">
+                      身高 {bodyProfile.heightCm || "--"}cm / 体重 {bodyProfile.weightKg || "--"}kg / 常穿 {bodyProfile.usualSize || "M"} / {fitLabel(bodyProfile.fitPreference)}
+                    </p>
+                  </div>
+                  <button type="button" className="toBodyToggle" onClick={() => setBodyEditorOpen((value) => !value)}>
+                    {bodyEditorOpen ? "收起" : "编辑身材"}
+                  </button>
+                </div>
+                {bodyEditorOpen && (
+                  <>
+                    <div className="toBodyGrid">
+                      <BodyInput label="身高 cm" value={bodyProfile.heightCm} onChange={(value) => updateBodyProfile("heightCm", value)} />
+                      <BodyInput label="体重 kg" value={bodyProfile.weightKg} onChange={(value) => updateBodyProfile("weightKg", value)} />
+                      <BodyInput label="肩宽 cm" value={bodyProfile.shoulderCm} onChange={(value) => updateBodyProfile("shoulderCm", value)} />
+                      <BodyInput label="胸围 cm" value={bodyProfile.bustCm} onChange={(value) => updateBodyProfile("bustCm", value)} />
+                      <BodyInput label="腰围 cm" value={bodyProfile.waistCm} onChange={(value) => updateBodyProfile("waistCm", value)} />
+                      <BodyInput label="臀围 cm" value={bodyProfile.hipCm} onChange={(value) => updateBodyProfile("hipCm", value)} />
+                    </div>
+                    <div className="toBodyInline">
+                      <label>
+                        常穿尺码
+                        <select
+                          value={bodyProfile.usualSize || "M"}
+                          onChange={(event) => updateBodyProfile("usualSize", event.target.value)}
+                        >
+                          {["S", "M", "L", "XL"].map((size) => (
+                            <option key={size} value={size}>{size}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <div>
+                        <span>穿着松量</span>
+                        <div className="toFitGroup">
+                          {FIT_OPTIONS.map((item) => (
+                            <button
+                              key={item.id}
+                              type="button"
+                              className={bodyProfile.fitPreference === item.id ? "is-selected" : ""}
+                              onClick={() => updateBodyProfile("fitPreference", item.id)}
+                            >
+                              {item.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </section>
+
+              <section className="toPanel toControlPanel" id="generate-try-on">
+                <div className="toPanelHead">
+                  <div>
+                    <p className="toEyebrow">呈现效果</p>
+                    <h2>画面风格</h2>
+                  </div>
+                </div>
+
+                <div className="toControlGroup">
+                  <h3>风格</h3>
+                  <div className="toOptionList">
+                    {MODEL_STYLE_OPTIONS.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={modelStyle === item.id ? "is-selected" : ""}
+                        onClick={() => setModelStyle(item.id)}
+                      >
+                        <b>{item.label}</b>
+                        <span>{item.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <OptionGroup
+                  title="画面"
+                  options={ATMOSPHERE_OPTIONS}
+                  value={atmosphere}
+                  onChange={(value) => setAtmosphere(value as Atmosphere)}
+                />
+                <OptionGroup
+                  title="角度"
+                  options={FRAMING_OPTIONS}
+                  value={framing}
+                  onChange={(value) => setFraming(value as Framing)}
+                />
+              </section>
+
+              <section className="toPanel toNextPanel">
+                <p>
+                  {hasSelectedTryOn
+                    ? "当前上身效果将用于下一步定制信息填写。"
+                    : bodyReady
+                      ? "确认参数后生成一张上身效果图。"
+                      : "请先填写身高和体重，再生成我的上身效果图。"}
+                </p>
+                <button type="button" className="toGenerateButton" disabled={generating || !canRunRequestedMode} onClick={() => generateTryOn()}>
+                  {generating ? "正在生成..." : "生成高保真参考试穿"}
+                </button>
+                {error && (
+                  <div className="toErrorStack">
+                    <p className="toError">{error}</p>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="toRegenerateButton"
+                  disabled={!hasSelectedTryOn}
+                  onClick={() => router.push(nextHref)}
+                >
+                  下一步：开始定制
+                </button>
+                {hasSelectedTryOn && (
+                  <button type="button" className="toRevisionToggle" onClick={() => setShowRevision((value) => !value)}>
+                    不满意，调整后重试
+                  </button>
+                )}
+                {showRevision && (
+                  <div className="toRevisionPanel">
+                    <p>选择一个原因，系统会保留原图并追加生成新的上身效果。</p>
+                    <div className="toRevisionReasons">
+                      {REVISION_REASONS.map((item) => (
+                        <button
+                          key={item}
+                          type="button"
+                          className={revisionReason === item ? "is-selected" : ""}
+                          onClick={() => setRevisionReason(item)}
+                        >
+                          {item}
+                        </button>
+                      ))}
+                    </div>
+                    {revisionReason === "版型不喜欢" && (
+                      <div className="toRevisionTemplates">
+                        {garmentTemplates.map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            className={selectedTemplate?.id === item.id ? "is-selected" : ""}
+                            onClick={() => setSelectedTemplateId(item.id)}
+                          >
+                            {item.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      className="toRegenerateButton"
+                      disabled={!revisionReason || generating || !canRunRequestedMode}
+                      onClick={() => generateTryOn(revisionReason)}
+                    >
+                      按这个调整重新生成
+                    </button>
+                  </div>
+                )}
+              </section>
+            </aside>
+
+            <main className="toPreviewStage" aria-label="虚拟试穿">
+              <div className="toPreviewToolbar">
+                <div>
+                  <p className="toEyebrow">虚拟试穿</p>
+                  <h2>{hasSelectedTryOn ? "当前上身效果" : "等待生成上身效果"}</h2>
+                </div>
+                <button
+                  type="button"
+                  className="toZoomButton"
+                  disabled={!previewAsset}
+                  onClick={() => previewAsset && window.open(previewImage, "_blank", "noopener,noreferrer")}
+                  aria-label="查看大图"
+                >
+                  放大
                 </button>
               </div>
-            )}
 
-            <div className="toPreviewStage">
-              {needsAuth && (
-                <div className="toEmpty">
-                  <div className="toEmpty__art" aria-hidden>
-                    <svg viewBox="0 0 64 64" fill="none">
-                      <g stroke="#234A58" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.78">
-                        <rect x="18" y="28" width="28" height="22" rx="3" />
-                        <path d="M24 28v-6a8 8 0 0 1 16 0v6" />
-                        <circle cx="32" cy="38" r="2" fill="#234A58" stroke="none" opacity="0.95" />
-                        <path d="M32 40v4" />
-                      </g>
-                    </svg>
+              <div
+                className={`toPreviewCanvas${hasSelectedTryOn ? " is-selected" : ""}${generating ? " is-generating" : ""}${!previewAsset ? " is-waiting" : ""}`}
+                style={{ "--try-on-loading-art": `url(${TRY_ON_LOADING_ELEGANT})` } as CSSProperties}
+              >
+                {previewAsset && !generating ? (
+                  <img src={previewImage} alt="当前上身效果图" />
+                ) : (
+                  <div className="toWaitingIllustration" aria-hidden="true">
+                    <span />
                   </div>
-                  <h3 className="toEmpty__title">请先登录,即可使用 AI 创作工具</h3>
-                  <p className="toEmpty__desc">登录后可保存作品、参与定制下单。</p>
-                  <Link href="/login" className="toPrimary" style={{ marginTop: 12 }}>去登录</Link>
-                </div>
-              )}
-              {phase === "idle" && (
-                <div className="toEmpty">
-                  <div className="toEmpty__art" aria-hidden>
-                    <svg viewBox="0 0 96 128" fill="none">
-                      <g stroke="#C06A73" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.65">
-                        {/* 简化裙装 + 头部轮廓占位,纯线稿不模特图 */}
-                        <circle cx="48" cy="22" r="10" />
-                        <path d="M38 32h20l4 8-3 6v8l8 64H29l8-64v-8l-3-6z" />
-                        <path d="M40 32c2 3 5 4 8 4s6-1 8-4" opacity="0.55" />
-                      </g>
-                    </svg>
+                )}
+                {hasSelectedTryOn && !generating && <span className="toSelectedFlag">当前上身效果</span>}
+                {previewAsset && !generating && (
+                  <span className={`toFidelityBadge is-${readTryOnFidelityMode(previewAsset)}`}>
+                    {tryOnFidelityLabel(previewAsset)}
+                  </span>
+                )}
+                {generating && (
+                  <div className="toGeneratingOverlay" aria-live="polite">
+                    <div className="toGeneratingFigure" aria-hidden="true">
+                      <span />
+                    </div>
+                    <div className="toGeneratingCopy">
+                      <strong>正在生成你的上身效果图</strong>
+                      <p>AI 正在根据印花、版型与身材参数生成试穿预览</p>
+                      <span className="toStageNow">{TRY_ON_GENERATION_STAGES[generationStage]}</span>
+                      <ol>
+                        {TRY_ON_GENERATION_STAGES.map((stage, index) => (
+                          <li key={stage} className={index <= generationStage ? "is-active" : ""}>
+                            {stage}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
                   </div>
-                  <h3 className="toEmpty__title">选择版型和花型,预览你的第一张上身效果</h3>
-                  <p className="toEmpty__desc">
-                    左侧选择版型与花型来源,点击"开始试穿"。
-                  </p>
-                </div>
-              )}
-
-              {isLoading && (
-                <div className="toLoading" role="status" aria-live="polite">
-                  <div className="toPetals" aria-hidden>
-                    <span /><span /><span /><span /><span /><span />
-                  </div>
-                  <p className="toLoading__text">正在把花型贴合到版型上…</p>
-                </div>
-              )}
-
-              {hasResult && (
-                <div className="toResult">
-                  <div className="toResult__main">
-                    <img src={mainImg} alt="试穿主视图" />
-                  </div>
-                  <div className="toResult__side">
-                    <img src={sideImg} alt="试穿侧视图" />
-                  </div>
-                </div>
-              )}
-
-              {hasError && (
-                <div className="toEmpty">
-                  <div className="toEmpty__art" aria-hidden>
-                    <svg viewBox="0 0 96 128" fill="none">
-                      <g stroke="#C06A73" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.6">
-                        <circle cx="48" cy="48" r="20" />
-                        <path d="M48 38v14" />
-                        <circle cx="48" cy="60" r="2" fill="#C06A73" stroke="none" />
-                      </g>
-                    </svg>
-                  </div>
-                  <h3 className="toEmpty__title">这次没能贴合上身</h3>
-                  <p className="toEmpty__desc">换一个版型,或调整袖长 / 裙长再试一次。</p>
-                </div>
-              )}
-            </div>
-
-            {/* 轮播点占位 */}
-            {hasResult && (
-              <div className="toCarousel" role="tablist" aria-label="试穿视图切换">
-                {[0, 1, 2].map((i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    role="tab"
-                    aria-selected={carousel === i}
-                    className={`toCarousel__dot${carousel === i ? " is-active" : ""}`}
-                    onClick={() => setCarousel(i)}
-                  />
-                ))}
+                )}
               </div>
-            )}
-          </section>
 
-          {/* ========== 右:操作面板 ========== */}
-          <aside className="toPanel toActionPanel" aria-label="下一步操作">
-            <h2 className="toPanel__title">下一步操作</h2>
+              <div className="toPreviewCaption">
+                <strong>{previewAsset ? tryOnSummary(previewAsset) : "生成后可在右侧选择当前上身效果"}</strong>
+                <span>{previewAsset ? tryOnFidelityNotice(previewAsset) : "AI 虚拟试穿仅供设计参考，实际成衣以最终工艺和面料为准。"}</span>
+              </div>
 
-            <div className="toActions">
-              <button
-                type="button"
-                className="toPrimary toPrimary--full"
-                disabled={!hasResult}
-                onClick={handleSave}
-              >
-                保存到作品
-              </button>
-              <button
-                type="button"
-                className="toSecondary toSecondary--accent toSecondary--full"
-                disabled={!hasResult}
-                onClick={handleOrder}
-              >
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="M2 4h12l-1.2 8.4a1.5 1.5 0 0 1-1.5 1.3H4.7a1.5 1.5 0 0 1-1.5-1.3L2 4z" />
-                  <path d="M5.5 4V3a2.5 2.5 0 0 1 5 0v1" />
-                </svg>
-                定制下单
-              </button>
-              <button
-                type="button"
-                className="toSecondary toSecondary--full"
-                disabled={!hasResult}
-                onClick={handlePublish}
-              >
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="M8 2v8M5 5l3-3 3 3" />
-                  <path d="M2 11v3h12v-3" />
-                </svg>
-                发布到灵感广场
-              </button>
-            </div>
+              <div className="toThumbStrip" aria-label="最近虚拟试穿缩略图">
+                {historyThumbs.length === 0 ? (
+                  <div className="toThumbEmpty">
+                    <img src={EMPTY_HISTORY_IMAGE} alt="" />
+                    <span>生成后的上身效果会出现在这里。</span>
+                  </div>
+                ) : (
+                  historyThumbs.slice(0, 5).map((asset) => (
+                    <button
+                      key={asset.id}
+                      type="button"
+                      className={selectedTryOn?.id === asset.id ? "is-selected" : ""}
+                      disabled={selectingId === asset.id}
+                      onClick={() => selectTryOn(asset.id)}
+                    >
+                      <img src={asset.imageUrl} alt="上身效果缩略图" />
+                    </button>
+                  ))
+                )}
+              </div>
+            </main>
 
-            <div className="toDivider" aria-hidden />
-
-            <h3 className="toActionPanel__sub">最近试穿</h3>
-            <ul className="toHistory" role="list">
-              {history.map((h) => (
-                <li key={h.id} className="toHistoryItem">
-                  <span className="toHistoryItem__thumb">
-                    <img src={h.thumb} alt="" />
-                  </span>
-                  <span className="toHistoryItem__meta">
-                    <span className="toHistoryItem__title">{h.title}</span>
-                    <span className="toHistoryItem__param">{h.param}</span>
-                    <span className="toHistoryItem__time">{h.time}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </aside>
-
-        </div>
-        </div>{/* /.toStudioShell */}
-
-        {/* 底部串联 banner */}
-        <section className="toNextBanner" aria-label="下一步:补充款式线稿">
-          <span className="toNextBanner__icon" aria-hidden>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 3l7 7-9 9H5v-7z" />
-              <path d="M14 3l3 3" />
-            </svg>
-          </span>
-          <div className="toNextBanner__copy">
-            <h3 className="toNextBanner__title">下一步:补充款式线稿(可选)</h3>
-            <p className="toNextBanner__desc">
-              补充裙装线稿,AI 将帮你生成更完整的设计方案。
-            </p>
+            <aside className="toHistoryRail" aria-label="历史试穿缩略栏">
+              <Link className="toDigitalAssetsButton" href={digitalAssetsHref}>
+                <img src={DIGITAL_ASSETS_ICON} alt="" />
+                数字资产
+              </Link>
+              <div className="toRailHeader">
+                <strong>历史试穿</strong>
+                <span>{historyGroups.length} 组 / {tryOnAssets.length} 张</span>
+              </div>
+              <div className="toRailList">
+                {generating && (
+                  <div className="toRailGenerating" aria-live="polite">
+                    <span />
+                    <small>生成中，即将出现在这里</small>
+                  </div>
+                )}
+                {historyThumbs.length === 0 && !generating ? (
+                  <div className="toRailEmpty">
+                    <img src={EMPTY_HISTORY_IMAGE} alt="" />
+                    <span>暂无历史</span>
+                  </div>
+                ) : (
+                  historyThumbs.map((asset) => (
+                    <TryOnRailThumb
+                      key={asset.id}
+                      asset={asset}
+                      selected={selectedTryOn?.id === asset.id}
+                      disabled={selectingId === asset.id}
+                      pattern={work.assets.patterns.find((item) => item.id === asset.patternAssetId || item.id === asset.inputAssetId)}
+                      onSelect={() => selectTryOn(asset.id)}
+                    />
+                  ))
+                )}
+              </div>
+            </aside>
           </div>
-          <button
-            type="button"
-            className="toPrimary toPrimary--banner"
-            disabled={!hasResult}
-            onClick={handleSketch}
-            /* TODO step 3:跳 /my-studio/sketch?from=try-on&workId={resultId} */
-          >
-            去补充线稿 →
-          </button>
-        </section>
+        )}
       </div>
     </div>
   );
+}
+
+function OptionGroup({
+  title,
+  options,
+  value,
+  onChange,
+}: {
+  title: string;
+  options: { id: string; label: string }[];
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="toControlGroup">
+      <h3>{title}</h3>
+      <div className="toSegmented">
+        {options.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            className={value === item.id ? "is-selected" : ""}
+            onClick={() => onChange(item.id)}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ReadinessItem({ label, ready, detail }: { label: string; ready: boolean; detail: string }) {
+  return (
+    <div className={ready ? "is-ready" : "is-missing"}>
+      <span>{label}</span>
+      <strong>{ready ? "已准备" : "待准备"}</strong>
+      <small>{detail}</small>
+    </div>
+  );
+}
+
+function BodyInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value?: number;
+  onChange: (value: number | undefined) => void;
+}) {
+  return (
+    <label className="toBodyInput">
+      {label}
+      <input
+        type="number"
+        min={0}
+        value={value ?? ""}
+        onChange={(event) => {
+          const next = event.target.value ? Number(event.target.value) : undefined;
+          onChange(Number.isFinite(next) ? next : undefined);
+        }}
+      />
+    </label>
+  );
+}
+
+function TryOnRailThumb({
+  asset,
+  pattern,
+  selected,
+  disabled,
+  onSelect,
+}: {
+  asset: StudioAsset;
+  pattern?: StudioAsset;
+  selected: boolean;
+  disabled: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`toRailThumb${selected ? " is-selected" : ""}`}
+      disabled={disabled}
+      onClick={onSelect}
+      title={selected ? "当前上身效果" : "设为当前上身效果"}
+    >
+      <img src={asset.imageUrl} alt="历史上身效果缩略图" />
+      {pattern && <img className="toRailPattern" src={pattern.imageUrl} alt="对应印花缩略图" />}
+      {selected && (
+        <span>
+          <img src={SELECTED_ICON} alt="" />
+          当前
+        </span>
+      )}
+      <em>{tryOnFidelityLabel(asset)}</em>
+      <small>
+        {asset.garmentTemplateSnapshot?.name || "已保存版型"}
+        <br />
+        {formatDateTime(asset.generatedAt)}
+      </small>
+    </button>
+  );
+}
+
+function buildTryOnReadiness(hasPattern: boolean, template: StudioGarmentTemplate | undefined, bodyReady: boolean) {
+  const hasTemplate = Boolean(template);
+  const defaultRegionTemplate = resolveDefaultGarmentRegionTemplate(template);
+  const hasRealMask = Boolean((template as (StudioGarmentTemplate & { garmentRegionMaskUrl?: string }) | undefined)?.garmentRegionMaskUrl);
+  const maskReady = Boolean(hasRealMask || defaultRegionTemplate);
+  const providerReady = hasPattern && hasTemplate && bodyReady && maskReady;
+  const missing = [
+    !hasPattern ? "印花平铺图" : "",
+    !hasTemplate ? "版型模板" : "",
+    !bodyReady ? "模特体型 / 底图" : "",
+    !maskReady ? "服装区域模板" : "",
+  ].filter(Boolean);
+  const shortBlocker = missing.length > 0
+    ? `${missing[0]}待准备`
+    : !providerReady
+      ? "高保真模型待接入"
+      : "准备完成";
+  const blockerMessage = missing.length > 0
+    ? `当前还需要准备${missing.join("、")}，因此暂时不能进入高保真试穿。`
+    : "当前已准备印花、版型和身材信息；高保真试穿模型还在接入中。";
+  return {
+    patternTileReady: hasPattern,
+    garmentTemplateReady: hasTemplate,
+    modelBaseReady: bodyReady,
+    maskReady,
+    maskSource: hasRealMask ? "real_mask" : defaultRegionTemplate ? "default_template" : "missing",
+    maskDetail: hasRealMask
+      ? "已准备服装区域"
+      : defaultRegionTemplate
+        ? "已准备（版型模板）"
+        : "请选择更完整的版型",
+    providerReady,
+    canRunMaskedTryOn: hasPattern && hasTemplate && bodyReady && maskReady && providerReady,
+    missing,
+    shortBlocker,
+    blockerMessage,
+  };
+}
+
+function resolveDefaultGarmentRegionTemplate(template?: StudioGarmentTemplate) {
+  if (!template) return undefined;
+  const key = [template.id, template.name, template.silhouette, template.closure, template.skirtLength]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (key.includes("wrap") || template.silhouette === "wrap" || template.id === "wrap-dress") {
+    return {
+      id: "default-mask-wrap-dress",
+      source: "default_template",
+      label: "裹身裙版型区域",
+    };
+  }
+  if (key.includes("a-line") || key.includes("a 字") || template.silhouette === "a-line") {
+    return {
+      id: "default-mask-a-line-dress",
+      source: "default_template",
+      label: "A 字裙版型区域",
+    };
+  }
+  if (key.includes("sheath") || key.includes("knit") || template.silhouette === "sheath") {
+    return {
+      id: "default-mask-sheath-dress",
+      source: "default_template",
+      label: "修身裙版型区域",
+    };
+  }
+  if (template.silhouette && template.silhouette !== "unknown") {
+    return {
+      id: `default-mask-${template.silhouette}`,
+      source: "default_template",
+      label: "默认版型区域",
+    };
+  }
+  return undefined;
+}
+
+function readTryOnFidelityMode(asset: StudioAsset): TryOnFidelityMode {
+  if (
+    asset.fidelityMode === "masked_garment_tryon" ||
+    asset.fidelityMode === "garment_tryon" ||
+    asset.fidelityMode === "garment_tryon_high_quality" ||
+    asset.fidelityMode === "reference_image" ||
+    asset.fidelityMode === "approximate"
+  ) {
+    return asset.fidelityMode;
+  }
+  return asset.isFallback ? "approximate" : "approximate";
+}
+
+function tryOnFidelityLabel(asset: StudioAsset): string {
+  if (asset.fidelityMode === "garment_tryon_high_quality") return "高质量确认图";
+  if (asset.fidelityMode === "garment_tryon") return "高保真试穿";
+  if (asset.isFallback) return "示例预览";
+  const mode = readTryOnFidelityMode(asset);
+  if (mode === "masked_garment_tryon") return "高保真试穿";
+  if (mode === "reference_image") return "高保真参考试穿";
+  return "历史预览";
+}
+
+function tryOnFidelityNotice(asset: StudioAsset): string {
+  const mode = readTryOnFidelityMode(asset);
+  if (mode === "garment_tryon_high_quality") {
+    return "已生成高质量确认图，生产前仍需后台审核工艺细节。";
+  }
+  if (mode === "garment_tryon") {
+    return "已使用服装图和标准模特底图生成高保真试穿，生产前仍需确认版型与工艺细节。";
+  }
+  if (mode === "masked_garment_tryon") {
+    return "已使用印花、版型和服装区域生成高保真试穿，生产前仍需后台确认工艺细节。";
+  }
+  if (mode === "reference_image") {
+    return "已使用当前印花作为真实参考图生成试穿预览，印花与版型细节仍需最终确认。";
+  }
+  return "当前结果用于设计预览，印花位置和细节仍可能存在偏差。";
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+function buildTryOnPrompt(
+  work: StudioWorkDTO,
+  pattern: StudioAsset,
+  preference: StudioTryOnPreviewPreference,
+  bodyProfile: StudioBodyProfile,
+  garmentTemplate: StudioGarmentTemplate,
+  revisionReason?: string,
+): string {
+  const garmentStructure = garmentStructureSnapshot(garmentTemplate);
+  const isWrapDress = garmentTemplate.id === "wrap-dress" || /wrap/i.test(garmentTemplate.name) || garmentTemplate.closure?.includes("系带");
+  return [
+    "Create refined premium womenswear virtual fitting preview images for MaxLuLu AI.",
+    `Use the selected print image URL as the exact fabric print reference: ${pattern.imageUrl}.`,
+    "The selected print is not mood-board inspiration. It is the exact textile print to place on the garment.",
+    "Preserve original floral layout, preserve density, preserve color balance, preserve background tone, preserve motif scale, and preserve motif distribution.",
+    "Do not reinterpret the selected print into a different print. Do not invent new flowers, new colors, or a different background.",
+    `Apply the print to this exact selected garment template: ${garmentTemplate.name}.`,
+    `Garment structure must be followed exactly: silhouette=${garmentStructure.silhouette}; neckline=${garmentStructure.neckline}; waist=${garmentStructure.waist}; closure=${garmentStructure.closure}; sleeveLength=${garmentStructure.sleeveLength}; dressLength=${garmentStructure.dressLength}.`,
+    isWrapDress
+      ? "This is a wrap dress, not an A-line dress. Show wrap-front construction, overlapping front panels, visible waist tie, and a V neckline. Do not replace with an A-line silhouette."
+      : "",
+    `Garment context: ${work.config.garmentType || "dress"}; occasion: ${work.config.occasion || "daily"}; size: ${bodyProfile.usualSize || work.config.size || "M"}; fit preference: ${fitLabel(bodyProfile.fitPreference)}.`,
+    `Body proportion should match: height ${bodyProfile.heightCm || "unknown"}cm, weight ${bodyProfile.weightKg || "unknown"}kg, shoulder ${bodyProfile.shoulderCm || "unknown"}cm, bust ${bodyProfile.bustCm || "unknown"}cm, waist ${bodyProfile.waistCm || "unknown"}cm, hip ${bodyProfile.hipCm || "unknown"}cm.`,
+    `Virtual fitting style: ${tryOnLabelParts(preference).join(" / ")}.`,
+    revisionReason ? `Regenerate because the user said: ${revisionReason}. Keep the same selected print unless the garment template changed.` : "",
+    "Output must be full-body, head to toe, both feet visible, vertical fashion composition, 2:3 fashion editorial framing.",
+    "Do not crop at the waist, knees, ankles, or shoes. Keep the entire model and full dress visible.",
+    "Show a wearable garment preview for a consumer to judge overall style, proportion and mood.",
+    "Generate a model wearing the garment. Do not change the selected dress silhouette unless garmentTemplate changed.",
+    "No text, no logo, no watermark, no technical sheet, no line sketch.",
+  ].filter(Boolean).join("\n");
+}
+
+function garmentStructureSnapshot(garmentTemplate: StudioGarmentTemplate) {
+  return {
+    silhouette: garmentTemplate.silhouette || "follow selected template",
+    neckline: garmentTemplate.neckline || "follow selected template",
+    waist: garmentTemplate.waistline || "follow selected template",
+    closure: garmentTemplate.closure || (garmentTemplate.id === "wrap-dress" ? "wrap-front side waist tie closure" : "follow selected template"),
+    sleeveLength: garmentTemplate.sleeve || "follow selected template",
+    dressLength: garmentTemplate.skirtLength || "follow selected template",
+  };
+}
+
+function tryOnLabelParts(preference: StudioTryOnPreviewPreference): string[] {
+  return [
+    MODEL_STYLE_OPTIONS.find((item) => item.id === preference.modelStyle)?.label || "通勤自然",
+    ATMOSPHERE_OPTIONS.find((item) => item.id === preference.atmosphere)?.label || "棚拍干净",
+    FRAMING_OPTIONS.find((item) => item.id === preference.framing)?.label || "全身展示",
+  ];
+}
+
+function fitLabel(value: StudioBodyProfile["fitPreference"]): string {
+  return FIT_OPTIONS.find((item) => item.id === value)?.label || "合身";
+}
+
+function inferBodyShape(heightCm?: number, weightKg?: number): string {
+  if (!heightCm || !weightKg) return "未设定";
+  const bmi = weightKg / Math.pow(heightCm / 100, 2);
+  if (!Number.isFinite(bmi)) return "未设定";
+  if (bmi < 18.5) return "纤细";
+  if (bmi < 24) return "标准";
+  return "丰满";
+}
+
+function tryOnSummary(asset: StudioAsset): string {
+  const preference = readTryOnPreference(asset);
+  const template = asset.garmentTemplateSnapshot?.name;
+  if (preference) return [template, ...tryOnLabelParts(preference)].filter(Boolean).join(" / ");
+  if (asset.isFallback) return "示例预览";
+  return "上身效果";
+}
+
+function readTryOnPreference(asset: StudioAsset): StudioTryOnPreviewPreference | null {
+  const params = asset.params;
+  const value = params && typeof params === "object" ? params.tryOnPreview : undefined;
+  if (!value || typeof value !== "object") return null;
+  const record = value as Partial<StudioTryOnPreviewPreference>;
+  if (!record.modelStyle || !record.atmosphere || !record.framing) return null;
+  return {
+    modelStyle: record.modelStyle,
+    atmosphere: record.atmosphere,
+    framing: record.framing,
+  };
+}
+
+function patternSummary(asset: StudioAsset): string {
+  const labels = asset.metadata?.displayLabels;
+  if (Array.isArray(labels)) {
+    const summary = labels.filter((item): item is string => typeof item === "string").join(" / ");
+    if (summary) return summary;
+  }
+  if (asset.isFallback) return "示例预览";
+  return "已选为这件衣服的当前印花";
+}
+
+function buildTryOnGroups(
+  assets: StudioAsset[],
+  groups: StudioTryOnGenerationGroup[],
+): { id: string; title: string; time: string; assets: StudioAsset[] }[] {
+  const output = groups
+    .map((group) => {
+      const groupAssets = assets.filter((asset) => group.resultIds.includes(asset.id));
+      if (groupAssets.length === 0) return null;
+      return {
+        id: group.groupId,
+        title: "虚拟试穿",
+        time: formatDateTime(group.generatedAt),
+        assets: groupAssets,
+      };
+    })
+    .filter((item): item is { id: string; title: string; time: string; assets: StudioAsset[] } => Boolean(item));
+
+  const groupedIds = new Set(output.flatMap((group) => group.assets.map((asset) => asset.id)));
+  const rest = assets.filter((asset) => !groupedIds.has(asset.id));
+  if (rest.length > 0) {
+    output.push({
+      id: "ungrouped-tryons",
+      title: "早期保存的虚拟试穿",
+      time: "已保存",
+      assets: rest,
+    });
+  }
+  return output;
+}
+
+function formatDateTime(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleString("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
