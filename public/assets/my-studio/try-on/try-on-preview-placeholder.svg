@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1200" fill="none">
+  <rect width="900" height="1200" rx="32" fill="#FCFDFD"/>
+  <circle cx="450" cy="190" r="78" fill="#F8E9E8" stroke="#C06A73" stroke-opacity=".25"/>
+  <path d="M260 1040c32-336 94-636 190-636s158 300 190 636" fill="#F7EDE9" stroke="#234A58" stroke-opacity=".18" stroke-width="8"/>
+  <path d="M315 620c88 60 176 60 270 0" stroke="#C8A875" stroke-opacity=".65" stroke-width="8" stroke-linecap="round"/>
+  <path d="M230 910c170-120 300-120 440 0" stroke="#C06A73" stroke-opacity=".32" stroke-width="8" stroke-linecap="round"/>
+  <text x="450" y="1130" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="#687A80">虚拟试穿预览占位</text>
+</svg>

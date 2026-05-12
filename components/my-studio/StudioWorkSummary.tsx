@@ -44,9 +44,7 @@ export default function StudioWorkSummary({ work }: { work: StudioWorkDTO }) {
         </div>
         <div>
           <dt>资产</dt>
-          <dd>
-            印花 {work.assetCounts.patterns} · 试穿 {work.assetCounts.tryOns}
-          </dd>
+          <dd>印花 {work.assetCounts.patterns} · 试穿 {work.assetCounts.tryOns}</dd>
         </div>
         <div>
           <dt>更新</dt>
