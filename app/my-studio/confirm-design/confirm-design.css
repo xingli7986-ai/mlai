@@ -2,502 +2,309 @@
 
 .cdPage {
   min-height: 100vh;
-  padding-bottom: 56px;
-  background: #f3f6f6;
-  color: #1e272b;
-  font-family: var(--font-sans, "Inter", "Noto Sans SC", sans-serif);
-}
-
-.cdPage .nav {
-  background: #fcfdfd;
-  border-bottom: 1px solid #e1e8e8;
+  background: #faf7f4;
+  color: #234a58;
+  padding-bottom: 70px;
 }
 
 .cdContainer {
-  width: min(1220px, calc(100vw - 64px));
+  width: min(1440px, calc(100% - 64px));
   margin: 0 auto;
-  padding-top: 16px;
+  padding-top: 96px;
 }
 
-.cdTop {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 18px;
-}
-
-.cdCrumb {
+.cdHeader nav {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #879397;
-  font-size: 12px;
-  line-height: 18px;
+  gap: 10px;
+  color: rgba(35, 74, 88, 0.58);
+  font-size: 14px;
 }
 
-.cdCrumb a {
-  color: inherit;
+.cdHeader a {
+  color: #234a58;
   text-decoration: none;
+  font-weight: 800;
 }
 
-.cdCrumb a:hover {
-  color: #234a58;
-}
-
-.cdProgress {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 6px 12px;
-  border: 1px solid rgba(35, 74, 88, 0.1);
-  border-radius: 999px;
-  background: rgba(252, 253, 253, 0.88);
-}
-
-.cdProgress span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: #879397;
-  font-size: 12px;
-  line-height: 18px;
-}
-
-.cdProgress b {
-  width: 20px;
-  height: 20px;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 50%;
-  background: #234a58;
-  color: #ffffff;
-  font-size: 11px;
-}
-
-.cdProgress .is-active {
-  color: #234a58;
-  font-weight: 700;
-}
-
-.cdHero {
-  margin-bottom: 18px;
-  padding: 8px 4px;
-}
-
-.cdEyebrow {
-  margin: 0 0 5px;
+.cdHeader p {
+  margin: 20px 0 8px;
   color: #c06a73;
   font-size: 12px;
-  line-height: 18px;
-  letter-spacing: 0.08em;
+  font-weight: 800;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
-.cdHero h1,
-.cdPanel h2 {
+.cdHeader h1 {
   margin: 0;
-  color: #1e272b;
-  font-family: var(--font-serif, "Noto Serif SC", serif);
-  font-weight: 500;
+  color: #203f49;
+  font-size: clamp(42px, 6vw, 76px);
+  line-height: 1;
 }
 
-.cdHero h1 {
-  font-size: 36px;
-  line-height: 44px;
+.cdHeader > span {
+  display: block;
+  margin-top: 12px;
+  color: rgba(35, 74, 88, 0.7);
+  font-size: 17px;
 }
 
-.cdHero p,
-.cdPanelHead p,
-.cdSide p,
-.cdNotice {
-  color: #566469;
+.cdSteps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 22px 0 28px;
+}
+
+.cdSteps b {
+  border-radius: 999px;
+  background: #f4ebe7;
+  padding: 10px 14px;
+  color: rgba(35, 74, 88, 0.7);
   font-size: 13px;
-  line-height: 22px;
 }
 
-.cdHero p {
-  max-width: 760px;
-  margin: 8px 0 0;
-  font-size: 14px;
-  line-height: 24px;
+.cdSteps b.is-active {
+  background: #234a58;
+  color: #fff;
+}
+
+.cdSteps b.is-done {
+  background: rgba(192, 106, 115, 0.14);
+  color: #9f4d58;
 }
 
 .cdNotice {
-  margin: 0 0 14px;
-  padding: 16px;
-  border: 1px dashed rgba(35, 74, 88, 0.18);
-  border-radius: 14px;
-  background: rgba(243, 246, 246, 0.72);
+  margin-bottom: 20px;
+  border-radius: 18px;
+  background: #f4ebe7;
+  padding: 14px 16px;
+  color: #234a58;
+  line-height: 1.7;
+}
+
+.cdNotice a {
+  margin-left: 8px;
+  color: #c06a73;
+  font-weight: 800;
 }
 
 .cdShell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 360px;
   gap: 22px;
   align-items: start;
-  margin-top: 18px;
 }
 
-.cdMain,
-.cdSide {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.cdMain {
+  display: grid;
+  gap: 18px;
 }
 
 .cdPanel {
-  padding: 18px;
-  border: 1px solid rgba(35, 74, 88, 0.12);
-  border-radius: 18px;
+  border: 1px solid rgba(35, 74, 88, 0.1);
+  border-radius: 22px;
   background: #fcfdfd;
-  box-shadow: 0 10px 30px rgba(31, 51, 66, 0.06);
+  padding: 20px;
+  box-shadow: 0 18px 46px rgba(64, 49, 42, 0.08);
 }
 
 .cdPanel h2 {
-  font-size: 21px;
-  line-height: 30px;
-}
-
-.cdPanelHead {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 14px;
-}
-
-.cdPanelHead p {
-  max-width: 720px;
-  margin: 6px 0 0;
+  margin: 0 0 16px;
+  color: #203f49;
+  font-size: 24px;
 }
 
 .cdAssetGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.cdAsset {
+  overflow: hidden;
+  border-radius: 18px;
+  background: #fff;
+}
+
+.cdAsset img {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+}
+
+.cdAsset strong,
+.cdAsset span {
+  display: block;
+  padding: 0 14px;
+}
+
+.cdAsset strong {
+  margin-top: 12px;
+  color: #203f49;
+}
+
+.cdAsset span {
+  padding-bottom: 14px;
+  color: #c06a73;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.cdMeta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0 0;
+}
+
+.cdMeta div {
+  border-radius: 16px;
+  background: #f4ebe7;
+  padding: 12px;
+}
+
+.cdMeta dt {
+  color: rgba(35, 74, 88, 0.58);
+  font-size: 13px;
+}
+
+.cdMeta dd {
+  margin: 6px 0 0;
+  color: #203f49;
+  font-weight: 800;
+}
+
+.cdFormGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 
-.cdAssetGrid--two {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.cdAssetCard {
-  display: grid;
-  gap: 8px;
-  padding: 12px;
-  border: 1px solid rgba(35, 74, 88, 0.12);
-  border-radius: 14px;
-  background: #ffffff;
-}
-
-.cdAssetCard img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  border-radius: 12px;
-}
-
-.cdAssetCard strong {
-  color: #234a58;
-  font-size: 14px;
-  line-height: 20px;
-}
-
-.cdAssetCard span,
-.cdAssetCard p {
-  margin: 0;
-  color: #879397;
-  font-size: 12px;
-  line-height: 18px;
-}
-
-.cdAssetCard a,
-.cdSecondaryLink {
-  display: inline-flex;
-  min-height: 36px;
-  align-items: center;
-  justify-content: center;
-  padding: 0 14px;
-  border: 1px solid rgba(35, 74, 88, 0.14);
-  border-radius: 999px;
-  background: #ffffff;
-  color: #234a58;
-  font-size: 12px;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.cdAssetCard--empty {
-  border-style: dashed;
-  background: rgba(243, 246, 246, 0.72);
-}
-
-.cdSnapshotGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 14px;
-}
-
-.cdSnapshotGrid > div {
-  padding: 13px 14px;
-  border: 1px solid rgba(35, 74, 88, 0.1);
-  border-radius: 14px;
-  background: #f8fbfb;
-}
-
-.cdSnapshotGrid span,
-.cdSnapshotGrid b {
-  display: block;
-}
-
-.cdSnapshotGrid span {
-  color: #879397;
-  font-size: 12px;
-}
-
-.cdSnapshotGrid b {
-  margin-top: 5px;
-  color: #234a58;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 20px;
-}
-
-.cdFormGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
 .cdFormGrid label {
   display: grid;
-  gap: 6px;
-  color: #566469;
+  gap: 7px;
+  color: rgba(35, 74, 88, 0.68);
   font-size: 13px;
-  line-height: 20px;
+  font-weight: 800;
 }
 
 .cdFormGrid input,
 .cdFormGrid select,
 .cdFormGrid textarea {
-  width: 100%;
   border: 1px solid rgba(35, 74, 88, 0.14);
-  border-radius: 10px;
-  background: #ffffff;
-  color: #1e272b;
+  border-radius: 13px;
+  background: #fff;
+  color: #234a58;
+  padding: 12px;
   font: inherit;
-  font-size: 13px;
 }
 
-.cdFormGrid input,
-.cdFormGrid select {
-  min-height: 42px;
-  padding: 0 12px;
-}
-
-.cdFormGrid textarea {
-  resize: vertical;
-  padding: 11px 12px;
-}
-
-.cdFormGrid__wide {
+.cdWide {
   grid-column: 1 / -1;
 }
 
-.cdStickyPanel {
+.cdSide {
   position: sticky;
-  top: 82px;
+  top: 88px;
   display: grid;
-  gap: 14px;
+  gap: 18px;
 }
 
-.cdPriceRow {
+.cdPrice {
   display: flex;
-  align-items: center;
   justify-content: space-between;
   gap: 12px;
+  border-bottom: 1px solid rgba(35, 74, 88, 0.09);
   padding: 10px 0;
-  border-bottom: 1px solid #e1e8e8;
-  color: #566469;
-  font-size: 13px;
 }
 
-.cdPriceRow b {
-  color: #234a58;
-  font-size: 15px;
+.cdPrice span {
+  color: rgba(35, 74, 88, 0.68);
 }
 
-.cdPriceRow--strong {
-  border-bottom: 0;
-  color: #1e272b;
+.cdPrice b,
+.cdPrice.is-strong {
+  color: #203f49;
 }
 
-.cdPriceRow--strong b {
-  color: #c06a73;
-  font-size: 19px;
-}
-
-.cdCycle,
-.cdSuccess {
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #f3f6f6;
-  color: #566469;
-  font-size: 13px;
-  line-height: 20px;
-}
-
-.cdSuccess {
-  border: 1px solid rgba(35, 74, 88, 0.16);
-  background: rgba(200, 168, 117, 0.14);
-  color: #234a58;
-  font-weight: 700;
-}
-
-.cdModeList {
-  display: grid;
-  gap: 10px;
-}
-
-.cdModeList button {
+.cdSide .cdPanel button:not(.cdPrimary) {
+  width: 100%;
   display: grid;
   gap: 5px;
-  width: 100%;
-  padding: 14px;
-  border: 1px solid rgba(35, 74, 88, 0.13);
-  border-radius: 14px;
-  background: #ffffff;
-  color: #566469;
+  border: 1px solid rgba(35, 74, 88, 0.14);
+  border-radius: 16px;
+  background: #fff;
+  color: #234a58;
+  padding: 13px;
   text-align: left;
   cursor: pointer;
 }
 
-.cdModeList button strong {
-  color: #234a58;
-  font-size: 14px;
+.cdSide .cdPanel button + button {
+  margin-top: 10px;
 }
 
-.cdModeList button span,
-.cdGroupBox p {
-  margin: 0;
-  font-size: 12px;
-  line-height: 18px;
-}
-
-.cdModeList button.is-selected {
+.cdSide .cdPanel button.is-selected {
   border-color: #c06a73;
   background: rgba(192, 106, 115, 0.08);
-  box-shadow: 0 10px 24px rgba(192, 106, 115, 0.1);
 }
 
-.cdGroupBox {
+.cdSide button span,
+.cdGroup p,
+.cdPanel small {
+  color: rgba(35, 74, 88, 0.64);
+  line-height: 1.55;
+}
+
+.cdGroup {
+  margin-top: 12px;
+  border-radius: 16px;
+  background: #f4ebe7;
+  padding: 12px;
+}
+
+.cdPrimary {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 14px;
+  border: 0;
+  border-radius: 999px;
+  background: #234a58;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cdSuccess {
   display: grid;
   gap: 10px;
-  padding: 12px;
-  border-radius: 14px;
-  background: #f8fbfb;
-  color: #566469;
+  margin-top: 14px;
+  border-radius: 16px;
+  background: rgba(192, 106, 115, 0.1);
+  color: #9f4d58;
+  padding: 14px;
+  line-height: 1.6;
+  font-weight: 700;
 }
 
-.cdGroupBox label,
-.cdCheckRow {
-  display: grid;
-  gap: 6px;
-  color: #566469;
-  font-size: 13px;
+.cdSuccess a {
+  color: #234a58;
 }
 
-.cdGroupBox select {
-  min-height: 40px;
-  padding: 0 10px;
-  border: 1px solid rgba(35, 74, 88, 0.14);
-  border-radius: 10px;
-  background: #ffffff;
-  color: #1e272b;
-  font: inherit;
-}
-
-.cdCheckRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.cdCheckRow input {
-  width: 16px;
-  height: 16px;
-}
-
-.cdPrimary,
-.cdPrimaryLink {
-  display: inline-flex;
-  width: 100%;
-  min-height: 50px;
-  align-items: center;
-  justify-content: center;
-  border: 0;
-  border-radius: 9px;
-  background: #234a58;
-  color: #ffffff;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 800;
-  text-decoration: none;
-  cursor: pointer;
-  box-shadow: 0 14px 30px rgba(35, 74, 88, 0.18);
-}
-
-.cdPrimary:disabled {
-  opacity: 0.48;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.cdSecondaryLink {
-  border-radius: 9px;
-}
-
-@media (max-width: 1180px) {
+@media (max-width: 980px) {
   .cdContainer {
-    width: calc(100vw - 48px);
+    width: min(100% - 32px, 720px);
   }
 
-  .cdShell {
-    grid-template-columns: 1fr;
-  }
-
-  .cdStickyPanel {
-    position: static;
-  }
-}
-
-@media (max-width: 760px) {
-  .cdContainer {
-    width: calc(100vw - 32px);
-  }
-
-  .cdHero h1 {
-    font-size: 30px;
-    line-height: 38px;
-  }
-
-  .cdTop {
-    grid-template-columns: 1fr;
-  }
-
-  .cdProgress {
-    overflow-x: auto;
-  }
-
+  .cdShell,
   .cdAssetGrid,
+  .cdMeta,
   .cdFormGrid {
     grid-template-columns: 1fr;
   }
 
-  .cdPanel {
-    padding: 14px;
-    border-radius: 14px;
+  .cdSide {
+    position: static;
   }
 }

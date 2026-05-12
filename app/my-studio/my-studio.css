@@ -1,597 +1,466 @@
-/* /my-studio —— 严格按 design/09_my-studio_rebuild_spec.md 重构
-   全部规则 scoped 在 .my-studio-page,不污染全局。
-   配色 token 已在 globals.css 统一,这里只覆盖 layout / scoped nav active。 */
-
 @import "../home-consumer.css";
 
-/* ============================================================
-   A. Page-scoped layout overrides
-   spec §3.2 / §12:fluid container,1200 cap,desktop 64×2 / tablet 24×2 / mobile 16×2
-   ============================================================ */
-.my-studio-page {
-  --ms-container-max: 1200px;
-  --ms-page-px-desktop: 64px;
-  --ms-page-px-tablet: 24px;
-  --ms-page-px-mobile: 16px;
-}
-
-/* ============================================================
-   B. Page Container —— spec §3.2
-   ============================================================ */
 .my-studio-page {
   min-height: 100vh;
-  background: var(--color-bg);                  /* #F3F6F6 */
-  color: var(--color-text-primary);
-  font-family: var(--font-sans);
-  padding-bottom: 48px;
+  background: #faf7f4;
+  color: #234a58;
+  padding-bottom: 72px;
 }
-/* fluid container,内容宽度 = min(1200, 100vw - 128) */
-.my-studio-page .container {
-  width: min(1200px, calc(100vw - 128px));
+
+.msHero,
+.msFlow,
+.msWorks {
+  width: min(1440px, calc(100% - 64px));
   margin: 0 auto;
-  padding: 0;
-}
-/* spec §12:Desktop ≥1280 / Tablet 768-1279 / Mobile <768 */
-@media (max-width: 1279px) {
-  .my-studio-page .container { width: calc(100vw - 48px); }
-}
-@media (max-width: 767px) {
-  .my-studio-page .container { width: calc(100vw - 32px); }
-  .my-studio-page { padding-bottom: 32px; }
 }
 
-/* ============================================================
-   C. Top Nav —— spec §4.1(scoped,不污染其它页)
-   ============================================================ */
-.my-studio-page .nav {
-  background: var(--color-surface);             /* #FCFDFD */
-  border-bottom: 1px solid var(--color-divider);/* #E1E8E8 */
-  height: 64px;
-}
-.my-studio-page .nav-center a.is-active {
-  color: var(--color-primary);                  /* #234A58 */
-  font-weight: 600;
-}
-.my-studio-page .nav-center a.is-active::after {
-  width: 100%;
-  background: var(--color-primary);             /* 2px 下划线 */
-}
-
-/* ============================================================
-   D. Hero —— spec §5.1 / §5.2 / §5.3
-   双栏 52/48,右侧两层图(floral 淡铺 + figure contain)
-   ============================================================ */
-.my-studio-page .msHero {
-  position: relative;
-  min-height: 360px;                            /* spec §5.1 */
-  margin-top: 24px;
-  padding: 56px 64px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  box-shadow: 0 1px 2px 0 rgba(30, 39, 43, 0.04);
-  overflow: hidden;
-}
-.my-studio-page .msHero__inner {
-  position: relative;
-  z-index: 2;
+.msHero {
   display: grid;
-  grid-template-columns: 52% 48%;               /* spec §5.1 */
-  gap: 32px;
-  align-items: center;                          /* spec §5.1 */
-  min-height: calc(360px - 56px * 2);           /* 248 */
-}
-.my-studio-page .msHero__copy {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-/* 面包屑(spec §5.2)*/
-.my-studio-page .msHero__crumb {
-  margin: 0 0 16px;
-  color: var(--color-text-tertiary);            /* #879397 */
-  font-size: 12px;
-  line-height: 18px;
-  letter-spacing: 0.04em;
-}
-.my-studio-page .msHero__crumb .slash {
-  color: var(--color-border-strong);
-  margin: 0 4px;
-}
-
-/* H1 在前(中文 Noto Serif SC 40/48,#1E272B)spec §5.2 */
-.my-studio-page .msHero h1 {
-  margin: 0;
-  font-family: var(--font-serif);
-  font-size: 40px;
-  line-height: 48px;
-  font-weight: 400;
-  letter-spacing: -0.01em;
-  color: var(--color-text-primary);
-}
-/* My Design Studio(Playfair italic 28/36,#C06A73)spec §5.2 */
-.my-studio-page .msHero__display {
-  margin: 4px 0 0;                              /* spec §5.2 mt 4 */
-  font-family: var(--font-serif);
-  font-size: 28px;
-  line-height: 36px;
-  font-weight: 400;
-  font-style: italic;
-  letter-spacing: -0.005em;
-  color: var(--color-accent);                   /* #C06A73 */
-}
-.my-studio-page .msHero__lead {
-  margin: 16px 0 0;
-  color: var(--color-text-secondary);           /* #566469 */
-  font-size: 14px;
-  line-height: 22px;
-  max-width: 460px;                             /* spec §5.2 */
-}
-
-/* spec §5.3 Hero 右侧视觉 —— 两层图,floral 淡铺 + figure abs right bottom */
-.my-studio-page .msHero__visual {
-  position: relative;
-  height: 100%;
-  min-height: 300px;
-}
-.my-studio-page .msHero__floralImg {
-  position: absolute;
-  /* spec:inset 负值,让花卉氛围溢出右栏到 Hero 卡片右半区淡铺 */
-  inset: -40px -64px -40px -80px;
-  width: calc(100% + 144px);
-  height: calc(100% + 80px);
-  object-fit: cover;
-  opacity: 0.42;                                /* spec §5.3 0.35-0.5 */
-  pointer-events: none;
-}
-.my-studio-page .msHero__figureImg {
-  position: absolute;
-  right: -12px;
-  bottom: -12px;
-  width: min(520px, 100%);
-  height: 330px;
-  object-fit: contain;
-  object-position: right bottom;
-  pointer-events: none;
-}
-
-/* Hero 响应式 spec §12 tablet 768-1279 */
-@media (max-width: 1279px) {
-  .my-studio-page .msHero {
-    padding: 40px 32px;
-    min-height: 320px;
-  }
-  .my-studio-page .msHero__inner {
-    grid-template-columns: 56% 44%;             /* tablet 文字稍宽 */
-    gap: 16px;
-    min-height: calc(320px - 80px);
-  }
-  .my-studio-page .msHero h1 { font-size: 32px; line-height: 40px; }
-  .my-studio-page .msHero__display { font-size: 22px; line-height: 30px; }
-}
-@media (max-width: 767px) {
-  .my-studio-page .msHero {
-    padding: 24px;
-    min-height: 220px;
-    margin-top: 16px;
-    border-radius: 12px;
-  }
-  .my-studio-page .msHero__inner {
-    grid-template-columns: 1fr;                 /* mobile 上下堆叠 */
-    gap: 12px;
-    min-height: 0;
-  }
-  .my-studio-page .msHero__visual {
-    /* mobile:把视觉缩到右上小图,不抢主信息 */
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 38%;
-    min-height: 0;
-    height: 60%;
-    z-index: 1;
-    pointer-events: none;
-  }
-  .my-studio-page .msHero__floralImg {
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0.32;
-  }
-  .my-studio-page .msHero__figureImg {
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
-    object-position: right top;
-  }
-  .my-studio-page .msHero h1 { font-size: 28px; line-height: 36px; }
-  .my-studio-page .msHero__display { font-size: 18px; line-height: 26px; }
-  .my-studio-page .msHero__lead { font-size: 14px; line-height: 22px; max-width: none; padding-right: 35%; }
-}
-
-/* ============================================================
-   E. Stats —— spec §6.1 / §6.2
-   3 张统计卡,每张 160×64,Playfair Display 数字 32/36
-   ============================================================ */
-/* spec §6.2:3 张统计卡 160×64,Playfair 32/36 */
-.my-studio-page .msHero__stats {
-  margin-top: 24px;                             /* spec §6.2 */
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;                                    /* spec §6.2 */
-}
-.my-studio-page .msStat {
-  width: 100%;
-  height: 64px;                                 /* spec §6.2 */
-  padding: 12px 16px;                           /* spec §6.2 */
-  display: grid;
-  grid-template-columns: 28px 1fr;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.75fr);
+  gap: 36px;
   align-items: center;
-  gap: 12px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;                          /* spec §6.2 */
+  padding: 104px 0 42px;
 }
-.my-studio-page .msStat__icon {
-  width: 28px;                                  /* spec §6.2 */
-  height: 28px;
-  color: var(--color-accent);                   /* #C06A73 */
+
+.msHero__copy h1 {
+  max-width: 780px;
+  margin: 10px 0 18px;
+  color: #203f49;
+  font-size: clamp(40px, 6vw, 82px);
+  line-height: 0.98;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.msHero__copy p {
+  max-width: 700px;
+  color: rgba(35, 74, 88, 0.76);
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+.msEyebrow {
+  margin: 0;
+  color: #c06a73;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.msHero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 30px;
+}
+
+.msCreateButton,
+.msGhostButton,
+.msWorkCard__actions a,
+.msFlowCard {
+  text-decoration: none;
+}
+
+.msCreateButton,
+.msGhostButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-}
-.my-studio-page .msStat__icon svg { width: 100%; height: 100%; stroke-width: 1.5; }
-.my-studio-page .msStat__body { display: grid; gap: 0; min-width: 0; }
-.my-studio-page .msStat b {
-  font-family: var(--font-serif);                /* Playfair Display */
-  font-size: 32px;                               /* spec §6.2 */
-  line-height: 36px;                             /* spec §6.2 */
-  font-weight: 400;
-  color: var(--color-text-primary);
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1, "lnum" 1;
-}
-.my-studio-page .msStat small {
-  color: var(--color-text-tertiary);
-  font-size: 12px;
-  line-height: 18px;
-  letter-spacing: 0.04em;
+  min-height: 48px;
+  border-radius: 999px;
+  padding: 0 24px;
+  border: 1px solid rgba(35, 74, 88, 0.18);
+  font-weight: 700;
+  cursor: pointer;
 }
 
-@media (max-width: 1279px) {
-  .my-studio-page .msHero__stats { gap: 8px; margin-top: 16px; }
-}
-@media (max-width: 767px) {
-  .my-studio-page .msHero__stats { gap: 8px; margin-top: 16px; }
-  .my-studio-page .msStat {
-    height: 56px;
-    padding: 8px 10px;
-    grid-template-columns: 22px 1fr;
-    gap: 8px;
-    min-width: 0;
-  }
-  .my-studio-page .msStat__icon { width: 22px; height: 22px; }
-  .my-studio-page .msStat b { font-size: 22px; line-height: 28px; }
-  .my-studio-page .msStat small { font-size: 11px; }
+.msCreateButton {
+  background: #234a58;
+  color: #fff;
+  box-shadow: 0 18px 42px rgba(35, 74, 88, 0.18);
 }
 
-/* ============================================================
-   F. Tool hint —— spec §7.1
-   ============================================================ */
-/* spec §7.1 */
-.my-studio-page .msHint {
-  margin-top: 40px;                             /* spec §7.1 */
-  margin-bottom: 24px;                          /* spec §7.1 */
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--color-text-secondary);
-  font-size: 13px;
-  line-height: 20px;
-}
-.my-studio-page .msHint__icon {
-  flex: 0 0 auto;
-  width: 16px;
-  height: 16px;
-  color: var(--color-certified-gold);
-}
-.my-studio-page .msHint__icon svg { width: 100%; height: 100%; }
-.my-studio-page .msHint b {
-  color: var(--color-certified-gold);
-  font-weight: 600;
+.msGhostButton {
+  background: rgba(255, 255, 255, 0.72);
+  color: #234a58;
 }
 
-@media (max-width: 767px) {
-  .my-studio-page .msHint { margin-top: 24px; margin-bottom: 16px; font-size: 12px; line-height: 18px; }
+.msHero__visual {
+  border-radius: 28px;
+  overflow: hidden;
+  background: #fcfdfd;
+  box-shadow: 0 24px 70px rgba(64, 49, 42, 0.12);
 }
 
-/* ============================================================
-   G. Tool cards —— spec §7.2 / §7.3
-   Desktop 4 列,卡片 168 高,padding 24,radius 12,图标 56
-   背景:rose=#F4E5E7 / blue=#E2EEF1 / neutral=#FCFDFD
-   ============================================================ */
-.my-studio-page .msTools {
-  margin-top: 0;
+.msHero__visual img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+
+.msSectionHead {
+  margin: 34px 0 20px;
+}
+
+.msSectionHead h2 {
+  margin: 7px 0 8px;
+  color: #203f49;
+  font-size: 30px;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+
+.msSectionHead p {
+  max-width: 780px;
+  margin: 0;
+  color: rgba(35, 74, 88, 0.68);
+  line-height: 1.7;
+}
+
+.msFlow__grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 24px;
+  gap: 16px;
 }
-.my-studio-page .msTool {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 168px;                                 /* spec §7.3 */
-  padding: 24px;                                 /* spec §7.3 */
-  border: 1px solid var(--color-border);
-  border-radius: 12px;                           /* spec §7.3 */
-  text-decoration: none;
-  color: var(--color-text-primary);
-  box-shadow: 0 1px 2px 0 rgba(30, 39, 43, 0.04);
-  transition:
-    border-color 150ms ease-out,
-    box-shadow 150ms ease-out,
-    transform 150ms ease-out;
-}
-.my-studio-page .msTool:hover {
-  border-color: var(--color-border-strong);
-  box-shadow: 0 8px 24px 0 rgba(30, 39, 43, 0.08);
-  transform: translateY(-2px);
-}
-.my-studio-page .msTool--rose    { background: var(--color-accent-subtle); }   /* #F4E5E7 */
-.my-studio-page .msTool--blue    { background: var(--color-primary-subtle); }  /* #E2EEF1 */
-.my-studio-page .msTool--neutral { background: var(--color-surface); }         /* #FCFDFD */
 
-.my-studio-page .msTool__icon {
-  width: 56px;                                   /* spec §7.3 */
-  height: 56px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+.msFlowCard {
+  min-height: 220px;
+  padding: 22px;
+  border: 1px solid rgba(35, 74, 88, 0.1);
+  border-radius: 20px;
+  background: #fcfdfd;
+  color: #234a58;
+  box-shadow: 0 16px 42px rgba(64, 49, 42, 0.07);
 }
-.my-studio-page .msTool__icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-.my-studio-page .msTool h3 {
-  margin: 12px 0 0;                              /* spec §7.3 mt 12 */
-  font-family: var(--font-serif);                /* Noto Serif SC */
-  font-size: 20px;                               /* spec §7.3 */
-  line-height: 28px;
-  font-weight: 500;
-  color: var(--color-primary);                   /* #234A58 */
-}
-.my-studio-page .msTool p {
-  margin: 4px 0 0;                               /* spec §7.3 mt 4 */
-  color: var(--color-text-secondary);
-  font-size: 14px;                               /* spec §7.3 */
-  line-height: 22px;
-}
-.my-studio-page .msTool__cta {
-  margin-top: auto;                              /* 推到底 */
-  align-self: flex-start;
-  flex-shrink: 0;                                /* 防 fixed-h parent 把 cta 挤扁 */
-  display: inline-flex;
-  align-items: center;
-  height: 32px;                                  /* spec §7.3 */
-  padding: 0 16px;                               /* spec §7.3 */
+
+.msFlowCard span {
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
-  background: var(--color-accent);               /* #C06A73 */
-  color: #FFFFFF;
-  font-size: 14px;                               /* spec §7.3 */
-  line-height: 20px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-.my-studio-page .msTool:hover .msTool__cta {
-  background: var(--color-accent-hover);
-  box-shadow: 0 4px 12px 0 rgba(192, 106, 115, 0.22);
+  background: #c06a73;
+  color: #fff;
+  font-weight: 800;
 }
 
-@media (max-width: 1279px) {
-  /* spec §12.2 Tablet 768-1279:工具卡 2 列;尺寸保留 spec base */
-  .my-studio-page .msTools { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-}
-@media (max-width: 767px) {
-  /* spec §7.3 mobile */
-  .my-studio-page .msTools { gap: 12px; }
-  .my-studio-page .msTool {
-    height: 124px;                               /* spec §7.3 mobile */
-    padding: 16px;                               /* spec §7.3 mobile */
-  }
-  .my-studio-page .msTool__icon { width: 36px; height: 36px; }   /* spec §7.3 mobile */
-  .my-studio-page .msTool h3 { font-size: 16px; line-height: 24px; margin-top: 8px; }
-  .my-studio-page .msTool p { font-size: 12px; line-height: 18px; }
-  .my-studio-page .msTool__cta { height: 30px; padding: 0 12px; font-size: 12px; }
+.msFlowCard strong {
+  display: block;
+  margin: 22px 0 10px;
+  color: #203f49;
+  font-size: 22px;
 }
 
-/* ============================================================
-   H. Works section —— spec §8
-   /my-studio 首页 6 列紧凑预览,4:3 裁切
-   ============================================================ */
-/* spec §8.1 */
-.my-studio-page .msWorks {
-  margin-top: 40px;                              /* spec §8.1 */
+.msFlowCard p {
+  margin: 0;
+  color: rgba(35, 74, 88, 0.68);
+  line-height: 1.65;
 }
-.my-studio-page .msWorks__head {
+
+.msWorks__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.msWorkCard {
+  overflow: hidden;
+  border: 1px solid rgba(35, 74, 88, 0.1);
+  border-radius: 22px;
+  background: #fcfdfd;
+  box-shadow: 0 18px 46px rgba(64, 49, 42, 0.08);
+}
+
+.msWorkCard > img {
+  display: block;
+  width: 100%;
+  height: 360px;
+  object-fit: cover;
+}
+
+.msWorkCard > div {
+  padding: 20px;
+}
+
+.msWorkCard span {
+  color: #c06a73;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.msWorkCard h3 {
+  margin: 8px 0;
+  color: #203f49;
+  font-size: 22px;
+}
+
+.msWorkCard p,
+.msWorkCard small {
+  display: block;
+  margin: 0 0 8px;
+  color: rgba(35, 74, 88, 0.68);
+}
+
+.msWorkCard__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.msWorkCard__actions a {
+  flex: 1;
+  display: inline-flex;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 10px 12px;
+  color: #234a58;
+  background: #f4ebe7;
+  font-weight: 700;
+}
+
+.msWorkCard__actions a:first-child {
+  color: #fff;
+  background: #234a58;
+}
+
+.msCreateModal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.msCreateModal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(21, 32, 37, 0.52);
+  backdrop-filter: blur(8px);
+}
+
+.msCreateModal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(640px, 100%);
+  max-height: min(760px, calc(100vh - 48px));
+  overflow: auto;
+  border: 1px solid rgba(35, 74, 88, 0.12);
+  border-radius: 24px;
+  background: #fcfdfd;
+  padding: 26px;
+  color: #234a58;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+}
+
+.msCreateModal__head,
+.msCreateModal__actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;                           /* spec §8.1 */
-}
-.my-studio-page .msWorks__head h2 {
-  margin: 0;
-  font-family: var(--font-serif);                /* Noto Serif SC */
-  font-size: 20px;
-  line-height: 28px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-}
-.my-studio-page .msWorks__more {
-  color: var(--color-text-tertiary);             /* #879397 浅灰 */
-  font-size: 13px;
-  line-height: 20px;
-  text-decoration: none;
-}
-.my-studio-page .msWorks__more:hover { color: var(--color-text-secondary); }
-
-/* spec §8.2:6 列(desktop) / 4 列(≤1280) / 2 列(≤768)*/
-.my-studio-page .msWorksGrid {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 16px;
 }
-@media (max-width: 1279px) {
-  /* spec §12.2 Tablet 768-1279:作品 4 列 */
-  .my-studio-page .msWorksGrid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-  }
-}
-@media (max-width: 767px) {
-  .my-studio-page .msWorksGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-  }
-  .my-studio-page .msWorks { margin-top: 24px; }
-  .my-studio-page .msWorks__head h2 { font-size: 18px; line-height: 26px; }
+
+.msCreateModal__head p {
+  margin: 0 0 6px;
+  color: #c06a73;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
-/* ============================================================
-   I. Work card —— spec §8.3
-   bg #FCFDFD / border #D2DEDF / radius 12 / overflow hidden
-   img 4:3 裁切,body padding 12,操作行用 border-top divider
-   ============================================================ */
-.my-studio-page .msWork {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  box-shadow: 0 1px 2px 0 rgba(30, 39, 43, 0.04);
-  overflow: hidden;                              /* spec §8.3 */
-  transition:
-    border-color 150ms ease-out,
-    box-shadow 150ms ease-out,
-    transform 150ms ease-out;
-}
-.my-studio-page .msWork:hover {
-  border-color: var(--color-border-strong);
-  box-shadow: 0 8px 24px 0 rgba(30, 39, 43, 0.08);
-  transform: translateY(-2px);
-}
-/* spec §8.3:image aspect 4:3,object-fit cover */
-.my-studio-page .msWork__media {
-  position: relative;
-  aspect-ratio: 4 / 3;                           /* spec §8.3 */
-  background: var(--color-subtle);
-  overflow: hidden;
-}
-.my-studio-page .msWork__media img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-}
-.my-studio-page .msWork__body {
-  padding: 12px;                                 /* spec §8.3 */
-}
-.my-studio-page .msWork__title {
+.msCreateModal__head h2 {
   margin: 0;
-  font-size: 14px;                               /* spec §8.3 */
-  line-height: 22px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 28px;
 }
-.my-studio-page .msWork__time {
-  margin: 2px 0 0;                               /* spec §8.3 */
-  font-size: 12px;                               /* spec §8.3 */
-  line-height: 18px;
-  color: var(--color-text-tertiary);
-}
-.my-studio-page .msWork__actions {
-  margin-top: 12px;                              /* spec §8.3 */
-  padding-top: 10px;                             /* spec §8.3 */
-  border-top: 1px solid var(--color-divider);    /* spec §8.3 divider */
-  display: flex;
-  flex-direction: column;
-  gap: 6px;                                      /* spec §8.3 */
-}
-.my-studio-page .msWork__action {
-  display: flex;
-  align-items: center;
-  gap: 6px;                                      /* spec §8.3 */
-  font-size: 12px;                               /* spec §8.3 */
-  line-height: 18px;
-  color: var(--color-text-secondary);            /* #566469 */
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  padding: 0;
-  text-align: left;
-}
-.my-studio-page .msWork__action:hover { color: var(--color-text-primary); }
-.my-studio-page .msWork__action svg {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-}
-.my-studio-page .msWork__action--accent {
-  color: var(--color-accent);                    /* #C06A73 */
-}
-.my-studio-page .msWork__action--accent:hover { color: var(--color-accent-hover); }
 
-/* ============================================================
-   J. Empty state —— spec §10.3(目前 desktop 用 mock,样式保留备用)
-   ============================================================ */
-.my-studio-page .msEmpty.ui-empty {
+.msCreateModal__head button {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 999px;
+  background: #f4ebe7;
+  color: #234a58;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.msCreateField,
+.msCreateChoices {
+  display: block;
+  margin-top: 18px;
+}
+
+.msCreateField span,
+.msCreateChoices p {
+  display: block;
+  margin: 0 0 9px;
+  color: rgba(35, 74, 88, 0.72);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.msCreateField input {
+  width: 100%;
+  border: 1px solid rgba(35, 74, 88, 0.16);
+  border-radius: 14px;
+  background: #fff;
+  padding: 13px 14px;
+  color: #234a58;
+  font: inherit;
+}
+
+.msCreateChoices > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.msCreateChoices button,
+.msCreateGhost,
+.msCreatePrimary {
+  border: 1px solid rgba(35, 74, 88, 0.16);
+  border-radius: 999px;
+  padding: 10px 15px;
+  color: #234a58;
+  background: #fff;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.msCreateChoices button.is-selected,
+.msCreatePrimary {
+  border-color: #234a58;
+  background: #234a58;
+  color: #fff;
+}
+
+.msCreateModal__error {
+  margin: 16px 0 0;
+  border-radius: 14px;
+  background: rgba(192, 106, 115, 0.12);
+  color: #9f3f4a;
+  padding: 12px 14px;
+}
+
+.msCreateModal__notice {
+  color: rgba(35, 74, 88, 0.68);
+}
+
+.msBodyGate,
+.msBodyGate__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+}
+
+.msBodyGate__backdrop {
+  background: rgba(21, 32, 37, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+.msBodyGate {
   display: grid;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 16px;
-  padding: 32px;
   place-items: center;
-  text-align: center;
+  padding: 24px;
+}
+
+.msBodyGate__panel {
+  position: relative;
+  z-index: 1;
+  width: min(560px, 100%);
+  border-radius: 24px;
+  background: #fcfdfd;
+  padding: 26px;
+  color: #234a58;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+}
+
+.msBodyGate__eyebrow {
+  margin: 0 0 8px;
+  color: #c06a73;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.msBodyGate__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 18px 0;
+}
+
+.msBodyGate label {
+  display: grid;
+  gap: 7px;
+  color: rgba(35, 74, 88, 0.72);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.msBodyGate input,
+.msBodyGate select {
+  border: 1px solid rgba(35, 74, 88, 0.16);
+  border-radius: 12px;
+  padding: 11px 12px;
+  color: #234a58;
+  background: #fff;
+}
+
+.msBodyGate__fit {
+  display: grid;
+  gap: 10px;
+}
+
+.msBodyGate__fit > div {
+  display: flex;
   gap: 8px;
 }
-.my-studio-page .msEmpty .ui-empty__icon {
-  width: 180px;                                  /* spec §10.3 */
-  height: auto;
-  background: transparent;
-  display: block;
-  margin: 0 0 24px;
+
+.msBodyGate__fit button {
+  flex: 1;
+  border: 1px solid rgba(35, 74, 88, 0.16);
+  border-radius: 999px;
+  background: #fff;
+  color: #234a58;
+  padding: 10px 12px;
+  font-weight: 800;
 }
-.my-studio-page .msEmpty .ui-empty__icon img {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 3 / 4;
-  object-fit: contain;
-  display: block;
+
+.msBodyGate__fit button.is-selected {
+  border-color: #234a58;
+  background: #234a58;
+  color: #fff;
 }
-.my-studio-page .msEmpty .ui-empty__title {
-  font-family: var(--font-serif);
-  font-size: 24px;
-  line-height: 32px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-}
-.my-studio-page .msEmpty .ui-empty__desc {
-  margin-top: 8px;
-  font-size: 14px;
-  line-height: 22px;
-  color: var(--color-text-secondary);
-  max-width: 520px;
-}
-.my-studio-page .msEmpty .ui-empty__action { margin-top: 24px; }
-@media (max-width: 767px) {
-  .my-studio-page .msEmpty.ui-empty { padding: 24px; }
-  .my-studio-page .msEmpty .ui-empty__icon { width: 160px; }
-  .my-studio-page .msEmpty .ui-empty__title { font-size: 20px; line-height: 28px; }
+
+@media (max-width: 980px) {
+  .msHero,
+  .msFlow,
+  .msWorks {
+    width: min(100% - 32px, 720px);
+  }
+
+  .msHero,
+  .msFlow__grid,
+  .msWorks__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .msHero {
+    padding-top: 88px;
+  }
+
+  .msHero__copy h1 {
+    font-size: 44px;
+  }
+
+  .msBodyGate__grid {
+    grid-template-columns: 1fr;
+  }
 }
