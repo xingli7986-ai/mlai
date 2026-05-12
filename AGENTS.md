@@ -30,6 +30,77 @@
 
 ---
 
+## Deployment Verification (MANDATORY · added 2026-05-12)
+
+After 2026-05-12 incident: 5-day silent build failure, 21 wasted commits, full rollback to 5/5 baseline. The following rules are non-negotiable.
+
+- After every `git push` to `main`, within 5 minutes you MUST verify the Vercel build status — via the Vercel dashboard, `vercel inspect`, or by asking the user to confirm.
+- If the Vercel build is RED, immediately STOP all further development. **Do NOT push more commits on top of a red build.** Layered fixes on a broken baseline are how 21 commits got wasted on 5/8-5/11.
+- Do NOT say "deployed" / "live" / "shipped" / "done" / "上线" / "发布" unless the Vercel production URL has been verified responding correctly within the last hour.
+- Local `npx tsc --noEmit` passing does NOT mean production works.
+- Local `npm run dev` rendering does NOT mean production works.
+- Definition of "done" for any feature (ALL FOUR must hold — three out of four is not done):
+  1. `npx tsc --noEmit` clean locally
+  2. committed and pushed to `main`
+  3. Vercel build green for that commit
+  4. production URL renders the feature without error in a real browser
+
+---
+
+## Stop-Loss Rules (MANDATORY · added 2026-05-12)
+
+The 2026-05-12 incident escalated because the same try-on bug was patched 10+ times without questioning the premise. The following triggers force an immediate STOP.
+
+- 2 consecutive Vercel build failures → STOP, do not push fix #3 blindly.
+- 3+ attempts to fix the same bug → STOP, the diagnosis is probably wrong.
+- 5+ modifications to the same file within 48 hours → STOP, the design is probably wrong.
+- A pushed fix shows no symptom change → do NOT push another fix; re-investigate the root cause first.
+
+When any trigger fires, immediately:
+1. State to the user what happened (which trigger, evidence — list the commit hashes).
+2. List what has already been tried, with concrete outcomes.
+3. Propose 2–3 alternative directions (e.g., rollback, change approach, ask for environment access, defer feature).
+4. WAIT for the user to choose. Do NOT pick one yourself.
+
+---
+
+## Environment Awareness (MANDATORY · added 2026-05-12)
+
+The 2026-05-12 incident's true root cause was missing Vercel environment variables that nobody noticed for 5 days. The agent treated build failures as code bugs and "fixed" them by pushing more code.
+
+- Before starting any task that touches API routes, database, or AI providers, confirm Vercel's most recent deployment succeeded. If the last deploy is red, the environment may be broken — STOP and ask the user before writing code.
+- Required production env vars on Vercel (any missing one breaks builds or runtime):
+
+  ```
+  DATABASE_URL
+  NEXTAUTH_SECRET
+  NEXTAUTH_URL
+  YXAI_API_KEY
+  YXAI_BASE_URL
+  R2_ENDPOINT
+  R2_ACCESS_KEY_ID
+  R2_SECRET_ACCESS_KEY
+  R2_PUBLIC_URL
+  R2_BUCKET
+  CRON_SECRET
+  ```
+
+- If any production error suggests missing env vars (`process.env.X is undefined`, Prisma connection errors, R2 upload returning 401, Alipay signature mismatch, etc.), ask the user to verify Vercel → Project → Settings → Environment Variables. Do NOT silently invent fallbacks or assume the issue is code.
+
+---
+
+## Vercel Hobby Deployment Constraints (added 2026-05-12)
+
+The 2026-05-12 incident also revealed a serverless function exceeding the 250MB Vercel Hobby limit.
+
+- Vercel Hobby unzipped serverless function size limit: **250MB**.
+- `sharp` and `@prisma/client` MUST stay in `next.config.ts` → `serverExternalPackages`. Removing them will fail at deploy time.
+- Before adding any new `dependency` (not `devDependency`), estimate its installed size (and its transitive deps). Any package > 5MB needs explicit user discussion before install.
+- Working budget: keep the unzipped lambda function size **≤ 200MB**, leaving 50MB safety headroom.
+- After adding code that imports a new heavy package, check the Vercel build log "Lambda size" section on the next deployment.
+
+---
+
 ## Read first
 
 Before any task, read:
@@ -39,16 +110,18 @@ Before any task, read:
 - `docs/TASK_BACKLOG.md`
 - `docs/DECISIONS.md`
 - `docs/DEVELOPMENT_LOG.md`
-- Relevant design specs:
+- Relevant design specs (verify each exists before relying on it):
   - `design/09_my-studio_rebuild_spec.md`
   - `design/11_my-studio_tools_design_spec.md`
   - `design/high-fidelity-v2/*.png`
 
-Also inspect:
+**If any "Read first" file does not exist on the current branch, STOP and report to the user — do not proceed assuming the file's content from memory or from history.**
+
+Also inspect the live state of the repo (do NOT trust historical commit hashes embedded elsewhere in this file or in docs/):
 
 ```bash
 git status --short --branch
-git log --oneline -12
+git log --oneline -10
 ```
 
 ---
@@ -139,19 +212,7 @@ Already implemented and pushed:
 - `/my-studio/try-on`
 - `/my-studio/sketch`
 
-Latest pushed commits include:
-
-```text
-360f567 fix: my-studio tools auth flow + prompt dedup
-46c0dcc fix: my-studio tool card links point to consumer routes
-75767d8 feat(my-studio): add sketch generation tool page
-84b9c72 feat(my-studio): add try-on preview tool page
-8f87ece feat(my-studio): add seamless fabric layout tool page
-6305633 docs(my-studio): add tool specs and high-fidelity boards
-c3e253a fix(my-studio): align home page values to spec 09
-1331c9b feat(my-studio): add pattern generate tool page
-8137141 feat(my-studio): polish visual layout and local font fallback
-```
+For current pushed commits, always run `git log --oneline -10` against the live repo. Do NOT trust any static commit list embedded in this file or in any `docs/` file — those lists go stale fast (this section previously listed 5/4 commits unchanged for over a week during the 5/12 incident).
 
 ---
 
