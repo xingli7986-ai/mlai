@@ -2,6 +2,17 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ['sharp', '@prisma/client'],
+  outputFileTracingExcludes: {
+    '*': [
+      './node_modules/@img/sharp-win32-*/**',
+      './node_modules/@img/sharp-darwin-*/**',
+      './node_modules/@img/sharp-libvips-win32-*/**',
+      './node_modules/@img/sharp-libvips-darwin-*/**',
+      './node_modules/@img/sharp-libvips-linuxmusl-arm64/**',
+      './node_modules/@img/sharp-linux-arm*/**',
+      './node_modules/@img/sharp-libvips-linux-arm*/**',
+    ],
+  },
   images: {
     remotePatterns: [
       {
