@@ -13,8 +13,6 @@ const nextConfig: NextConfig = {
       'node_modules/@img/sharp-libvips-linux-arm*',
       'node_modules/prisma/libquery_engine-*',
       'node_modules/@prisma/engines/**',
-      'node_modules/.prisma/client/libquery_engine-*',
-      '!node_modules/.prisma/client/libquery_engine-debian-openssl*',
       'node_modules/@react-pdf/**',
       'node_modules/potrace/**',
     ],
