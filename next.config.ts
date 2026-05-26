@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
       'node_modules/@prisma/engines/**',
       'node_modules/@react-pdf/**',
       'node_modules/potrace/**',
+      'public/assets/images/**',
+      'public/assets/my-studio/**',
+      'public/seed-images/**',
+      'design/**',
     ],
   },
   images: {
