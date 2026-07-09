@@ -1,0 +1,9 @@
+{
+  "previewUrl": "https://mlai-app.vercel.app",
+  "pendingHumanAction": [
+    "推送本次治理提交到 origin/main(当前仅本地提交,未 push),Atlas GitHub App 才会同步。",
+    "对齐生产实际后更新 docs/ 运营态文档:CONTEXT_BRIEF/PROJECT_STATUS 停留在 2026-05-12 事故态,称多项功能已回滚,但 main 经 restore backup code 等提交已恢复相关代码,存在时间差。",
+    "确认生产域名:docs 记为 https://mlai-app.vercel.app,而 lib/alipay.ts、miniprogram、.env.example 使用 https://maxlulu-ai-iota.vercel.app,需统一。",
+    "支付宝商户密钥落地后完成支付端到端联调(主线 A blocker)。"
+  ]
+}
