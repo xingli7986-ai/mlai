@@ -16,7 +16,7 @@ export default function StudioStepGate({
     <main className="studioStepGatePage">
       <ConsumerNav variant="solid" />
       <section className="studioStepGate">
-        <p className="studioStepGate__eyebrow">Garment Work Required</p>
+        <p className="studioStepGate__eyebrow">我的设计工作室</p>
         <h1>{title}</h1>
         <p>{description}</p>
         <div className="studioStepGate__actions">
